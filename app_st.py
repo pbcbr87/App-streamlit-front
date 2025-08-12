@@ -70,8 +70,9 @@ def home():
 if st.session_state.logado == False:
     pg = st.navigation([st.Page(login)])
 else:
-    pg = st.navigation([st.Page(home,title='inicio'), st.Page(f'pages/page_1.py', title='Operações'), st.Page('pages/page_2.py', title='Carteira')])    
+    pg = st.navigation([st.Page(home,title='inicio'), st.Page(f'Pages/page_1.py', title='Operações'), st.Page('Pages/page_2.py', title='Carteira')])    
 pg.run()
+
 
 
 
