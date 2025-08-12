@@ -36,7 +36,7 @@ def login():
     if st.button("Log in"):
         if (len(user_input) > 0) and (len(senha_input) > 0):
             try:
-                get_token = requests.post('https://pythonapi-production-6268.up.railway.app/auth/tokent', {'username': user_input, 'password': senha_input}).json()
+                get_token = requests.post('https://pythonapi-production-6268.up.railway.app/auth/token', {'username': user_input, 'password': senha_input}).json()
                 if 'access_token' in get_token:
                     st.session_state.logado = True
                     st.session_state.token = get_token['access_token']
@@ -72,6 +72,7 @@ if st.session_state.logado == False:
 else:
     pg = st.navigation([st.Page(home,title='inicio'), st.Page(f'pages/page_1.py', title='Operações'), st.Page('pages/page_2.py', title='Carteira')])    
 pg.run()
+
 
 
 
