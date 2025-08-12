@@ -9,7 +9,7 @@ from datetime import datetime
 # requisição de datos
 def get_operacoes():
     try:
-        dados_ordens = requests.get(f'http://localhost:8000/Calcular/pegar_ordens', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()    
+        dados_ordens = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/pegar_ordens', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()    
     except:
         dados_ordens = []
         st.toast(f'Sem dados')
@@ -21,13 +21,13 @@ def enviar_tabela(dataframe):
     linhas = loads(linhas)
     ordens_tabela = dumps({"ordens": linhas})
 
-    requests.post('http://localhost:8000/Calcular/inserir_ordens_table', ordens_tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
+    requests.post('https://pythonapi-production-6268.up.railway.app/Calcular/inserir_ordens_table', ordens_tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
 
 # Enviar dados para o banco de dados
 def envia_manual(ordem_manual):
     ordem_manual = dumps(ordem_manual)
     try:
-        resp = requests.post('http://localhost:8000/Calcular/inserir_ordem', ordem_manual, headers={'Authorization':f'Bearer {st.session_state.token}'})
+        resp = requests.post('https://pythonapi-production-6268.up.railway.app/Calcular/inserir_ordem', ordem_manual, headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
             st.toast('Dados enviados')
             st.toast(resp.json())
@@ -39,13 +39,13 @@ def envia_manual(ordem_manual):
 
 # Pegar lista de ativos
 def get_ativos():
-    st.session_state['lista'] = requests.get(f'http://localhost:8000/Calcular/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
+    st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
 
 # Excluir operçaão
 def excluir_op():
     for l in st.session_state['sl_op']:
         try:
-            resp = requests.delete(f'http://localhost:8000/Calcular/delete_ordem/{l}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+            resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/Calcular/delete_ordem/{l}', headers={'Authorization':f'Bearer {st.session_state.token}'})
             if resp.status_code == 200:
                 st.toast('Dados Excluidos')
             else:
@@ -56,7 +56,7 @@ def excluir_op():
 #Excluir todas as operações
 def excluir_tudo():
     try:
-        resp = requests.delete(f'http://localhost:8000/Calcular/delete_ordem/', headers={'Authorization':f'Bearer {st.session_state.token}'})
+        resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/Calcular/delete_ordem/', headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
             st.toast('Dados Excluidos')
         else:
@@ -107,7 +107,7 @@ with tab3:
         if 'sl_cat' not in st.session_state:
             st.session_state['sl_cat'] = 'AÇÕES'
         if 'lista' not in st.session_state:
-            lista = requests.get(f'http://localhost:8000/Calcular/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
+            lista = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
         else:
             lista = st.session_state['lista']       
         
@@ -167,4 +167,5 @@ with tab4:
         with col1:
             st.button('Excluir', key='bt_3', disabled=st.session_state['bt_on'], on_click=excluir_op)  
         with col2:                
+
             st.button('Excluir tudo', key='bt_4', on_click=excluir_tudo)
