@@ -7,7 +7,7 @@ import requests
 #função para pegar o token de autenticação
 @st.cache_data
 def get_user(tk):
-    usuario = requests.get(f'https://pythonapi-production-6268.up.railway.app/usuarios', headers={'Authorization':f'Bearer {tk}'}).json()
+    usuario = requests.get(f'https://pythonapi-production-6268.up.railway.app/usuarios/', headers={'Authorization':f'Bearer {tk}'}).json()
     return usuario
 
 #Delcarar sessions
@@ -72,6 +72,7 @@ if st.session_state.logado == False:
 else:
     pg = st.navigation([st.Page(home,title='inicio'), st.Page(f'pages/page_1.py', title='Operações'), st.Page('pages/page_2.py', title='Carteira')])    
 pg.run()
+
 
 
 
