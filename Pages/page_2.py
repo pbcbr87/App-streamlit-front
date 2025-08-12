@@ -4,9 +4,9 @@ import pandas as pd
 
 st.title('Carteira')
 
-resp = requests.get(f'http://localhost:8000/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
 
-carteira = requests.get(f'http://localhost:8000/Calcular/pegar_carteira/', headers={'Authorization':f'Bearer {st.session_state.token}'})
+carteira = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/pegar_carteira/', headers={'Authorization':f'Bearer {st.session_state.token}'})
 
 df_carteira = pd.DataFrame(carteira.json())
 df_carteira['%'] = 100 * df_carteira['custo_brl'] / df_carteira['custo_brl'].sum()
@@ -20,4 +20,5 @@ st.dataframe(df_carteira, hide_index=True, column_config={
             "% (BRL)",
             help="Proporcação do ativo na carteira em BRL"
         )
+
     })
