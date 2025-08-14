@@ -12,6 +12,7 @@ carteira = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcu
 
 df_carteira = pd.DataFrame(carteira.json())
 df_carteira['%'] = 100 * df_carteira['custo_brl'] / df_carteira['custo_brl'].sum()
+df_carteira['%_lucro'] = df['valor_mercado_brl'] - df_carteira['custo_brl']
 
 
 # Criar abas
@@ -34,14 +35,14 @@ with tab2:
     df = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
     fig = go.Figure()
     fig.update_layout()
-    y = df['Custo_BRL']
-    x = df['Codigo_Ativo']
+    y = df['custo_brl']
+    x = df['codigo_ativo']
     fig.add_trace(go.Bar(x=x.values, y=y.values,name='Custo'))
 
-    y = df['Valor_Mercado_BRL']
+    y = df['valor_mercado_brl']
     fig.add_trace(go.Bar(x=x.values, y=y.values, name='Valor Atual'))
 
-    y = df['%_Lucro']
+    y = df['%_lucro']
     fig.add_trace(go.Bar(x=x.values, 
                         y=y.values, 
                         yaxis="y2", 
@@ -69,6 +70,7 @@ with tab2:
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)')
     )
     st.plotly_chart(fig, use_container_width=True)
+
 
 
 
