@@ -16,11 +16,11 @@ df_carteira['%'] = 100 * df_carteira['custo_brl'] / df_carteira['custo_brl'].sum
 tab1, tab2 = st.tabs(["Carteira", "Grafico Barra"])
 
 with tab1:
-    df_carteira = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant', 'custo_brl', 'custo_usd'])
+    df_carteira_st = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant', 'custo_brl', 'custo_usd'])
                                     .format(precision=0, thousands=".", decimal=",", subset=['peso', 'nota'])
                                     .format(precision=2, thousands=".", decimal=",", subset=['%']))
 
-    st.dataframe(df_carteira, hide_index=True, column_config={
+    st.dataframe(df_carteira_st, hide_index=True, column_config={
                 "%": st.column_config.NumberColumn(
                 "% (BRL)",
                 help="Proporcação do ativo na carteira em BRL"
@@ -67,5 +67,6 @@ with tab2:
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)')
     )
     st.plotly_chart(fig, use_container_width=True)
+
 
 
