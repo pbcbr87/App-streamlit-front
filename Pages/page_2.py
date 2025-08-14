@@ -1,6 +1,8 @@
 import streamlit as st
 import requests
 import pandas as pd
+from plotly import graph_objects as go
+
 
 st.title('Carteira')
 
@@ -67,6 +69,7 @@ with tab2:
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)')
     )
     st.plotly_chart(fig, use_container_width=True)
+
 
 
 
