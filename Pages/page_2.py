@@ -12,7 +12,7 @@ carteira = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcu
 
 df_carteira = pd.DataFrame(carteira.json())
 df_carteira['%'] = 100 * df_carteira['custo_brl'] / df_carteira['custo_brl'].sum()
-df_carteira['%_lucro'] = df['valor_mercado_brl'] - df_carteira['custo_brl']
+df_carteira['%_lucro'] =  df_carteira['valor_mercado_brl'] - df_carteira['custo_brl']
 
 
 # Criar abas
@@ -70,6 +70,7 @@ with tab2:
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)')
     )
     st.plotly_chart(fig, use_container_width=True)
+
 
 
 
