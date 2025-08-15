@@ -69,7 +69,7 @@ with tab2:
             tickmode="sync",
             tickformat=".0%"  
         ),
-        # locale="pt-BR",
+        separators= ".,"
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)')
     )
     st.plotly_chart(fig, use_container_width=True)
