@@ -55,12 +55,12 @@ with tab2:
                                     opacity=0.5,
                                     line=dict(color='black',width=1))))
     fig.update_layout(
+        separators= ",.",
         yaxis=dict(
             title=dict(text="Valor em Reais"),
             side="left",
             range=None,
-            tickformat=",.2f",
-            separators= ",."
+            tickformat=",.2f"   
         ),
         yaxis2=dict(
             title=dict(text="Lucro %"),
