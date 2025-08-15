@@ -68,7 +68,7 @@ with tab2:
             range=None,
             overlaying="y",
             tickmode="sync",
-            tickformat=".0%"  
+            tickformat=".2%"  
         ),
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)')
     )
