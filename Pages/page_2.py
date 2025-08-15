@@ -18,11 +18,12 @@ df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo
 # Criar abas
 tab1, tab2 = st.tabs(["Carteira", "Grafico Barra"])
 
-with tab1:
-    df_carteira_st = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant', 'custo_brl', 'custo_usd'])
-                                    .format(precision=0, thousands=".", decimal=",", subset=['peso', 'nota'])
-                                    .format(precision=2, thousands=".", decimal=",", subset=['%']))
-
+# Ajuste de estilo e ordenação
+df_carteira = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
+df_carteira_st = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant', 'custo_brl', 'custo_usd'])
+                                .format(precision=0, thousands=".", decimal=",", subset=['peso', 'nota'])
+                                .format(precision=2, thousands=".", decimal=",", subset=['%']))
+with tab1:    
     st.dataframe(df_carteira_st, hide_index=True, column_config={
                 "%": st.column_config.NumberColumn(
                 "% (BRL)",
@@ -32,7 +33,7 @@ with tab1:
         })
 
 with tab2:
-    df = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
+    df = df_carteira_st
     fig = go.Figure()
     fig.update_layout()
     y = df['custo_brl']
@@ -70,6 +71,7 @@ with tab2:
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)')
     )
     st.plotly_chart(fig, use_container_width=True)
+
 
 
 
