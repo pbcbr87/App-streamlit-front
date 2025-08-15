@@ -59,7 +59,7 @@ with tab2:
             title=dict(text="Valor em Reais"),
             side="left",
             range=None,
-            tickformat=",2f"
+            tickformat=",.2f"
         ),
         yaxis2=dict(
             title=dict(text="Lucro %"),
@@ -69,6 +69,7 @@ with tab2:
             tickmode="sync",
             tickformat=".0%"  
         ),
+        locale="pt-BR",
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)')
     )
     st.plotly_chart(fig, use_container_width=True)
