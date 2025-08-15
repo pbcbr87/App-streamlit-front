@@ -59,7 +59,7 @@ with tab2:
             title=dict(text="Valor em Reais"),
             side="left",
             range=None,
-            tickformat=",.2f"
+            tickformat=",.2f".replace(",", ".")
         ),
         yaxis2=dict(
             title=dict(text="Lucro %"),
