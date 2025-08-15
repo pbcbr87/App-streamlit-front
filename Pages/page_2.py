@@ -18,13 +18,15 @@ df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo
 # Criar abas
 tab1, tab2 = st.tabs(["Carteira", "Grafico Barra"])
 
-# Ajuste de estilo e ordenação
+# ordenação
 df_carteira = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
-# df_carteira_st = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant', 'custo_brl', 'custo_usd'])
-#                                 .format(precision=0, thousands=".", decimal=",", subset=['peso', 'nota'])
-#                                 .format(precision=2, thousands=".", decimal=",", subset=['%']))
-with tab1:    
-    st.dataframe(df_carteira, hide_index=True, 
+
+with tab1:  
+    df_carteira_st = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant', 'custo_brl', 'custo_usd'])
+                                 .format(precision=0, thousands=".", decimal=",", subset=['peso', 'nota'])
+                                 .format(precision=2, thousands=".", decimal=",", subset=['%']))
+
+    st.dataframe(df_carteira_st, hide_index=True, 
                     column_config={
                         "%": st.column_config.NumberColumn(
                             "% (BRL)",
