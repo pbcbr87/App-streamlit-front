@@ -3,14 +3,17 @@ import requests
 import pandas as pd
 from plotly import graph_objects as go
 
+if 'carteira_load' not in st.session_state:
+    st.session_state['carteira_load'] = False
 
 st.title('Carteira')
 
 
 # Buscando dados na API
-if not carteira:
+if st.session_state['carteira_load'] == false:
     resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
     carteira = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'})
+    st.session_state['carteira_load'] = True
 
 # Trantando dados recebidos
 df_carteira = pd.DataFrame(carteira.json())
