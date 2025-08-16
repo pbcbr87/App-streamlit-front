@@ -22,7 +22,15 @@ tab1, tab2 = st.tabs(["Carteira", "Grafico Barra"])
 df_carteira = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
 
 with tab1:  
-    df_carteira_st = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant', 'custo_brl', 'custo_usd'])
+    df_carteira_st = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant',
+                                                                                                'custo_brl',
+                                                                                                'custo_usd',
+                                                                                                'valor_mercado_brl',
+                                                                                                'valor_mercado_usd',
+                                                                                                'lucro_brl',
+                                                                                                'lucro_usd',
+                                                                                                'valor_plan_brl',
+                                                                                                'valor_plan_usd'])
                                  .format(precision=0, thousands=".", decimal=",", subset=['peso', 'nota'])
                                  .format(precision=2, thousands=".", decimal=",", subset=['%']))
 
