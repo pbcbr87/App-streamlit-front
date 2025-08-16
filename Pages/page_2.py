@@ -16,7 +16,7 @@ df_carteira = pd.DataFrame(carteira.json())
 df_carteira['%'] = 100 * df_carteira['custo_brl'] / df_carteira['custo_brl'].sum()
 df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo_brl']) / df_carteira['custo_brl']
 
-#Seletot
+#Seletor
 def sl_tudo_ex():       
         st.session_state['Key_SL_2'] = df_cat
         
@@ -34,6 +34,8 @@ with col2:
     st.text('')
     st.button(':heavy_check_mark:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 
+mask = df['Categoria'].isin(Categoria)
+df_carteira = df_carteira[mask]
 
 # Criar abas
 tab1, tab2 = st.tabs(["Carteira", "Grafico Barra"])
