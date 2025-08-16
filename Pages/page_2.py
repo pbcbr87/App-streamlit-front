@@ -34,7 +34,7 @@ with col2:
     st.text('')
     st.button(':heavy_check_mark:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 
-mask = df_carteira['Categoria'].isin(Categoria)
+mask = df_carteira['categoria'].isin(Categoria)
 df_carteira = df_carteira[mask]
 
 # Criar abas
