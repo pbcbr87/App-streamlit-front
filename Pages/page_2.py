@@ -20,7 +20,7 @@ df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo
 def sl_tudo_ex():       
         st.session_state['Key_SL_2'] = df_cat
         
-df_cat = list(df['Categoria'].unique())
+df_cat = list(df_carteira['Categoria'].unique())
     
 if 'Key_SL_2' not in st.session_state:
     st.session_state['Key_SL_2'] = df_cat
