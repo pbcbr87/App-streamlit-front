@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 from plotly import graph_objects as go
 
-if 'carteira_load' not in st.session_state:
+if 'carteira_api' not in st.session_state:
     st.session_state['carteira_api'] = False
 
 st.title('Carteira')
