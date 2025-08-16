@@ -10,7 +10,7 @@ st.title('Carteira')
 
 
 # Buscando dados na API
-if st.session_state['carteira_load'] == false:
+if st.session_state['carteira_load'] == False:
     resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
     carteira = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'})
     st.session_state['carteira_load'] = True
