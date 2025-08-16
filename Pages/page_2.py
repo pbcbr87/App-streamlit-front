@@ -12,11 +12,11 @@ st.title('Carteira')
 # Buscando dados na API
 if st.session_state['carteira_api'] == False:
     resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
-    st.session_state['carteira_api'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'})
-    st.session_state['carteira_load'] = True
+    st.session_state['carteira_api'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
+
 
 # Trantando dados recebidos
-df_carteira = pd.DataFrame(st.session_state['carteira_api'].json())
+df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 df_carteira['%'] = 100 * df_carteira['custo_brl'] / df_carteira['custo_brl'].sum()
 df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo_brl']) / df_carteira['custo_brl']
 
