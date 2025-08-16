@@ -7,11 +7,11 @@ from plotly import graph_objects as go
 st.title('Carteira')
 
 
-# Buscad dados na API
+# Buscando dados na API
 resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
-
 carteira = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'})
 
+# Trantando dados recebidos
 df_carteira = pd.DataFrame(carteira.json())
 df_carteira['%'] = 100 * df_carteira['custo_brl'] / df_carteira['custo_brl'].sum()
 df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo_brl']) / df_carteira['custo_brl']
