@@ -27,7 +27,7 @@ if 'Key_SL_2' not in st.session_state:
 
 
 with col1:
-        Categoria = st.multiselect('Categoria', df_cat, placeholder = f'Selecione quals categorias', key='Key_SL_2')
+        Categoria = st.multiselect('categoria', df_cat, placeholder = f'Selecione quals categorias', key='Key_SL_2')
 with col2:
     st.text('')
     st.text('')
