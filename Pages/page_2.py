@@ -6,6 +6,8 @@ from plotly import graph_objects as go
 
 st.title('Carteira')
 
+
+# Buscad dados na API
 resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
 
 carteira = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'})
@@ -13,6 +15,23 @@ carteira = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcu
 df_carteira = pd.DataFrame(carteira.json())
 df_carteira['%'] = 100 * df_carteira['custo_brl'] / df_carteira['custo_brl'].sum()
 df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo_brl']) / df_carteira['custo_brl']
+
+#Seletot
+def sl_tudo_ex():       
+        st.session_state['Key_SL_2'] = df_cat
+        
+df_cat = list(df['Categoria'].unique())
+    
+if 'Key_SL_2' not in st.session_state:
+    st.session_state['Key_SL_2'] = df_cat
+
+
+with col1:
+        Categoria = st.multiselect('Categoria', df_cat, placeholder = f'Selecione quals categorias', key='Key_SL_2')
+with col2:
+    st.text('')
+    st.text('')
+    st.button(':heavy_check_mark:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 
 
 # Criar abas
