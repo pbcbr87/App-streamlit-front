@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 #deixar visivel as session:
-#st.write(st.session_state)
+st.write(st.session_state)
 
 #função para pegar o token de autenticação
 @st.cache_data
