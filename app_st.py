@@ -51,6 +51,9 @@ TD = st.number_input("TD (para curvas IEEE)", min_value=0.01, value=1.0)
 selected_iec = st.multiselect("Selecionar curvas IEC", list(iec_curves.keys()), default=["Standard Inverse"])
 selected_ieee = st.multiselect("Selecionar curvas IEEE", list(ieee_curves.keys()), default=["Moderately Inverse"])
 
+# Corrente de falta para destacar ponto
+highlight_current = st.number_input("Corrente de falta para destacar no gráfico [A]", min_value=Is * 1.01, value=Is * 5)
+
 # Faixa de corrente
 I = np.linspace(Is * 1.01, Is * 20, 500)
 
@@ -60,11 +63,19 @@ for curve in selected_iec:
     params = iec_curves[curve]
     t = calc_iec_time(I, Is, TMS, params["k"], params["alpha"])
     ax.plot(I, t, label=f"IEC - {curve}")
+    # Calcular ponto destacado
+    t_point = calc_iec_time(np.array([highlight_current]), Is, TMS, params["k"], params["alpha"])[0]
+    if not np.isnan(t_point):
+        ax.plot(highlight_current, t_point, 'o', label=f"Ponto IEC - {curve}", markersize=8)
 
 for curve in selected_ieee:
     params = ieee_curves[curve]
     t = calc_ieee_time(I, Is, TD, params["A"], params["B"], params["p"])
     ax.plot(I, t, label=f"IEEE - {curve}")
+    # Calcular ponto destacado
+    t_point = calc_ieee_time(np.array([highlight_current]), Is, TD, params["A"], params["B"], params["p"])[0]
+    if not np.isnan(t_point):
+        ax.plot(highlight_current, t_point, 'o', label=f"Ponto IEEE - {curve}", markersize=8)
 
 ax.set_xlabel("Corrente de falta (A)")
 ax.set_ylabel("Tempo de atuação (s)")
@@ -73,11 +84,8 @@ ax.set_yscale("log")
 ax.grid(True, which="both", linestyle="--", linewidth=0.5)
 ax.legend()
 
-highlight_current = st.number_input("Corrente de falta para destacar no gráfico [A]", min_value=Is * 1.01, value=Is * 5)
-ax.plot(highlight_current, t_point, 'o', label=f"Ponto IEC - {curve}", markersize=8)
-
-
 st.pyplot(fig)
+
 
 
 
