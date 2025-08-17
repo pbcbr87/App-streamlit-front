@@ -65,6 +65,7 @@ for curve in selected_iec:
     ax.plot(I, t, label=f"IEC - {curve}")
     # Calcular ponto destacado
     t_point = calc_iec_time(np.array([highlight_current]), Is, TMS, params["k"], params["alpha"])[0]
+    st.text(t_point)
     if not np.isnan(t_point):
         ax.plot(highlight_current, t_point, 'o', label=f"Ponto IEC - {curve}", markersize=8)
 
