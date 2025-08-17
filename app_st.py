@@ -2,8 +2,8 @@ import streamlit as st
 import requests
 
 #deixar visivel as session:
-st.write(st.session_state)
-
+#st.write(st.session_state)
+st.header('Criado por Patrick Cangussu')
 
 import streamlit as st
 import numpy as np
