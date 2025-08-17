@@ -73,6 +73,10 @@ ax.set_yscale("log")
 ax.grid(True, which="both", linestyle="--", linewidth=0.5)
 ax.legend()
 
+highlight_current = st.number_input("Corrente de falta para destacar no gráfico [A]", min_value=Is * 1.01, value=Is * 5)
+ax.plot(highlight_current, t_point, 'o', label=f"Ponto IEC - {curve}", markersize=8)
+
+
 st.pyplot(fig)
 
 
