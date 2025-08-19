@@ -65,8 +65,10 @@ def home():
         st.session_state.token = None
         st.session_state.nome = None
         st.rerun()
+
     if st.button('Outra pagina'):
-        pg = st.navigation([st.Page(f'Pages/page_bruno.py', title='Bruno')])
+        pg = st.navigation([st.Page(f'Pages/page_bruno.py', title='Bruno'), st.Page(f'Pages/Dashboards/page_operacao.py', title='dash')])
+        st.rerun()
 
 
 #Extrutura de nevegação:
