@@ -3,8 +3,8 @@ import streamlit as st
 
 pagina = st.empty()
 
-if buttom('pagina'):
+if button('pagina'):
     pagina.markdown("Poof!")
 
-if buttom('pagina'):
+if button('pagina'):
     pagina.markdown("opa!")
