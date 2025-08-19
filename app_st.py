@@ -72,10 +72,11 @@ if st.session_state.logado == False:
     pg = st.navigation([st.Page(login), st.Page(f'Pages/page_bruno.py', title='Bruno')])
 else:
     with st.container(horizontal= True, horizontal_alignment = "left"):
-        st.button('a')
+        if st.button('a'):
+            pg = st.navigation([st.Page(home,title='inicio'), st.Page(f'Pages/page_1.py', title='Operações'), st.Page('Pages/page_2.py', title='Carteira')])    
+            
         st.button('b')
 
-    pg = st.navigation([st.Page(home,title='inicio'), st.Page(f'Pages/page_1.py', title='Operações'), st.Page('Pages/page_2.py', title='Carteira')])    
 pg.run()
 
 
