@@ -66,16 +66,12 @@ def home():
         st.session_state.nome = None
         st.rerun()
 
-    if st.button('Outra pagina'):
-        st.Page(f'Pages/Dashboards/page_operacao.py', title='dash')
-
-
 
 #Extrutura de nevegação:
 if st.session_state.logado == False:
-    pg = st.navigation([st.Page(login), st.Page(f'Pages/page_bruno.py', title='Bruno')])
+    pg = st.navigation([st.Page(login), st.Page('Pages/page_bruno.py', title='Bruno')])
 else:
-    pg = st.navigation([st.Page(home,title='inicio'), st.Page(f'Pages/page_1.py', title='Operações'), st.Page('Pages/page_2.py', title='Carteira')])            
+    pg = st.navigation([st.Page(home,title='inicio'), st.Page(f'Pages/page_bruno.py', title='Teste'), st.Page('Pages/page_1.py', title='Operações'), st.Page('Pages/page_2.py', title='Carteira')])            
 
 
 pg.run()
