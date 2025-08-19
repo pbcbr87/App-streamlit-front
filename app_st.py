@@ -71,7 +71,7 @@ def home():
 if st.session_state.logado == False:
     pg = st.navigation([st.Page(login), st.Page(f'Pages/page_bruno.py', title='Bruno')])
 else:
-    with st.container(horizontal_alignment = "left"):
+    with st.container(horizontal= True, horizontal_alignment = "left"):
         col1, col2 = st.columns(2)
         col1.button('1')
         col2.button('2')
