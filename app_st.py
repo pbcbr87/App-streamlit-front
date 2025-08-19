@@ -71,10 +71,18 @@ def home():
 if st.session_state.logado == False:
     pg = st.navigation([st.Page(login), st.Page('Pages/page_bruno.py', title='Bruno')])
 else:
-    pg = st.navigation([st.Page(home,title='inicio'),
-                        st.Page('Pages/page_empty.py', title='Empty'),
-                        st.Page('Pages/page_1.py', title='Operações'),
-                        st.Page('Pages/page_2.py', title='Carteira')])            
+    pages = {
+    "Home": [st.Page(home,title='inicio')
+    ],
+    "Sua Carteira": [
+        st.Page('Pages/page_1.py', title='Operações'),
+        st.Page('Pages/page_2.py', title='Carteira')
+    ],
+    "Testes": [
+        st.Page('Pages/page_empty.py', title='Empty')
+    ],
+    }   
+    pg = st.navigation(pages)            
 
 
 pg.run()
