@@ -84,7 +84,6 @@ else:
     }   
     pg = st.navigation(pages)            
 
-
 pg.run()
 
 
