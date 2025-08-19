@@ -92,7 +92,7 @@ else:
         st.Page('Pages/page_empty.py', title='Empty')
     ],
     }   
-    pg = st.navigation(pages)            
+    pg = st.navigation(pages, position="top")            
 
 pg.run()
 
