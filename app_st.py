@@ -73,6 +73,8 @@ if st.session_state.logado == False:
 else:
     with st.container(horizontal= True, horizontal_alignment = "left"):
         col1, col2 = st.columns(2)
+        st.button('a')
+        st.button('b')
         col1.button('1')
         col2.button('2')
     pg = st.navigation([st.Page(home,title='inicio'), st.Page(f'Pages/page_1.py', title='Operações'), st.Page('Pages/page_2.py', title='Carteira')])    
