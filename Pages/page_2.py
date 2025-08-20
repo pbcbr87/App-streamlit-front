@@ -111,7 +111,7 @@ with tab2:
     st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
-    df = df_carteira)
+    df = df_carteira
     st.dataframe(df)
     fig = go.Figure(data=[go.Pie(labels=df['categoria'], values=df['valor_mercado_brl'])])
     fig.show()
