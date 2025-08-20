@@ -82,7 +82,7 @@ def home():
 
 #Extrutura de nevegação:
 if st.session_state.logado == False:
-    pg = st.navigation([st.Page(login), st.Page('Pages/page_bruno.py', title='Bruno')])
+    pg = st.navigation([st.Page(login) | st.Page('Pages/page_bruno.py', title='Bruno')])
 else:
     pages = {
     "Home": [st.Page(home,title='inicio')
