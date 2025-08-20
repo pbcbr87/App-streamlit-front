@@ -117,14 +117,14 @@ with tab3:
     "Contestant": ["Alex", "Alex", "Alex", "Jordan", "Jordan", "Jordan"],
     "Number Eaten": [2, 1, 3, 1, 3, 2],
     })
-
+    
+    df = df_carteira
 
     # Plotly Express
 
     import plotly.express as px
-
-    fig = px.bar(df, x="Fruit", y="Number Eaten", color="Contestant", barmode="group")
-    fig = px.pie(df, values='Number Eaten', names='Fruit', title='Population of European continent')
+    
+    fig = px.pie(df, values='valor_mercado_brl', names='categoria', title='Tipo de ativos')
     st.plotly_chart(fig, use_container_width=True)
 
     # import plotly.graph_objects as go
