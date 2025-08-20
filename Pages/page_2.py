@@ -121,7 +121,7 @@ with tab3:
     fig = px.pie(df, values='valor_mercado_brl', names='categoria', title='Tipo de ativos',
              hover_data=['valor_mercado_usd'], labels={'valor_mercado_usd':'Valor Mercado em Dolar'})
     fig.update_traces(textposition='inside', textinfo='percent+label')
-    st.container(horizontal_alignment='center').plotly_chart(fig, use_container_width=False)
+    st.container(horizontal_alignment='left').plotly_chart(fig)
 
     # import plotly.graph_objects as go
 
