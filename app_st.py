@@ -1,10 +1,13 @@
 import streamlit as st
 import requests
 
+
 #deixar visivel as session:
 st.write(st.session_state)
 
+#------------------------------------------------
 #Congiguraçãoes iniciais
+#------------------------------------------------
 st.set_page_config(
     page_title="Cartiera",
     page_icon="📊",
@@ -36,6 +39,10 @@ if "user" not in st.session_state:
     st.session_state.id = None
     st.session_state.token = None
     st.session_state.nome = None
+
+#------------------------------------------------
+# Funções para paiginas
+#------------------------------------------------
 
 #Pagina de login
 def login():
@@ -85,10 +92,12 @@ def logout():
     st.session_state.token = None
     st.session_state.nome = None
     st.rerun()
-
+#------------------------------------------------
 #Extrutura de nevegação:
+#------------------------------------------------
 if st.session_state.logado == False:
     pages = {"1": [st.Page(login)], "2": [st.Page('Pages/page_bruno.py', title='Bruno')]}
+    pg = st.navigation(pages, position="sidebar")
 else:
     pages = {
     "Home": [st.Page(home,title='inicio', default=True),
@@ -102,8 +111,8 @@ else:
         st.Page('Pages/page_empty.py', title='Empty')
     ],
     }            
+    pg = st.navigation(pages, position="top")
 
-pg = st.navigation(pages, position="top")
 pg.run()
 
 
