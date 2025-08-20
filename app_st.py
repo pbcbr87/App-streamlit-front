@@ -100,7 +100,7 @@ if st.session_state.logado == False:
     pg = st.navigation(pages, position="top")
 else:
     pages = {
-    "Home": [st.Page(home,title='inicio', icon="🏠︎" ,default=True),
+    "Home": [st.Page(home,title='inicio', icon="" ,default=True),
              st.Page(logout, title='Sair', icon= ':material/logout:')    
     ],
     "Sua Carteira": [
