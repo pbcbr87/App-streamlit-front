@@ -96,8 +96,8 @@ def logout():
 #Extrutura de nevegação:
 #------------------------------------------------
 if st.session_state.logado == False:
-    pages = {"1": [st.Page(login)], "2": [st.Page('Pages/page_bruno.py', title='Bruno')]}
-    pg = st.navigation(pages, position="sidebar")
+    pages = {"Login": [st.Page(login)], "extras": [st.Page('Pages/page_bruno.py', title='Bruno')]}
+    pg = st.navigation(pages, position="top")
 else:
     pages = {
     "Home": [st.Page(home,title='inicio', default=True),
@@ -111,7 +111,7 @@ else:
         st.Page('Pages/page_empty.py', title='Empty')
     ],
     }            
-    pg = st.navigation(pages, position="top")
+    pg = st.navigation(pages, position="sidebar")
 
 pg.run()
 
