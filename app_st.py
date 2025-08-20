@@ -65,7 +65,7 @@ def login():
             else:
                 st.warning('Usuário ou senha vazio')
      
-#Pagina de logout
+#Pagina Home
 def home():
     st.text(f'Bem Vindo {st.session_state.nome}')
     st.text(f'User: {st.session_state.user}')
@@ -79,13 +79,22 @@ def home():
         st.session_state.nome = None
         st.rerun()
 
+#Pagina de logut 
+def logout():
+    st.session_state.logado = False
+    st.session_state.user = None
+    st.session_state.id = None
+    st.session_state.token = None
+    st.session_state.nome = None
+    st.rerun()
 
 #Extrutura de nevegação:
 if st.session_state.logado == False:
     pages = {"1": [st.Page(login)], "2": [st.Page('Pages/page_bruno.py', title='Bruno')]}
 else:
     pages = {
-    "Home": [st.Page(home,title='inicio', default=True)
+    "Home": [st.Page(home,title='inicio', default=True),
+             st.Paga(logout, title='Sair :material/logout:')    
     ],
     "Sua Carteira": [
         st.Page('Pages/page_1.py', title='Operações'),
