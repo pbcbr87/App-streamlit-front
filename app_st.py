@@ -94,7 +94,7 @@ if st.session_state.logado == False:
 else:
     pages = {
     "Home": [st.Page(home,title='inicio', default=True),
-             st.Page(logout, title='Sair :material/logout:')    
+             st.Page(logout, title='Sair', icon= ':material/logout:')    
     ],
     "Sua Carteira": [
         st.Page('Pages/page_1.py', title='Operações'),
