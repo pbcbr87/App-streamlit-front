@@ -112,12 +112,6 @@ with tab2:
 
 with tab3:
 
-    df = pd.DataFrame({
-    "Fruit": ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"],
-    "Contestant": ["Alex", "Alex", "Alex", "Jordan", "Jordan", "Jordan"],
-    "Number Eaten": [2, 1, 3, 1, 3, 2],
-    })
-    
     df = df_carteira
 
     # Plotly Express
@@ -126,6 +120,7 @@ with tab3:
     
     fig = px.pie(df, values='valor_mercado_brl', names='categoria', title='Tipo de ativos',
              hover_data=['categoria'], labels={'categoria':'categoria 2'})
+    fig.update_traces(textposition='inside', textinfo='percent+label')
     st.plotly_chart(fig, use_container_width=False)
 
     # import plotly.graph_objects as go
