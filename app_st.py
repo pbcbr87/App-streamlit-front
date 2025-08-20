@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'About': "Aplicativo para gerenciamento de investimando criado por Patrick Cangussu"
+        'About': "# Aplicativo para gerenciamento de investimando \ncriado por Patrick Cangussu"
     }
 )
 
@@ -41,26 +41,29 @@ if "user" not in st.session_state:
 def login():
     st.header("Log in")
     
-    user_input = st.text_input('User')
-    senha_input = st.text_input('Senha')
-
-    if st.button("Log in"):
-        if (len(user_input) > 0) and (len(senha_input) > 0):
-            try:
-                get_token = requests.post('https://pythonapi-production-6268.up.railway.app/auth/token', {'username': user_input, 'password': senha_input}).json()
-                if 'access_token' in get_token:
-                    st.session_state.logado = True
-                    st.session_state.token = get_token['access_token']
-                    st.session_state.nome = get_user(get_token['access_token'])['nome']
-                    st.session_state.user = get_user(get_token['access_token'])['login']
-                    st.session_state.id = get_user(get_token['access_token'])['id']
-                    st.rerun()
-            except Exception as e:
-                print("Erro: ", e)
-                st.warning(f'Conexão com backend, Detalhes: {e}')            
-                st.session_state.logado = False               
-        else:
-            st.warning('Usuário ou senha vazio')
+    with st.form("login"):
+        user_input = st.text_input('User')
+        senha_input = st.text_input('Senha')
+        
+        
+        
+        if st.form_submit_button("Log in"):
+            if (len(user_input) > 0) and (len(senha_input) > 0):
+                try:
+                    get_token = requests.post('https://pythonapi-production-6268.up.railway.app/auth/token', {'username': user_input, 'password': senha_input}).json()
+                    if 'access_token' in get_token:
+                        st.session_state.logado = True
+                        st.session_state.token = get_token['access_token']
+                        st.session_state.nome = get_user(get_token['access_token'])['nome']
+                        st.session_state.user = get_user(get_token['access_token'])['login']
+                        st.session_state.id = get_user(get_token['access_token'])['id']
+                        st.rerun()
+                except Exception as e:
+                    print("Erro: ", e)
+                    st.warning(f'Conexão com backend, Detalhes: {e}')            
+                    st.session_state.logado = False               
+            else:
+                st.warning('Usuário ou senha vazio')
      
 #Pagina de logout
 def home():
