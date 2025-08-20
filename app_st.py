@@ -43,7 +43,7 @@ def login():
     
     with st.form("login"):
         user_input = st.text_input('User')
-        senha_input = st.text_input('Senha')
+        senha_input = st.text_input('Senha', type='password')
         
         
         
