@@ -88,7 +88,7 @@ else:
     "Home": [st.Page(home,title='inicio')
     ],
     "Sua Carteira": [
-        st.Page('Pages/page_1.py', title='Operações'),
+        st.Page('Pages/page_1.py', title='Operações', default = True),
         st.Page('Pages/page_2.py', title='Carteira')
     ],
     "Testes": [
