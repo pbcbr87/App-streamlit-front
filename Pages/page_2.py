@@ -111,6 +111,7 @@ with tab2:
     st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
+
     df = pd.DataFrame({
     "Fruit": ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"],
     "Contestant": ["Alex", "Alex", "Alex", "Jordan", "Jordan", "Jordan"],
@@ -123,6 +124,7 @@ with tab3:
     import plotly.express as px
 
     fig = px.bar(df, x="Fruit", y="Number Eaten", color="Contestant", barmode="group")
+    fig = px.pie(df, values='Number Eaten', names='Fruit', title='Population of European continent')
     st.plotly_chart(fig, use_container_width=True)
 
     # import plotly.graph_objects as go
