@@ -114,8 +114,8 @@ with tab3:
     df = df_carteira.groupby('categoria')['valor_mercado_brl'].sum()
     st.dataframe(df)
     st.echo(list(df['categoria']))
-    fig = go.Figure(data=[go.Pie(labels=df['categoria'], values=df['valor_mercado_brl'])])
-    fig.show()
+    # fig = go.Figure(data=[go.Pie(labels=df['categoria'], values=df['valor_mercado_brl'])])
+    # fig.show()
 
 
 
