@@ -71,7 +71,7 @@ def home():
     st.text(f'User: {st.session_state.user}')
     st.text(f'Id: {st.session_state.id}')
 
-    if st.button('Sair'):
+    if st.button(':material/logout: Sair'):
         st.session_state.logado = False
         st.session_state.user = None
         st.session_state.id = None
