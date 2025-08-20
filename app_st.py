@@ -39,9 +39,9 @@ if "user" not in st.session_state:
 
 #Pagina de login
 def login():
-    st.header("Log in")
 
     with st.container(horizontal_alignment ="center").form("login", width="content"):
+        st.header("Log in")
         user_input = st.text_input('User')
         senha_input = st.text_input('Senha', type='password')    
         
