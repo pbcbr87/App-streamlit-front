@@ -40,12 +40,10 @@ if "user" not in st.session_state:
 #Pagina de login
 def login():
     st.header("Log in")
-    
-    with st.form("login", width="content"):
+
+    with st.container(horizontal_alignment ="center").form("login", width="content"):
         user_input = st.text_input('User')
-        senha_input = st.text_input('Senha', type='password')
-        
-        
+        senha_input = st.text_input('Senha', type='password')    
         
         if st.form_submit_button("Log in"):
             if (len(user_input) > 0) and (len(senha_input) > 0):
