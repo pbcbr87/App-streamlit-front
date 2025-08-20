@@ -111,7 +111,7 @@ with tab2:
     st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
-    df = df_carteira.groupby('categoria')
+    df = df_carteira.groupby('categoria')['valor_mercado_brl'].sum()
     st.dataframe(df)
 
 
