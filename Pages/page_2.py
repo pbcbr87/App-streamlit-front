@@ -113,7 +113,7 @@ with tab2:
 with tab3:
     df = df_carteira.groupby('categoria')['valor_mercado_brl'].sum()
     st.dataframe(df)
-    st.write(df)
+    st.write(type(df))
     # st.write(list(df['categoria']))
     # fig = go.Figure(data=[go.Pie(labels=df['categoria'], values=df['valor_mercado_brl'])])
     # fig.show()
