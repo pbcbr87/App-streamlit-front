@@ -140,7 +140,7 @@ with tab3:
                 "taxas": input_taxa,
                 "corretora": input_Corretora
                 }
-            st.button('Enviar', key='bt_2', on_click= envia_manual, kwargs={'ordem_manual': ordem_manual})
+            st.form_submit_button('Enviar', key='bt_2', on_click= envia_manual, kwargs={'ordem_manual': ordem_manual})
 #-------------------------------------------------------------------------------------------------------------
 #     Excluir operações
 #-------------------------------------------------------------------------------------------------------------
