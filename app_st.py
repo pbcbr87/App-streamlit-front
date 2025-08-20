@@ -2,16 +2,16 @@ import streamlit as st
 import requests
 
 #deixar visivel as session:
-#st.write(st.session_state)
+st.write(st.session_state)
+
+#Congiguraçãoes iniciais
 st.set_page_config(
-    page_title="Ex-stream-ly Cool App",
+    page_title="Cartiera",
     page_icon="notebook",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'Get Help': 'https://www.extremelycoolapp.com/help',
-        'Report a bug': "https://www.extremelycoolapp.com/bug",
-        'About': "# This is a header. This is an *extremely* cool app!"
+        'About': "Aplicativo para gerenciamento de investimando criado por Patrick Cangussu"
     }
 )
 
