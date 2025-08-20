@@ -123,18 +123,18 @@ with tab3:
     import plotly.express as px
 
     fig = px.bar(df, x="Fruit", y="Number Eaten", color="Contestant", barmode="group")
-    fig.show()
+    st.plotly_chart(fig, use_container_width=True)
 
-    import plotly.graph_objects as go
+    # import plotly.graph_objects as go
 
-    fig = go.Figure()
-    for contestant, group in df.groupby("Contestant"):
-        fig.add_trace(go.Bar(x=group["Fruit"], y=group["Number Eaten"], name=contestant,
-        hovertemplate="Contestant=%s<br>Fruit=%%{x}<br>Number Eaten=%%{y}<extra></extra>"% contestant))
-    fig.update_layout(legend_title_text = "Contestant")
-    fig.update_xaxes(title_text="Fruit")
-    fig.update_yaxes(title_text="Number Eaten")
-    fig.show()
+    # fig = go.Figure()
+    # for contestant, group in df.groupby("Contestant"):
+    #     fig.add_trace(go.Bar(x=group["Fruit"], y=group["Number Eaten"], name=contestant,
+    #     hovertemplate="Contestant=%s<br>Fruit=%%{x}<br>Number Eaten=%%{y}<extra></extra>"% contestant))
+    # fig.update_layout(legend_title_text = "Contestant")
+    # fig.update_xaxes(title_text="Fruit")
+    # fig.update_yaxes(title_text="Number Eaten")
+    # fig.show()
 
 
 
