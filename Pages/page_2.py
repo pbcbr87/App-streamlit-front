@@ -111,12 +111,10 @@ with tab2:
     st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
-    df = df_carteira.groupby('categoria')['valor_mercado_brl'].sum()
+    df = df_carteira)
     st.dataframe(df)
-    st.write(type(df))
-    # st.write(list(df['categoria']))
-    # fig = go.Figure(data=[go.Pie(labels=df['categoria'], values=df['valor_mercado_brl'])])
-    # fig.show()
+    fig = go.Figure(data=[go.Pie(labels=df['categoria'], values=df['valor_mercado_brl'])])
+    fig.show()
 
 
 
