@@ -111,7 +111,7 @@ with tab3:
         else:
             lista = st.session_state['lista']       
         
-        with st.form():
+        with st.container(horizontal_alignment ="center").form("login", width="content"):
             st.subheader('Dados da Operação')
             col1, col2 = st.columns(2)
             with col1:
