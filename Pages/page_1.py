@@ -104,45 +104,43 @@ with tab2:
 with tab3:
     with st.container():
         
-        with st.container(horizontal_alignment ="center").form("login", width="content"):
-            if 'sl_cat' not in st.session_state:
-                st.session_state['sl_cat'] = 'AÇÕES'
-            if 'lista' not in st.session_state:
-                lista = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
-            else:
-                lista = st.session_state['lista']       
+        if 'sl_cat' not in st.session_state:
+            st.session_state['sl_cat'] = 'AÇÕES'
+        if 'lista' not in st.session_state:
+            lista = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
+        else:
+            lista = st.session_state['lista']       
         
-            st.subheader('Dados da Operação')
-            col1, col2 = st.columns(2)
-            with col1:
-                input_data = st.date_input('Data: ', format='DD/MM/YYYY',max_value=datetime.today())
-                input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
-                input_qt = st.number_input('Quantidade:', format='%f',step=0.000001, min_value=0.000001, value=1.0)
-                input_taxa = st.number_input('Taxas (Opcional):', value=0.00, format='%f',step=0.01, min_value=0.00, help='Essa taxa não impacta calculo da planilha, valor já incluso no valot total')
-            with col2:
-                input_C_V = st.radio('Compra ou Venda: ',['Compra', 'Venda'], horizontal=True)
-                if input_C_V == 'Compra':
-                    input_C_V = 'C'
-                else:
-                    input_C_V = 'V'
-                input_Ativo = st.selectbox('Ativo:', lista)
-                input_Valor = st.number_input('Valor total da operção (Incluso as taxas):', format='%f',step=0.01, min_value=0.01, help='Valor total gasto, incluindo taxas')
-                input_Corretora = st.text_input('Corretora:')           
-            
-            #Datos a serem enviado
-            ordem_manual = {
-                "data_operacao": f'{input_data}',
-                "categoria": input_Cat,
-                "codigo_ativo": input_Ativo,
-                "c_v": input_C_V,
-                "quant": input_qt,
-                "custo_operacao": input_Valor,
-                "taxas": input_taxa,
-                "corretora": input_Corretora
-                }
-            if st.form_submit_button('Enviar'):
-                st.text('ww')
-            #st.form_submit_button('Enviar', key='bt_2', on_click= envia_manual, kwargs={'ordem_manual': ordem_manual})
+        
+        st.subheader('Dados da Operação')
+        col1, col2 = st.columns(2)
+        with col1:
+            input_data = st.date_input('Data: ', format='DD/MM/YYYY',max_value=datetime.today())
+            input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
+            input_qt = st.number_input('Quantidade:', format='%f',step=0.000001, min_value=0.000001, value=1.0)
+            input_taxa = st.number_input('Taxas (Opcional):', value=0.00, format='%f',step=0.01, min_value=0.00, help='Essa taxa não impacta calculo da planilha, valor já incluso no valot total')
+        with col2:
+            input_C_V = st.radio('Compra ou Venda: ',['Compra', 'Venda'], horizontal=True)
+            if input_C_V == 'Compra':
+                input_C_V = 'C'
+            else:
+                input_C_V = 'V'
+            input_Ativo = st.selectbox('Ativo:', lista)
+            input_Valor = st.number_input('Valor total da operção (Incluso as taxas):', format='%f',step=0.01, min_value=0.01, help='Valor total gasto, incluindo taxas')
+            input_Corretora = st.text_input('Corretora:')           
+        
+        #Datos a serem enviado
+        ordem_manual = {
+            "data_operacao": f'{input_data}',
+            "categoria": input_Cat,
+            "codigo_ativo": input_Ativo,
+            "c_v": input_C_V,
+            "quant": input_qt,
+            "custo_operacao": input_Valor,
+            "taxas": input_taxa,
+            "corretora": input_Corretora
+            }
+        st.button('Enviar', key='bt_2', on_click= envia_manual, kwargs={'ordem_manual': ordem_manual})
 #-------------------------------------------------------------------------------------------------------------
 #     Excluir operações
 #-------------------------------------------------------------------------------------------------------------
