@@ -104,14 +104,14 @@ with tab2:
 with tab3:
     with st.container():
         
-        if 'sl_cat' not in st.session_state:
-            st.session_state['sl_cat'] = 'AÇÕES'
-        if 'lista' not in st.session_state:
-            lista = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
-        else:
-            lista = st.session_state['lista']       
-        
         with st.container(horizontal_alignment ="center").form("login", width="content"):
+            if 'sl_cat' not in st.session_state:
+                st.session_state['sl_cat'] = 'AÇÕES'
+            if 'lista' not in st.session_state:
+                lista = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
+            else:
+                lista = st.session_state['lista']       
+        
             st.subheader('Dados da Operação')
             col1, col2 = st.columns(2)
             with col1:
