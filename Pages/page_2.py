@@ -124,7 +124,8 @@ with tab3:
 
     import plotly.express as px
     
-    fig = px.pie(df, values='valor_mercado_brl', names='categoria', title='Tipo de ativos')
+    fig = px.pie(df, values='valor_mercado_brl', names='categoria', title='Tipo de ativos',
+             hover_data=['categoria'], labels={'categoria':'categoria 2')
     st.plotly_chart(fig, use_container_width=False)
 
     # import plotly.graph_objects as go
