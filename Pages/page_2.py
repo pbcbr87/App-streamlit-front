@@ -42,7 +42,7 @@ mask = df_carteira['categoria'].isin(Categoria)
 df_carteira = df_carteira[mask]
 
 # Criar abas
-tab1, tab2 = st.tabs(["Carteira", "Grafico Barra"])
+tab1, tab2, tab3 = st.tabs(["Carteira", "Grafico barra", "Grafico pizza"])
 
 # ordenação
 df_carteira = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
@@ -110,8 +110,9 @@ with tab2:
     )
     st.plotly_chart(fig, use_container_width=True)
 
-
-
+with tab3:
+    df = df_carteira.group_by('categoria')
+    st.dataframe(df)
 
 
 
