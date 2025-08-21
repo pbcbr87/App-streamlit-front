@@ -50,7 +50,7 @@ df_carteira = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
 
 with st.container(horizontal=True, horizontal_alignment='left'):
     # Metricas
-    valor_total = rouns(df_carteira['valor_mercado_brl'].sum(), 2)
+    valor_total = round(df_carteira['valor_mercado_brl'].sum(), 2)
     custo_total = round(df_carteira['custo_brl'].sum(), 2)
     lucro_total = round(valor_total - custo_total,2)
     lucro_total_perc = round(100*(valor_total - custo_total) / custo_total,2)
