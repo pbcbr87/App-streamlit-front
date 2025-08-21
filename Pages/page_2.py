@@ -48,11 +48,11 @@ tab1, tab2, tab3 = st.tabs(["Carteira", "Grafico barra", "Grafico pizza"])
 # ordenação
 df_carteira = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
 
-with st.container():
+with st.container(horizontal=True, horizontal_alignment='left'):
     # Metricas
-    valor_total = df_carteira['valor_mercado_brl'].sum()
-    custo_total = df_carteira['custo_brl'].sum()
-    lucro_total = round((valor_total - custo_total) / custo_total,2)
+    valor_total = rouns(df_carteira['valor_mercado_brl'].sum(), 2)
+    custo_total = round(df_carteira['custo_brl'].sum(), 2)
+    lucro_total = round(valor_total - custo_total,2)
     lucro_total_perc = round(100*(valor_total - custo_total) / custo_total,2)
 
     st.metric(label="Valor de mercado", value=f'{valor_total} R$', delta=f'{custo_total} R%', delta_color='off')
