@@ -126,7 +126,9 @@ with tab3:
              hover_data=['valor_mercado_usd'], labels={'valor_mercado_usd':'Valor Mercado em Dolar'})
     fig2.update_traces(textposition='inside', textinfo='percent+label')
 
-    with st.container(horizontal=True, horizontal_alignment='left'):
+    with st.container(horizontal=True, horizontal_alignment='right'):
+        st.text('teste')
+        st.text('teste')
         st.plotly_chart(fig)
         st.plotly_chart(fig2)
 
