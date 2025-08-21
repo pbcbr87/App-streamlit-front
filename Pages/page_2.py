@@ -52,9 +52,9 @@ with st.container():
     # Metricas
     valor_total = df_carteira['valor_mercado_brl'].sum()
     custo_total = df_carteira['custo_brl'].sum()
-    lucro_total = (valor_total - custo_total) / custo_total
+    lucro_total = 100*(valor_total - custo_total) / custo_total
 
-    st.metric(label="Valor de mercado", value=valor_total, delta=(100*lucro_total))
+    st.metric(label="Valor de mercado", value=valor_total, delta=f'{lucro_total}%'))
 
 
 with tab1:  
