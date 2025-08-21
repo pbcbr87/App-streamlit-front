@@ -20,6 +20,7 @@ df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 df_carteira['%'] = 100 * df_carteira['custo_brl'] / df_carteira['custo_brl'].sum()
 df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo_brl']) / df_carteira['custo_brl']
 
+
 #Seletor
 def sl_tudo_ex():       
         st.session_state['Key_SL_2'] = df_cat
@@ -46,6 +47,15 @@ tab1, tab2, tab3 = st.tabs(["Carteira", "Grafico barra", "Grafico pizza"])
 
 # ordenação
 df_carteira = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
+
+with st.container():
+    # Metricas
+    valor_total = df_carteira['valor_mercado_brl'].sum()
+    custo_total = df_carteira['custo_brl'].sum()
+    lucro_total = (valor_total - custo_total) / custo_total
+
+    st.metric(label="Valor de mercado", value=valor_total, delta=lucro_total)
+
 
 with tab1:  
     df_carteira_st = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant',
@@ -141,16 +151,7 @@ with tab3:
         st.plotly_chart(fig)
         st.plotly_chart(fig2)
 
-    # import plotly.graph_objects as go
 
-    # fig = go.Figure()
-    # for contestant, group in df.groupby("Contestant"):
-    #     fig.add_trace(go.Bar(x=group["Fruit"], y=group["Number Eaten"], name=contestant,
-    #     hovertemplate="Contestant=%s<br>Fruit=%%{x}<br>Number Eaten=%%{y}<extra></extra>"% contestant))
-    # fig.update_layout(legend_title_text = "Contestant")
-    # fig.update_xaxes(title_text="Fruit")
-    # fig.update_yaxes(title_text="Number Eaten")
-    # fig.show()
 
 
 
