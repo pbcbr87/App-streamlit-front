@@ -57,9 +57,12 @@ with st.container(horizontal=True, horizontal_alignment='left'):
 
     st.metric(label="Valor de mercado", value=f'{valor_total} R$')
     st.metric(label="Lucro", value=lucro_total, delta=f'{lucro_total_perc} %')
+
 st.text('test')
+
 with st.container():
     st.text('teste')
+    
     with tab1:  
         df_carteira_st = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant',
                                                                                                     'custo_brl',
