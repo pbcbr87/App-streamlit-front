@@ -31,7 +31,8 @@ if 'Key_SL_2' not in st.session_state:
     st.session_state['Key_SL_2'] = df_cat
 
 #Filtro
-col1, col2 = st.columns([1, 0.1])
+container_1 = st.container(border=True)
+col1, col2 = st.container_1.columns([1, 0.1])
 with col1:
         Categoria = st.multiselect('categoria', df_cat, placeholder = f'Selecione quals categorias', key='Key_SL_2')
 with col2:
