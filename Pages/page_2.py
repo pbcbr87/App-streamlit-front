@@ -23,7 +23,7 @@ df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo
 #Conteinner
 container_1 = st.container(border=True)
 container_2 = st.container(horizontal=True, horizontal_alignment='left')
-
+container_3 = st.container(border=True)
 
 
 #Seletor
@@ -61,8 +61,8 @@ with container_2:
     st.metric(label="Lucro", value=lucro_total, delta=f'{lucro_total_perc} %')
 
 # Criar abas
-container_3 = st.container(border=True)
-tab1, tab2, tab3 = container_2.tabs(["Carteira", "Grafico barra", "Grafico pizza"])
+
+tab1, tab2, tab3 = container_3.tabs(["Carteira", "Grafico barra", "Grafico pizza"])
 with tab1:  
     df_carteira_st = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant',
                                                                                                 'custo_brl',
