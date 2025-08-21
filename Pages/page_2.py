@@ -55,7 +55,7 @@ with st.container(horizontal=True, horizontal_alignment='left'):
     lucro_total = round(valor_total - custo_total,2)
     lucro_total_perc = round(100*(valor_total - custo_total) / custo_total,2)
 
-    st.metric(label="Valor de mercado", value=f'{valor_total} R$', delta=f'{custo_total} R$', delta_color='off')
+    st.metric(label="Valor de mercado", value=f'{valor_total} R$')
     st.metric(label="Lucro", value=lucro_total, delta=f'{lucro_total_perc} %')
 
 
