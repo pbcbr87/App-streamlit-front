@@ -60,7 +60,7 @@ with st.container(horizontal=True, horizontal_alignment='left'):
 
 st.text('test')
 
-with st.container():
+with st.container(border=True):
     st.text('teste')
     
     with tab1:  

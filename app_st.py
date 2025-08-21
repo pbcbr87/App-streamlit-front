@@ -3,7 +3,7 @@ import requests
 
 
 #deixar visivel as session:
-st.write(st.session_state)
+#st.write(st.session_state)
 
 #------------------------------------------------
 #Congiguraçãoes iniciais
