@@ -83,7 +83,7 @@ with tab2:
     y = df['valor_plan_brl']
     fig.add_trace(go.Bar(x=x.values, y=y.values, name='Valor Planejado',
                         marker=dict(color='green'),
-                        line=dict(color='black')))))
+                        line=dict(color='black')))
 
     y = df['%_lucro']
     fig.add_trace(go.Bar(x=x.values, 
