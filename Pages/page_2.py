@@ -72,12 +72,16 @@ with tab2:
     df = df_carteira
     fig = go.Figure()
     fig.update_layout()
+
     y = df['custo_brl']
     x = df['codigo_ativo']
     fig.add_trace(go.Bar(x=x.values, y=y.values,name='Custo'))
 
     y = df['valor_mercado_brl']
     fig.add_trace(go.Bar(x=x.values, y=y.values, name='Valor Atual'))
+
+    y = df['valor_plan_brl']
+    fig.add_trace(go.Bar(x=x.values, y=y.values, name='Valor Planejado'))
 
     y = df['%_lucro']
     fig.add_trace(go.Bar(x=x.values, 
