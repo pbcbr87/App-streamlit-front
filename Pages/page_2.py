@@ -193,7 +193,8 @@ with tab3:
         st.plotly_chart(fig)
         st.plotly_chart(fig2)
         st.plotly_chart(fig3)
-        st.plotly_chart(fig4)
+
+    st.plotly_chart(fig4)
 
 
 
