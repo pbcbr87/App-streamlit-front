@@ -46,7 +46,7 @@ col1, col2, col3 = sl_cat_container.columns([0.2, 0.1,0.6], vertical_alignment='
 with col1:
     mult_sl_cat = st.pills('categoria', df_cat, key='Key_SL_2', selection_mode="multi")
 with col2:
-    st.caption('Tudo')
+    st.subhead('Tudo')
     st.button(':material/checklist_rtl:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 with col3:
     op_ordem = {
