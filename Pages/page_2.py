@@ -46,7 +46,12 @@ with col2:
     st.text('')
     st.button(':material/checklist_rtl:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 with col3:
-    option = st.selectbox("Ordendar por:", ("valor_mercado_brl", "valor_mercado_usd", "%_lucro"))
+    op_ordem = {
+        "valor_mercado_brl": 'Valor de Mercado BRL',
+        "valor_mercado_USD": 'Valor de Mercado USD',
+        "%_lucro": 'Percentual do lucro'
+    }
+    option = st.selectbox("Ordendar por:", list(op_ordem.keys()))
     st.write(option)
 
 
