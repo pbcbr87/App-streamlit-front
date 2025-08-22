@@ -115,7 +115,7 @@ with tab1:
     st.dataframe(df_carteira_st, hide_index=True, use_container_width=True,
                 column_config={
                     "Lucro %": st.column_config.NumberColumn("Lucro %", format="percent"),
-                    "Custo": st.column_config.NumberColumn("Custo", format="R$")
+                    "Custo": st.column_config.NumberColumn("Custo", format="R$ %")
                     })
 
 with tab2:
