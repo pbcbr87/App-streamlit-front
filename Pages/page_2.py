@@ -20,7 +20,7 @@ if st.session_state['carteira_api'] == False:
 df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 
 df_carteira['pais'] = np.where((df_carteira['categoria'] == "AÇÕES") | (df_carteira['categoria'] == "FII"), 'BRL', 'USD')
-df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo_brl']) / df_carteira['custo_brl']
+df_carteira['%_lucro'] =  df_carteira['lucro_brl'] / df_carteira['custo_brl']
 
 #-----------------------------------------------------------
 #Containers layout
@@ -52,8 +52,8 @@ with col2:
         st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 with col3:
     op_ordem = {
-                'Valor de Mercado (R$)': "valor_mercado_brl",
-                'Valor de Mercado ($)': "valor_mercado_usd",
+                'Valor de Mercado': "valor_mercado_brl",
+                'Custo': "custo_brl",
                 'Percentual do lucro': "%_lucro"
                 }
     option = st.selectbox("Ordendar por", list(op_ordem.keys()))
@@ -76,6 +76,7 @@ df_carteira_front['Qt'] = df_carteira['quant']
 df_carteira_front['Custo'] = df_carteira['custo_brl']
 df_carteira_front['Valor de mercado'] = df_carteira['valor_mercado_brl']
 df_carteira_front['Lucro'] = df_carteira['lucro_brl']
+df_carteira_front['Lucro %'] = df_carteira['%_lucro']
 df_carteira_front['Peso'] = df_carteira['peso']
 df_carteira_front['Nota'] = df_carteira['nota']
 if ck_box_plan:
