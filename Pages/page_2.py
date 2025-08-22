@@ -163,19 +163,19 @@ with tab3:
     import plotly.express as px
     
     #Pizza tipos
-    fig = px.pie(df, values='valor_mercado_brl', names='categoria', title='Tipo de ativos',
+    fig = px.pie(df, values=op_ordem[option], names='categoria', title='Tipo de ativos',
             hover_data=['valor_mercado_usd'], labels={'valor_mercado_usd':'Valor Mercado em Dolar'})
     fig.update_traces(textposition='inside', textinfo='percent+label')
     fig.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
     #Pizza Ativos
-    fig2 = px.pie(df, values='valor_mercado_brl', names='codigo_ativo', title='Ativos',
+    fig2 = px.pie(df, values=op_ordem[option], names='codigo_ativo', title='Ativos',
             hover_data=['valor_mercado_usd'], labels={'valor_mercado_usd':'Valor Mercado em Dolar'})
     fig2.update_traces(textposition='inside', textinfo='percent+label')
     fig2.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
     #Pizza Setor
-    fig3 = px.pie(df, values='valor_mercado_brl', names='setor', title='Setores',
+    fig3 = px.pie(df, values=op_ordem[option], names='setor', title='Setores',
             hover_data=['valor_mercado_usd'], labels={'valor_mercado_usd':'Valor Mercado em Dolar'})
     fig3.update_traces(textposition='inside', textinfo='percent+label')
     fig3.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
