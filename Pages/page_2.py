@@ -51,7 +51,7 @@ with col3:
         'Valor de Mercado USD': "valor_mercado_USD",
         'Percentual do lucro': "%_lucro"
     }
-    option = st.selectbox("Ordendar por:", list(op_ordem.keys()))
+    st.selectbox("Ordendar por:", list(op_ordem.keys()), key='option')
     st.write(op_ordem[option])
 
 
