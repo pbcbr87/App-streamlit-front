@@ -165,8 +165,8 @@ with tab2:
 with tab3:
     df = df_carteira_front
     op_valor = {
-        'Valor de Mercado (R$)': "valor_mercado_brl",
-        'Valor de Mercado ($)': "valor_mercado_usd"
+        'Valor de Mercado': "Valor de mercado",
+        'Custo': 'Custo'
     }
     option_valor = st.selectbox("Valor:", list(op_valor.keys()))
 
