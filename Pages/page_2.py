@@ -44,7 +44,7 @@ with col1:
 with col2:
     st.text('')
     st.text('')
-    st.button(':heavy_check_mark:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
+    st.button(':select_all:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 
 mask = df_carteira['categoria'].isin(Categoria)
 df_carteira = df_carteira[mask]
@@ -64,7 +64,9 @@ with metrica_total_container:
     lucro_total_perc = 100*(valor_total - custo_total) / custo_total
 
     st.metric(label="Valor de mercado", value=f'{numero_padrao(valor_total)} R$')
+    st.metric(label="Valor de mercado", value=f'{numero_padrao(valor_total)} R$')
     st.metric(label="Lucro", value=f"{numero_padrao(lucro_total)} R$", delta=f'{numero_padrao(lucro_total_perc)} %')
+
 
 #-----------------------------------------------------------
 # Criar abas
