@@ -76,7 +76,17 @@ df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False])
 #-----------------------------------------------------------
 df_carteira_front = pd.DataFrame()
 df_carteira_front['Código ativo'] = df_carteira['codigo_ativo']
-
+df_carteira_front['Categoria'] = df_carteira['categoria']
+df_carteira_front['País'] = df_carteira['pais']
+df_carteira_front['Nome'] = df_carteira['nome']
+df_carteira_front['Setor'] = df_carteira['setor']
+df_carteira_front['Qt'] = df_carteira['quant']
+df_carteira_front['Custo'] = df_carteira['custo_brl']
+df_carteira_front['Valor de mercado'] = df_carteira['valor_mercado_brl']
+df_carteira_front['Lucro'] = df_carteira['lucro_brl']
+df_carteira_front['Peso'] = df_carteira['peso']
+df_carteira_front['Nota'] = df_carteira['nota']
+df_carteira_front['Valor Planejado'] = df_carteira['valor_plan_brl']
 
 #-----------------------------------------------------------
 # Metricas
