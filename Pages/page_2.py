@@ -169,7 +169,7 @@ with tab2:
                         textposition='auto',
                         texttemplate = "%{value:.2%}",
                         textfont = dict(color='black'),
-                        marker=dict(color=y.where(y > 0 , 'cornflowerblue').where(y <= 0 , 'gray'),
+                        marker=dict(color=y.where(y > 0 , 'darkgoldenrod').where(y <= 0 , 'cornflowerblue'),
                                     opacity=0.5,
                                     line=dict(color='black',width=1))))
 
