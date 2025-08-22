@@ -60,7 +60,7 @@ with metrica_total_container:
     lucro_total = round(valor_total - custo_total,2)
     lucro_total_perc = round(100*(valor_total - custo_total) / custo_total,2)
 
-    valor_total = f"{valor_total:,}"
+    valor_total = f"{valor_total:.,}"
 
 
     st.metric(label="Valor de mercado", value=f'{valor_total} R$')
