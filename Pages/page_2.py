@@ -115,7 +115,7 @@ with tab1:
                                                                                                 'Valor Planejado',
                                                                                                 'Aporte'])
                                         .format(precision=0, thousands=".", decimal=",", subset=['Peso', 'Nota'])
-                                        .format(precision=2, thousands=".", decimal=",", subset=['Lucro %'])
+                                        .format(precision=2, thousands=".", decimal=",", subset=['Lucro %', 'Aporte %'])
                                         )
 
     st.dataframe(df_carteira_st, hide_index=True, use_container_width=True,
