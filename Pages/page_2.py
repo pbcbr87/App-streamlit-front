@@ -17,6 +17,8 @@ if st.session_state['carteira_api'] == False:
 
 # Trantando dados recebidos
 df_carteira = pd.DataFrame(st.session_state['carteira_api'])
+
+df_carteira['pais'] = df_carteira.where(df_carteira['categoria'] == "AÇÕES", 'BRL', 'USD')
 df_carteira['%'] = 100 * df_carteira['custo_brl'] / df_carteira['custo_brl'].sum()
 df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo_brl']) / df_carteira['custo_brl']
 
