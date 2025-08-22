@@ -44,7 +44,7 @@ with col1:
 with col2:
     st.text('')
     st.text('')
-    st.button(':material/select_all:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
+    st.button(':material/checklist_rtl:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 
 mask = df_carteira['categoria'].isin(Categoria)
 df_carteira = df_carteira[mask]
