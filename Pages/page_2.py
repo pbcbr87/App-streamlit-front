@@ -182,11 +182,18 @@ with tab3:
     fig3.update_traces(textposition='inside', textinfo='percent+label')
     fig3.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
+    #Pizza país
+    fig4 = px.pie(df, values=op_valor[option_valor], names='setor', title='Setores',
+            hover_data=['valor_mercado_usd'], labels={'valor_mercado_usd':'Valor Mercado em Dolar'})
+    fig4.update_traces(textposition='inside', textinfo='percent+label')
+    fig4.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
+
     #Plotar valores
     with st.container(horizontal=True, horizontal_alignment='left'):
         st.plotly_chart(fig)
         st.plotly_chart(fig2)
         st.plotly_chart(fig3)
+        st.plotly_chart(fig4)
 
 
 
