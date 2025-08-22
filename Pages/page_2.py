@@ -192,8 +192,9 @@ with tab3:
     with st.container(horizontal=True, horizontal_alignment='left'):
         st.plotly_chart(fig)
         st.plotly_chart(fig2)
-        st.plotly_chart(fig3)
+    with st.container(horizontal=True, horizontal_alignment='left'):
         st.plotly_chart(fig4)
+        st.plotly_chart(fig3)
 
 
 
