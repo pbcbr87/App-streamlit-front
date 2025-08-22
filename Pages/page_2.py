@@ -14,16 +14,16 @@ if st.session_state['carteira_api'] == False:
     resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
     st.session_state['carteira_api'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
 
-
 # Trantando dados recebidos
 df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 df_carteira['%'] = 100 * df_carteira['custo_brl'] / df_carteira['custo_brl'].sum()
 df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo_brl']) / df_carteira['custo_brl']
 
-#Conteinner
-container_1 = st.container(border=True)
-container_2 = st.container(horizontal=True, horizontal_alignment='left')
-container_3 = st.container(border=True)
+
+#Containers
+sl_cat_container = st.container(border=True)
+metrica_total_container = st.container(border=True, horizontal=True, horizontal_alignment='left')
+tabs_container = st.container(border=True)
 
 
 #Seletor
@@ -36,7 +36,7 @@ if 'Key_SL_2' not in st.session_state:
     st.session_state['Key_SL_2'] = df_cat
 
 #Filtro
-col1, col2 = container_1.columns([1, 0.1])
+col1, col2 = sl_cat_container.columns([1, 0.1])
 with col1:
         Categoria = st.multiselect('categoria', df_cat, placeholder = f'Selecione quals categorias', key='Key_SL_2')
 with col2:
@@ -51,7 +51,7 @@ df_carteira = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
 
 
 # Metricas
-with container_2:
+with metrica_total_container:
     valor_total = round(df_carteira['valor_mercado_brl'].sum(), 2)
     custo_total = round(df_carteira['custo_brl'].sum(), 2)
     lucro_total = round(valor_total - custo_total,2)
@@ -62,7 +62,7 @@ with container_2:
 
 # Criar abas
 
-tab1, tab2, tab3 = container_3.tabs(["Carteira", "Grafico barra", "Grafico pizza"])
+tab1, tab2, tab3 = tabs_container.tabs(["Carteira", "Grafico barra", "Grafico pizza"])
 with tab1:  
     df_carteira_st = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant',
                                                                                                 'custo_brl',
