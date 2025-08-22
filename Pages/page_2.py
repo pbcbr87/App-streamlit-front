@@ -10,7 +10,6 @@ if 'carteira_api' not in st.session_state:
 
 st.header('Carteira')
 
-
 # Buscando dados na API
 if st.session_state['carteira_api'] == False:
     resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
@@ -20,8 +19,9 @@ if st.session_state['carteira_api'] == False:
 df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 
 df_carteira['pais'] = np.where((df_carteira['categoria'] == "AÇÕES") | (df_carteira['categoria'] == "FII"), 'BRL', 'USD')
-df_carteira['%'] = 100 * df_carteira['custo_brl'] / df_carteira['custo_brl'].sum()
 df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo_brl']) / df_carteira['custo_brl']
+
+
 
 #-----------------------------------------------------------
 #Containers
@@ -59,6 +59,8 @@ with col3:
 
 mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
+df_carteira['valor_plan_brl_'] = df_carteira['valor_mercado_brl'].sun() * (df_carteira['peso']/df_carteira['peso'].sum())
+
 
 # ordenação
 df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False])
