@@ -56,9 +56,6 @@ with col3:
         'Percentual do lucro': "%_lucro"
     }
     option = st.selectbox("Ordendar por:", list(op_ordem.keys()))
-    st.write(op_ordem[option])
-
-
 
 mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
