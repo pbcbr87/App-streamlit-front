@@ -50,7 +50,7 @@ with col1:
 with col2:
     st.button(':material/cancel:', help='Desmarcar tudo', key='Key_BT_3', on_click=sl_nada_ex)
 with col3:
-    st.button(':material/:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
+    st.button(':material/selct_all:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 with col4:
     op_ordem = {
         'Valor de Mercado (R$)': "valor_mercado_brl",
