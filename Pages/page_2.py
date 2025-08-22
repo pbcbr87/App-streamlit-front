@@ -48,7 +48,7 @@ with sl_cat_container:
     st.button("",icon=':material/cancel:', type='tertiary', help='Desmarcar tudo', key='Key_BT_3', on_click=sl_nada_ex)
     st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
     ck_box_plan = st.checkbox('Filtro no Planejamento', help='O filtro será aplicado para recalcular os valores de planejamento')
-    st.number_input('Valor de aporte:', format="%.2f", min_value=0.01)
+    st.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.01)
 
     op_ordem = {
                 'Valor de mercado': "Valor de mercado",
