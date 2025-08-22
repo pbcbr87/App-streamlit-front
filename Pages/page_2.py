@@ -48,9 +48,9 @@ col1, col2, col3, col4 = sl_cat_container.columns([0.23, 0.04, 0.04, 0.7], verti
 with col1:
     mult_sl_cat = st.pills('categoria', df_cat, key='Key_SL_2', selection_mode="multi")
 with col2:
-    st.button(':material/cancel:', help='Desmarcar tudo', key='Key_BT_3', on_click=sl_nada_ex, border=False)
+    st.button(icon=':material/cancel:', help='Desmarcar tudo', key='Key_BT_3', on_click=sl_nada_ex)
 with col3:
-    st.button(':material/checklist_rtl:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
+    st.button(icon=':material/checklist_rtl:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 with col4:
     op_ordem = {
         'Valor de Mercado (R$)': "valor_mercado_brl",
