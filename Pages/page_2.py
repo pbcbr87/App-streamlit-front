@@ -54,6 +54,7 @@ with col3:
     op_ordem = {
                 'Valor de Mercado': "valor_mercado_brl",
                 'Custo': "custo_brl",
+                'Lucro': "lucro_brl",
                 'Percentual do lucro': "%_lucro"
                 }
     option = st.selectbox("Ordendar por", list(op_ordem.keys()))
