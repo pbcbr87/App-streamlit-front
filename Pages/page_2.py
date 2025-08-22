@@ -113,11 +113,10 @@ with tab1:
                                         )
 
     st.dataframe(df_carteira_st, hide_index=True, use_container_width=True,
-                                column_config={
-                                    "Lucro %": st.column_config.NumberColumn(
-                                        "Lucro %",
-                                        format="percent")
-                                    })
+                column_config={
+                    "Lucro %": st.column_config.NumberColumn("Lucro %", format="percent")
+                    "Custo": st.column_config.NumberColumn("Custo", format="R$ %.2f")
+                    })
 
 with tab2:
     df = df_carteira
