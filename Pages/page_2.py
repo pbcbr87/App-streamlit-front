@@ -19,14 +19,16 @@ df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 df_carteira['%'] = 100 * df_carteira['custo_brl'] / df_carteira['custo_brl'].sum()
 df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo_brl']) / df_carteira['custo_brl']
 
-
+#-----------------------------------------------------------
 #Containers
+#-----------------------------------------------------------
 sl_cat_container = st.container(border=True)
 metrica_total_container = st.container(border=True, horizontal=True, horizontal_alignment='left')
-tabs_container = st.container(border=True)
+tabs_container = st.container()
 
-
+#-----------------------------------------------------------
 #Seletor
+#-----------------------------------------------------------
 def sl_tudo_ex():       
         st.session_state['Key_SL_2'] = df_cat
         
@@ -35,7 +37,7 @@ df_cat = list(df_carteira['categoria'].unique())
 if 'Key_SL_2' not in st.session_state:
     st.session_state['Key_SL_2'] = df_cat
 
-#Filtro
+#multiselect
 col1, col2 = sl_cat_container.columns([1, 0.1])
 with col1:
         Categoria = st.multiselect('categoria', df_cat, placeholder = f'Selecione quals categorias', key='Key_SL_2')
@@ -49,19 +51,24 @@ df_carteira = df_carteira[mask]
 # ordenação
 df_carteira = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
 
-
+#-----------------------------------------------------------
 # Metricas
+#-----------------------------------------------------------
 with metrica_total_container:
     valor_total = round(df_carteira['valor_mercado_brl'].sum(), 2)
     custo_total = round(df_carteira['custo_brl'].sum(), 2)
     lucro_total = round(valor_total - custo_total,2)
     lucro_total_perc = round(100*(valor_total - custo_total) / custo_total,2)
 
+    valor_total = str(valor_total).replace(".", ",")
+
+
     st.metric(label="Valor de mercado", value=f'{valor_total} R$')
     st.metric(label="Lucro", value=lucro_total, delta=f'{lucro_total_perc} %')
 
+#-----------------------------------------------------------
 # Criar abas
-
+#-----------------------------------------------------------
 tab1, tab2, tab3 = tabs_container.tabs(["Carteira", "Grafico barra", "Grafico pizza"])
 with tab1:  
     df_carteira_st = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant',
