@@ -97,7 +97,7 @@ with tab1:
                                                                                                 'valor_plan_brl',
                                                                                                 'valor_plan_usd'])
                                 .format(precision=0, thousands=".", decimal=",", subset=['peso', 'nota'])
-                                .format(precision=2, thousands=".", decimal=",", subset=['%']))
+                                )
 
     st.dataframe(df_carteira_st, hide_index=True, 
                     column_config={
