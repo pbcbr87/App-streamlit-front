@@ -89,8 +89,8 @@ def numero_padrao(numero):
     return f"{numero:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 with metrica_total_container:
-    valor_total = df_carteira_front['valor_mercado_brl'].sum()
-    custo_total = df_carteira_front['custo_brl'].sum()
+    valor_total = df_carteira_front['Valor de mercado'].sum()
+    custo_total = df_carteira_front['Custo'].sum()
     lucro_total = valor_total - custo_total
     lucro_total_perc = 100*(valor_total - custo_total) / custo_total
 
@@ -102,23 +102,15 @@ with metrica_total_container:
 #-----------------------------------------------------------
 tab1, tab2, tab3 = tabs_container.tabs(["Carteira", "Grafico barra", "Grafico pizza"])
 with tab1:  
-    df_carteira_st = (df_carteira_front.style.format(precision=2, thousands=".", decimal=",", subset=['quant',
-                                                                                                'custo_brl',
-                                                                                                'custo_usd',
-                                                                                                'valor_mercado_brl',
-                                                                                                'lucro_brl',
-                                                                                                'valor_plan_brl_'])
-                                        .format(precision=0, thousands=".", decimal=",", subset=['peso', 'nota'])
+    df_carteira_st = (df_carteira_front.style.format(precision=2, thousands=".", decimal=",", subset=['Qt',
+                                                                                                'Custo',
+                                                                                                'Valor de mercado',
+                                                                                                'Lucro',
+                                                                                                'Valor Planejado'])
+                                        .format(precision=0, thousands=".", decimal=",", subset=['Peso', 'Nota'])
                                         )
 
-    st.dataframe(df_carteira_st, hide_index=True,
-                    use_container_width=False,
-                    column_config={
-                        "%": st.column_config.NumberColumn(
-                            "% (BRL)",
-                            help="Proporcação do ativo na carteira em BRL"
-                            )
-                        })
+    st.dataframe(df_carteira_st, hide_index=True, use_container_width=False)
 
 with tab2:
     df = df_carteira
