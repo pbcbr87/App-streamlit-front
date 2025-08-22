@@ -38,13 +38,18 @@ if 'Key_SL_2' not in st.session_state:
     st.session_state['Key_SL_2'] = df_cat
 
 #multiselect
-col1, col2 = sl_cat_container.columns([1, 0.1])
+col1, col2, col3 = sl_cat_container.columns([0.5, 0.1,0.4])
 with col1:
     mult_sl_cat = st.multiselect('categoria', df_cat, placeholder = f'Selecione quals categorias', key='Key_SL_2')
 with col2:
     st.text('')
     st.text('')
     st.button(':material/checklist_rtl:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
+with col3;
+    option = st.selectbox("Ordendar por:", ("Email", "Home phone", "Mobile phone"))
+    st.write(option)
+
+
 
 mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
