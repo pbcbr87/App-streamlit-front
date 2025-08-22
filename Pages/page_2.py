@@ -46,7 +46,7 @@ col1, col2, col3 = sl_cat_container.columns([0.2, 0.1,0.6], vertical_alignment='
 with col1:
     mult_sl_cat = st.pills('categoria', df_cat, key='Key_SL_2', selection_mode="multi")
 with col2:
-    st.markdown('Tudo')
+    st.text('Tudo')
     st.button(':material/checklist_rtl:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 with col3:
     op_ordem = {
@@ -54,7 +54,7 @@ with col3:
         'Valor de Mercado ($)': "valor_mercado_usd",
         'Percentual do lucro': "%_lucro"
     }
-    option = st.selectbox("Ordendar por:", list(op_ordem.keys()))
+    option = st.selectbox("Ordendar por", list(op_ordem.keys()))
 
 mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
