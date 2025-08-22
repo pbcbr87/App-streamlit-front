@@ -110,7 +110,7 @@ with tab1:
                                         .format(precision=0, thousands=".", decimal=",", subset=['Peso', 'Nota'])
                                         )
 
-    st.dataframe(df_carteira_st, hide_index=True, use_container_width=False)
+    st.dataframe(df_carteira_st, hide_index=True, use_container_width=True)
 
 with tab2:
     df = df_carteira
