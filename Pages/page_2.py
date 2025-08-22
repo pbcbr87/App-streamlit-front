@@ -80,10 +80,14 @@ df_carteira_front['Lucro'] = df_carteira['lucro_brl']
 df_carteira_front['Lucro %'] = df_carteira['%_lucro']
 df_carteira_front['Peso'] = df_carteira['peso']
 df_carteira_front['Nota'] = df_carteira['nota']
+
 if ck_box_plan:
-    df_carteira_front['Valor Planejado'] = df_carteira['valor_mercado_brl'].sum() * (df_carteira['peso']/df_carteira['peso'].sum())
+    df_carteira_front['Valor Planejado'] = df_carteira['valor_mercado_brl'].sum() * (df_carteira['peso']/df_carteira['peso'].sum())   
 else:
     df_carteira_front['Valor Planejado'] = df_carteira['valor_plan_brl']
+df_carteira_front['Aporte'] = df_carteira_front['Valor Planejado'] - df_carteira_front['Valor de mercado']
+df_carteira_front['Aporte %'] = df_carteira_front['Aporte']/df_carteira_front['Valor Planejado']
+
 #-----------------------------------------------------------
 # Metricas
 #-----------------------------------------------------------
