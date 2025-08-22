@@ -53,7 +53,7 @@ with col2:
         st.button("",icon=':material/cancel:', type='tertiary', help='Desmarcar tudo', key='Key_BT_3', on_click=sl_nada_ex)
         st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 with col3:
-    with st.container(horizontal=True, horizontal_alignment='right')
+    with st.container(horizontal=True, horizontal_alignment='left')
         op_ordem = {
             'Valor de Mercado (R$)': "valor_mercado_brl",
             'Valor de Mercado ($)': "valor_mercado_usd",
