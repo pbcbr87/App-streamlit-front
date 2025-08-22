@@ -74,7 +74,7 @@ df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False])
 #-----------------------------------------------------------
 #Dataframe que vai utilizar
 #-----------------------------------------------------------
-df_carteira_front = pd.dataframe()
+df_carteira_front = pd.DataFrame()
 df_carteira_front['Código ativo'] = df_carteira['codigo_ativo']
 
 
