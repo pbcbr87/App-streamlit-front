@@ -60,7 +60,7 @@ mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
 
 # ordenação
-df_carteira = df_carteira.sort_values(option, ascending=[False])
+df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False])
 
 #-----------------------------------------------------------
 # Metricas
