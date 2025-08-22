@@ -51,8 +51,8 @@ with col2:
     st.button(':material/checklist_rtl:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 with col3:
     op_ordem = {
-        'Valor de Mercado BRL': "valor_mercado_brl",
-        'Valor de Mercado USD': "valor_mercado_usd",
+        'Valor de Mercado (R$)': "valor_mercado_brl",
+        'Valor de Mercado ($)': "valor_mercado_usd",
         'Percentual do lucro': "%_lucro"
     }
     option = st.selectbox("Ordendar por:", list(op_ordem.keys()))
@@ -162,8 +162,8 @@ with tab3:
 
     df = df_carteira
     op_valor = {
-        'Valor de Mercado BRL': "valor_mercado_brl",
-        'Valor de Mercado USD': "valor_mercado_usd"
+        'Valor de Mercado (R$)': "valor_mercado_brl",
+        'Valor de Mercado ($)': "valor_mercado_usd"
     }
     option_valor = st.selectbox("Valor:", list(op_valor.keys()))
 
