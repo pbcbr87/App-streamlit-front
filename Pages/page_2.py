@@ -129,8 +129,9 @@ with tab2:
     fig = go.Figure()
     fig.update_layout()
 
-    y = df['Custo']
     x = df['Código ativo']
+    
+    y = df['Custo']
     fig.add_trace(go.Bar(x=x.values, y=y.values,name='Custo'))
 
     y = df['Valor de mercado']
@@ -154,6 +155,21 @@ with tab2:
                         marker=dict(color=y.where(y > 0 , 'IndianRed').where(y <= 0 , 'gray'),
                                     opacity=0.5,
                                     line=dict(color='black',width=1))))
+
+
+
+    y = df['Aporte %']
+    fig.add_trace(go.Bar(x=x.values, 
+                        y=y.values, 
+                        yaxis="y2", 
+                        name='Aporte %', 
+                        textposition='auto',
+                        texttemplate = "%{value:.2%}",
+                        textfont = dict(color='black'),
+                        marker=dict(color=y.where(y > 0 , 'IndianRed').where(y <= 0 , 'gray'),
+                                    opacity=0.5,
+                                    line=dict(color='black',width=1))))
+
     fig.update_layout(
         separators= ",.",
         yaxis=dict(
@@ -163,7 +179,7 @@ with tab2:
             tickformat=",.2f"   
         ),
         yaxis2=dict(
-            title=dict(text="Lucro %"),
+            title=dict(text="%"),
             side="right",
             range=None,
             overlaying="y",
