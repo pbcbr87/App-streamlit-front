@@ -190,11 +190,11 @@ with tab3:
 
     #Plotar valores
     with st.container(horizontal=True, horizontal_alignment='left'):
-        st.plotly_chart(fig)
-        st.plotly_chart(fig2)
-        st.plotly_chart(fig3)
+        st.plotly_chart(fig, id='fig1')
+        st.plotly_chart(fig2, id='fig2')
+        st.plotly_chart(fig3, id='fig3')
+        st.plotly_chart(fig4, id='fig4')
 
-    st.plotly_chart(fig4)
 
 
 
