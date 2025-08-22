@@ -163,7 +163,6 @@ with tab3:
         'Valor de Mercado USD': "valor_mercado_usd"
     }
     option_valor = st.selectbox("Valor:", list(op_valor.keys()))
-    st.write(op_valor[option_valor]) 
 
     #Pizza tipos
     fig = px.pie(df, values=op_valor[option_valor], names='categoria', title='Tipo de ativos',
