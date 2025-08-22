@@ -51,8 +51,8 @@ with col3:
         'Valor de Mercado USD': "valor_mercado_USD",
         'Percentual do lucro': "%_lucro"
     }
-    st.selectbox("Ordendar por:", list(op_ordem.keys()), key='option')
-    st.write(op_ordem[st.session_state['option']])
+    option = st.selectbox("Ordendar por:", list(op_ordem.keys()))
+    st.write(op_ordem[option])
 
 
 
@@ -60,7 +60,7 @@ mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
 
 # ordenação
-df_carteira = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
+df_carteira = df_carteira.sort_values(option, ascending=[False])
 
 #-----------------------------------------------------------
 # Metricas
