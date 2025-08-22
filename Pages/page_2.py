@@ -103,7 +103,7 @@ with tab1:
                                         )
 
     st.dataframe(df_carteira_st, hide_index=True,
-                    column_order=('codigo_ativo','categoria','valor_mercado_brl', 'custo_brl'),
+                    column_order=('codigo_ativo','categoria','valor_mercado_brl', 'custo_brl', 'lucro_brl', 'valor_plan_brl_'),
                     column_config={
                         "%": st.column_config.NumberColumn(
                             "% (BRL)",
