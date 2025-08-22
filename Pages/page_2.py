@@ -56,6 +56,7 @@ with col3:
                 'Custo': "Custo",
                 'Lucro': "Lucro",
                 'Percentual do lucro': "Lucro %",
+                'Valor Planejado': 'Valor Planejado',
                 'Aporte': 'Aporte',
                 'Percentual do aporte': 'Aporte %'
                 }
