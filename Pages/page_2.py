@@ -26,7 +26,7 @@ df_carteira['%_lucro'] =  df_carteira['lucro_brl'] / df_carteira['custo_brl']
 #Containers layout
 #-----------------------------------------------------------
 sl_cat_container = st.container(border=True, horizontal=True)
-metrica_total_container = st.container(border=True, horizontal=True, horizontal_alignment='left')
+metrica_total_container = st.container(border=True, horizontal=True, horizontal_alignment='left', vertical_alignment='center')
 tabs_container = st.container()
 #-----------------------------------------------------------
 #Seletor
