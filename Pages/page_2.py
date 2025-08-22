@@ -48,7 +48,7 @@ col1, col2, col3 = sl_cat_container.columns([0.28, 0.2, 0.7], vertical_alignment
 with col1:
     mult_sl_cat = st.pills('categoria', df_cat, key='Key_SL_2', selection_mode="multi")
 with col2:
-    st.checkbox('Aplicar no Planejamento')
+    ck_box_plan = st.checkbox('Aplicar no Planejamento', help='O filtro será aplicado para recalcular os valores de planejamento')
     with st.container(horizontal=True, horizontal_alignment='left'):
         st.button("",icon=':material/cancel:', type='tertiary', help='Desmarcar tudo', key='Key_BT_3', on_click=sl_nada_ex)
         st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
@@ -62,7 +62,10 @@ with col3:
 
 mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
-df_carteira['valor_plan_brl_'] = df_carteira['valor_mercado_brl'].sum() * (df_carteira['peso']/df_carteira['peso'].sum())
+if ck_box_plan:
+    df_carteira['valor_plan_brl_'] = df_carteira['valor_mercado_brl'].sum() * (df_carteira['peso']/df_carteira['peso'].sum())
+else:
+    df_carteira['valor_plan_brl_'] = df_carteira['valor_plan_brl']
 
 
 # ordenação
@@ -94,13 +97,10 @@ with tab1:
                                                                                                 'custo_brl',
                                                                                                 'custo_usd',
                                                                                                 'valor_mercado_brl',
-                                                                                                'valor_mercado_usd',
                                                                                                 'lucro_brl',
-                                                                                                'lucro_usd',
-                                                                                                'valor_plan_brl',
-                                                                                                'valor_plan_usd'])
-                                .format(precision=0, thousands=".", decimal=",", subset=['peso', 'nota'])
-                                )
+                                                                                                'valor_plan_brl_'])
+                                        .format(precision=0, thousands=".", decimal=",", subset=['peso', 'nota'])
+                                        )
 
     st.dataframe(df_carteira_st, hide_index=True, 
                     column_config={
