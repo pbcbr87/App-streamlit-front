@@ -189,12 +189,13 @@ with tab3:
     fig4.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
     #Plotar valores
+    with st.container(horizontal=True, horizontal_alignment='left'):        
+        st.plotly_chart(fig2)
+        st.plotly_chart(fig3)
     with st.container(horizontal=True, horizontal_alignment='left'):
         st.plotly_chart(fig)
-        st.plotly_chart(fig2)
-    with st.container(horizontal=True, horizontal_alignment='left'):
         st.plotly_chart(fig4)
-        st.plotly_chart(fig3)
+
 
 
 
