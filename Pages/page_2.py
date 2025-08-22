@@ -118,7 +118,7 @@ with tab1:
                     })
 
 with tab2:
-    df = df_carteira
+    df = df_carteira_front
     fig = go.Figure()
     fig.update_layout()
 
