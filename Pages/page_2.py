@@ -171,25 +171,25 @@ with tab3:
     option_valor = st.selectbox("Valor:", list(op_valor.keys()))
 
     #Pizza tipos
-    fig = px.pie(df, values=op_valor[option_valor], names='categoria', title='Tipo de ativos',
+    fig = px.pie(df, values=op_valor[option_valor], names='Categoria', title='Tipo de ativos',
             hover_data=['Qt'], labels={'Qt':'Quantidade de ativos'})
     fig.update_traces(textposition='inside', textinfo='percent+label')
     fig.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
     #Pizza Ativos
-    fig2 = px.pie(df, values=op_valor[option_valor], names='codigo_ativo', title='Ativos',
+    fig2 = px.pie(df, values=op_valor[option_valor], names='Código ativo', title='Ativos',
             hover_data=['Qt'], labels={'Qt':'Quantidade de ativos'})
     fig2.update_traces(textposition='inside', textinfo='percent+label')
     fig2.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
     #Pizza Setor
-    fig3 = px.pie(df, values=op_valor[option_valor], names='setor', title='Setores',
+    fig3 = px.pie(df, values=op_valor[option_valor], names='Setor', title='Setores',
             hover_data=['Qt'], labels={'Qt':'Quantidade de ativos'})
     fig3.update_traces(textposition='inside', textinfo='percent+label')
     fig3.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
     #Pizza país
-    fig4 = px.pie(df, values=op_valor[option_valor], names='pais', title='País',
+    fig4 = px.pie(df, values=op_valor[option_valor], names='País', title='País',
             hover_data=['Qt'], labels={'Qt':'Quantidade de ativos'})
     fig4.update_traces(textposition='inside', textinfo='percent+label')
     fig4.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
