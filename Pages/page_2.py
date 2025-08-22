@@ -46,7 +46,7 @@ col1, col2, col3 = sl_cat_container.columns([0.28, 0.2, 0.7], vertical_alignment
 with col1:
     mult_sl_cat = st.pills('categoria', df_cat, key='Key_SL_2', selection_mode="multi")
 with col2:
-    ck_box_plan = st.checkbox('Aplicar no Planejamento', help='O filtro será aplicado para recalcular os valores de planejamento')
+    ck_box_plan = st.checkbox('Aplicar no Planejamento', help='O filtro será aplicado para recalcular os valores de planejamento', on_change=st.rerun)
     with st.container(horizontal=True, horizontal_alignment='left'):
         st.button("",icon=':material/cancel:', type='tertiary', help='Desmarcar tudo', key='Key_BT_3', on_click=sl_nada_ex)
         st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
