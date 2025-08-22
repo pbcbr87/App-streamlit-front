@@ -112,7 +112,12 @@ with tab1:
                                         .format(precision=2, thousands=".", decimal=",", subset=['Lucro %'])
                                         )
 
-    st.dataframe(df_carteira_st, hide_index=True, use_container_width=True)
+    st.dataframe(df_carteira_st, hide_index=True, use_container_width=True,
+                                column_config={
+                                    "Lucro %": st.column_config.NumberColumn(
+                                        "Lucro %",
+                                        format="percent")
+                                    })
 
 with tab2:
     df = df_carteira
