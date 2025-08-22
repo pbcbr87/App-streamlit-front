@@ -25,7 +25,7 @@ df_carteira['%_lucro'] =  df_carteira['lucro_brl'] / df_carteira['custo_brl']
 #-----------------------------------------------------------
 #Containers layout
 #-----------------------------------------------------------
-sl_cat_container = st.container(border=True)
+sl_cat_container = st.container(border=True, horizontal=True)
 metrica_total_container = st.container(border=True, horizontal=True, horizontal_alignment='left')
 tabs_container = st.container()
 #-----------------------------------------------------------
@@ -43,7 +43,7 @@ if 'Key_SL_2' not in st.session_state:
 
 #multiselect
 # col1, col2, col3 = sl_cat_container.columns([0.25, 0.25, 0.5], vertical_alignment='center')
-with sl_cat_container(horizontal=True):
+with sl_cat_container:
     mult_sl_cat = st.pills('categoria', df_cat, key='Key_SL_2', selection_mode="multi")
 # with col2:
     ck_box_plan = st.checkbox('Aplicar no Planejamento', help='O filtro será aplicado para recalcular os valores de planejamento')
