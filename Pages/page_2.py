@@ -122,21 +122,21 @@ with tab2:
     fig = go.Figure()
     fig.update_layout()
 
-    y = df['custo_brl']
-    x = df['codigo_ativo']
+    y = df['Custo']
+    x = df['Código ativo']
     fig.add_trace(go.Bar(x=x.values, y=y.values,name='Custo'))
 
-    y = df['valor_mercado_brl']
+    y = df['Valor de mercado']
     fig.add_trace(go.Bar(x=x.values, y=y.values, name='Valor Atual'))
 
-    y = df['valor_plan_brl']
+    y = df['Valor Planejado']
     fig.add_trace(go.Bar(x=x.values, 
                         y=y.values, 
                         name='Valor Planejado',
                         marker=dict(color='green', line=dict(color='black'))
                         ))
 
-    y = df['%_lucro']
+    y = df['Lucro %']
     fig.add_trace(go.Bar(x=x.values, 
                         y=y.values, 
                         yaxis="y2", 
