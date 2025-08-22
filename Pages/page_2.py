@@ -40,14 +40,15 @@ if 'Key_SL_2' not in st.session_state:
 #multiselect
 col1, col2 = sl_cat_container.columns([1, 0.1])
 with col1:
-    Categoria = st.multiselect('categoria', df_cat, placeholder = f'Selecione quals categorias', key='Key_SL_2')
+    mult_sl_cat = st.multiselect('categoria', df_cat, placeholder = f'Selecione quals categorias', key='Key_SL_2')
 with col2:
     st.text('')
     st.text('')
     st.button(':material/checklist_rtl:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 
-mask = df_carteira['categoria'].isin(Categoria)
+mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
+
 # ordenação
 df_carteira = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
 
@@ -151,22 +152,25 @@ with tab3:
 
     import plotly.express as px
     
+    #Pizza tipos
     fig = px.pie(df, values='valor_mercado_brl', names='categoria', title='Tipo de ativos',
             hover_data=['valor_mercado_usd'], labels={'valor_mercado_usd':'Valor Mercado em Dolar'})
     fig.update_traces(textposition='inside', textinfo='percent+label')
     fig.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
-
+    #Pizza Ativos
     fig2 = px.pie(df, values='valor_mercado_brl', names='codigo_ativo', title='Ativos',
             hover_data=['valor_mercado_usd'], labels={'valor_mercado_usd':'Valor Mercado em Dolar'})
     fig2.update_traces(textposition='inside', textinfo='percent+label')
     fig2.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
+    #Pizza Setor
     fig3 = px.pie(df, values='valor_mercado_brl', names='setor', title='Setores',
             hover_data=['valor_mercado_usd'], labels={'valor_mercado_usd':'Valor Mercado em Dolar'})
     fig3.update_traces(textposition='inside', textinfo='percent+label')
     fig3.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
+    #Plotar valores
     with st.container(horizontal=True, horizontal_alignment='left'):
         st.plotly_chart(fig)
         st.plotly_chart(fig2)
