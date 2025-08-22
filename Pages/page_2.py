@@ -47,7 +47,7 @@ if 'Key_SL_2' not in st.session_state:
 col1, col2, col3 = sl_cat_container.columns([0.23, 0.04, 0.7], vertical_alignment='center')
 with col1:
     mult_sl_cat = st.pills('categoria', df_cat, key='Key_SL_2', selection_mode="multi")
-with col2():
+with col2:
     with st.container(horizontal=True, horizontal_alignment='left'):
         st.button("",icon=':material/cancel:', type='tertiary', help='Desmarcar tudo', key='Key_BT_3', on_click=sl_nada_ex)
         st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
