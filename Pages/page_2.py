@@ -162,9 +162,15 @@ with tab3:
     fig2.update_traces(textposition='inside', textinfo='percent+label')
     fig2.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
+    fig3 = px.pie(df, values='valor_mercado_brl', names='setor', title='Setores',
+            hover_data=['valor_mercado_usd'], labels={'valor_mercado_usd':'Valor Mercado em Dolar'})
+    fig3.update_traces(textposition='inside', textinfo='percent+label')
+    fig3.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
+
     with st.container(horizontal=True, horizontal_alignment='left'):
         st.plotly_chart(fig)
         st.plotly_chart(fig2)
+        st.plotly_chart(fig3)
 
 
 
