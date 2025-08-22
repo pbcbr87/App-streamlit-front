@@ -72,6 +72,12 @@ else:
 df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False])
 
 #-----------------------------------------------------------
+#Dataframe que vai utilizar
+#-----------------------------------------------------------
+df_carteira_front['Código ativo'] = df_carteira['Código ativo']
+
+
+#-----------------------------------------------------------
 # Metricas
 #-----------------------------------------------------------
 def numero_padrao(numero):
@@ -104,7 +110,6 @@ with tab1:
 
     st.dataframe(df_carteira_st, hide_index=True,
                     use_container_width=False,
-                    column_order=('codigo_ativo','categoria','valor_mercado_brl', 'custo_brl', 'lucro_brl', 'valor_plan_brl_'),
                     column_config={
                         "%": st.column_config.NumberColumn(
                             "% (BRL)",
