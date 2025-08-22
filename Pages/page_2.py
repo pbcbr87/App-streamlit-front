@@ -22,7 +22,7 @@ df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo
 #-----------------------------------------------------------
 #Containers
 #-----------------------------------------------------------
-sl_cat_container = st.container(border=True,vertical_alignment='center' )
+sl_cat_container = st.container(border=True, vertical_alignment='center' )
 metrica_total_container = st.container(border=True, horizontal=True, horizontal_alignment='left')
 tabs_container = st.container()
 
@@ -42,8 +42,8 @@ col1, col2 = sl_cat_container.columns([1, 0.1])
 with col1:
     Categoria = st.multiselect('categoria', df_cat, placeholder = f'Selecione quals categorias', key='Key_SL_2')
 with col2:
-    st.text('')
-    st.text('')
+    # st.text('')
+    # st.text('')
     st.button(':material/checklist_rtl:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 
 mask = df_carteira['categoria'].isin(Categoria)
