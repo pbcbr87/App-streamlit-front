@@ -42,7 +42,7 @@ col1, col2 = sl_cat_container.columns([1, 0.1], border=True)
 with col1:
     Categoria = st.multiselect('categoria', df_cat, placeholder = f'Selecione quals categorias', key='Key_SL_2')
 with col2:
-    st.container(border=True, horizontal_alignment='center'):
+    with st.container(border=True, horizontal_alignment='center'):
         st.text('')
         st.text('')
         st.button(':material/checklist_rtl:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
