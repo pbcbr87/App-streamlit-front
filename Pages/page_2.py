@@ -63,7 +63,7 @@ with metrica_total_container:
     lucro_total = valor_total - custo_total
     lucro_total_perc = 100*(valor_total - custo_total) / custo_total
 
-    st.metric(label="Valor de mercado", value=f'{numero_padrao(valor_total)} R$')
+    st.metric(label="Custo", value=f'{numero_padrao(custo_total)} R$')
     st.metric(label="Valor de mercado", value=f'{numero_padrao(valor_total)} R$')
     st.metric(label="Lucro", value=f"{numero_padrao(lucro_total)} R$", delta=f'{numero_padrao(lucro_total_perc)} %')
 
