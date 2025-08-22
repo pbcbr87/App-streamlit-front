@@ -112,7 +112,8 @@ with tab1:
                                                                                                 'Custo',
                                                                                                 'Valor de mercado',
                                                                                                 'Lucro',
-                                                                                                'Valor Planejado'])
+                                                                                                'Valor Planejado',
+                                                                                                'Aporte'])
                                         .format(precision=0, thousands=".", decimal=",", subset=['Peso', 'Nota'])
                                         .format(precision=2, thousands=".", decimal=",", subset=['Lucro %'])
                                         )
