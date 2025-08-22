@@ -10,7 +10,7 @@ import requests
 #------------------------------------------------
 st.set_page_config(
     page_title="Cartiera",
-    page_icon="📊",
+    page_icon=":material/finance:",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
@@ -46,7 +46,6 @@ if "user" not in st.session_state:
 
 #Pagina de login
 def login():
-
     with st.container(horizontal_alignment ="center").form("login", width="content"):
         st.header("Log in")
         user_input = st.text_input('User')
