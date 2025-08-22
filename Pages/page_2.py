@@ -34,7 +34,9 @@ tabs_container = st.container()
 #Seletor
 #-----------------------------------------------------------
 def sl_tudo_ex():       
-        st.session_state['Key_SL_2'] = df_cat
+    st.session_state['Key_SL_2'] = df_cat
+def sl_nada_ex():       
+    st.session_state['Key_SL_2'] = []
         
 df_cat = list(df_carteira['categoria'].unique())
     
@@ -42,13 +44,14 @@ if 'Key_SL_2' not in st.session_state:
     st.session_state['Key_SL_2'] = df_cat
 
 #multiselect
-col1, col2, col3 = sl_cat_container.columns([0.2, 0.1,0.6], vertical_alignment='center')
+col1, col2, col3, col4 = sl_cat_container.columns([0.2, 0.1, 0.1, 0.6], vertical_alignment='center')
 with col1:
     mult_sl_cat = st.pills('categoria', df_cat, key='Key_SL_2', selection_mode="multi")
 with col2:
-    st.header('x')
-    st.button(':material/checklist_rtl:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
+    st.button(':material/cancel:', help='Desmarcar tudo', key='Key_BT_3', on_click=sl_nada_ex)
 with col3:
+    st.button(':material/:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
+with col4:
     op_ordem = {
         'Valor de Mercado (R$)': "valor_mercado_brl",
         'Valor de Mercado ($)': "valor_mercado_usd",
