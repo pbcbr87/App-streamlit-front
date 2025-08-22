@@ -45,7 +45,7 @@ with col2:
     st.text('')
     st.text('')
     st.button(':material/checklist_rtl:', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
-with col3;
+with col3:
     option = st.selectbox("Ordendar por:", ("Email", "Home phone", "Mobile phone"))
     st.write(option)
 
