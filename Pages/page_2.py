@@ -28,7 +28,7 @@ df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo
 #-----------------------------------------------------------
 sl_cat_container = st.container(border=True)
 metrica_total_container = st.container(border=True, horizontal=True, horizontal_alignment='left')
-tabs_container = st.container(height=500)
+tabs_container = st.container()
 
 #-----------------------------------------------------------
 #Seletor
