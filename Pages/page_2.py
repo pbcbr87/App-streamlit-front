@@ -44,7 +44,7 @@ if 'Key_SL_2' not in st.session_state:
 #multiselect
 col1, col2, col3 = sl_cat_container.columns([0.6, 0.05,0.35])
 with col1:
-    mult_sl_cat = st.pills('categoria', df_cat, placeholder = f'Selecione quals categorias', key='Key_SL_2', selection_mode="multi")
+    mult_sl_cat = st.pills('categoria', df_cat, key='Key_SL_2', selection_mode="multi")
 with col2:
     st.text('')
     st.text('')
