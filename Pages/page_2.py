@@ -52,18 +52,19 @@ with col2:
         st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 with col3:
     op_ordem = {
-                'Valor de Mercado': "valor_mercado_brl",
-                'Custo': "custo_brl",
-                'Lucro': "lucro_brl",
-                'Percentual do lucro': "%_lucro"
+                'Valor de Mercado': "Valor de Mercado",
+                'Custo': "Custo",
+                'Lucro': "Lucro",
+                'Percentual do lucro': "Lucro %",
+                'Aporte': 'Aporte',
+                'Percentual do Aporte': 'Aporte %'
                 }
     option = st.selectbox("Ordendar por", list(op_ordem.keys()))
 
 mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
 
-# ordenação
-df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False])
+
 #-----------------------------------------------------------
 #Dataframe que vai utilizar
 #-----------------------------------------------------------
@@ -88,6 +89,8 @@ else:
 df_carteira_front['Aporte'] = df_carteira_front['Valor Planejado'] - df_carteira_front['Valor de mercado']
 df_carteira_front['Aporte %'] = df_carteira_front['Aporte']/df_carteira_front['Valor Planejado']
 
+# ordenação
+df_carteira_front = df_carteira_front.sort_values(op_ordem[option], ascending=[False])
 #-----------------------------------------------------------
 # Metricas
 #-----------------------------------------------------------
