@@ -54,16 +54,17 @@ df_carteira = df_carteira.sort_values('valor_mercado_brl', ascending=[False])
 #-----------------------------------------------------------
 # Metricas
 #-----------------------------------------------------------
+def numero_padrao(numero):
+    return f"{numero:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
 with metrica_total_container:
     valor_total = round(df_carteira['valor_mercado_brl'].sum(), 2)
     custo_total = round(df_carteira['custo_brl'].sum(), 2)
     lucro_total = round(valor_total - custo_total,2)
     lucro_total_perc = round(100*(valor_total - custo_total) / custo_total,2)
 
-    valor_total = f"{valor_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
-    st.metric(label="Valor de mercado", value=f'{valor_total} R$')
-    st.metric(label="Lucro", value=lucro_total, delta=f'{lucro_total_perc} %')
+    st.metric(label="Valor de mercado", value=f'{numero_padrao(valor_total)} R$')
+    st.metric(label="Lucro", value=lucro_total, delta=f'{numero_padrao(lucro_total_perc)} %')
 
 #-----------------------------------------------------------
 # Criar abas
