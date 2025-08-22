@@ -10,7 +10,7 @@ import requests
 #------------------------------------------------
 st.set_page_config(
     page_title="Cartiera",
-    page_icon=":material/finance:",
+    page_icon=":material/finance_mode:",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
