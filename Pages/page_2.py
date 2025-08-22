@@ -38,7 +38,7 @@ if 'Key_SL_2' not in st.session_state:
     st.session_state['Key_SL_2'] = df_cat
 
 #multiselect
-col1, col2, col3 = sl_cat_container.columns([0.6, 0.1,0.3])
+col1, col2, col3 = sl_cat_container.columns([0.6, 0.05,0.35])
 with col1:
     mult_sl_cat = st.multiselect('categoria', df_cat, placeholder = f'Selecione quals categorias', key='Key_SL_2')
 with col2:
