@@ -59,7 +59,7 @@ with col3:
 
 mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
-df_carteira['valor_plan_brl_'] = df_carteira['valor_mercado_brl'].sun() * (df_carteira['peso']/df_carteira['peso'].sum())
+df_carteira['valor_plan_brl_'] = df_carteira['valor_mercado_brl'].sum() * (df_carteira['peso']/df_carteira['peso'].sum())
 
 
 # ordenação
