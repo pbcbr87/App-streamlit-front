@@ -48,7 +48,7 @@ with col2:
 with col3:
     op_ordem = {
         'Valor de Mercado BRL': "valor_mercado_brl",
-        'Valor de Mercado USD': "valor_mercado_USD",
+        'Valor de Mercado USD': "valor_mercado_usd",
         'Percentual do lucro': "%_lucro"
     }
     option = st.selectbox("Ordendar por:", list(op_ordem.keys()))
