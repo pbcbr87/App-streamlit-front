@@ -42,15 +42,15 @@ if 'Key_SL_2' not in st.session_state:
     st.session_state['Key_SL_2'] = df_cat
 
 #multiselect
-# col1, col2, col3 = sl_cat_container.columns([0.25, 0.25, 0.5], vertical_alignment='center')
 with sl_cat_container:
     mult_sl_cat = st.pills('categoria', df_cat, key='Key_SL_2', selection_mode="multi")
-# with col2:
+
     st.button("",icon=':material/cancel:', type='tertiary', help='Desmarcar tudo', key='Key_BT_3', on_click=sl_nada_ex)
     st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
-    with st.container(horizontal=True, horizontal_alignment='left', border=True):
-        ck_box_plan = st.checkbox('Aplicar no Planejamento', help='O filtro será aplicado para recalcular os valores de planejamento')
-# with col3:
+    with st.container(border=True):
+        ck_box_plan = st.checkbox('Filtro no Planejamento', help='O filtro será aplicado para recalcular os valores de planejamento')
+        st.number_input('Valor de aporte:', format='localized',step=0.01, min_value=0.01, help='Valor total gasto, incluindo taxas')
+
     op_ordem = {
                 'Valor de mercado': "Valor de mercado",
                 'Custo': "Custo",
