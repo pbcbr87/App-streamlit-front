@@ -58,10 +58,10 @@ def numero_padrao(numero):
     return f"{numero:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 with metrica_total_container:
-    valor_total = round(df_carteira['valor_mercado_brl'].sum(), 2)
-    custo_total = round(df_carteira['custo_brl'].sum(), 2)
-    lucro_total = round(valor_total - custo_total,2)
-    lucro_total_perc = round(100*(valor_total - custo_total) / custo_total,2)
+    valor_total = df_carteira['valor_mercado_brl'].sum()
+    custo_total = df_carteira['custo_brl'].sum()
+    lucro_total = valor_total - custo_total
+    lucro_total_perc = 100*(valor_total - custo_total) / custo_total
 
     st.metric(label="Valor de mercado", value=f'{numero_padrao(valor_total)} R$')
     st.metric(label="Lucro", value=f"{numero_padrao(lucro_total)} R$", delta=f'{numero_padrao(lucro_total_perc)} %')
