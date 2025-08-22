@@ -102,7 +102,8 @@ with tab1:
                                         .format(precision=0, thousands=".", decimal=",", subset=['peso', 'nota'])
                                         )
 
-    st.dataframe(df_carteira_st, hide_index=True, 
+    st.dataframe(df_carteira_st, hide_index=True,
+                    column_order=('valor_mercado_brl'),
                     column_config={
                         "%": st.column_config.NumberColumn(
                             "% (BRL)",
