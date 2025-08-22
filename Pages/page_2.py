@@ -9,8 +9,9 @@ if 'carteira_api' not in st.session_state:
     st.session_state['carteira_api'] = False
 
 st.header('Carteira')
-
+#-----------------------------------------------------------
 # Buscando dados na API
+#-----------------------------------------------------------
 if st.session_state['carteira_api'] == False:
     resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
     st.session_state['carteira_api'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
@@ -21,15 +22,12 @@ df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 df_carteira['pais'] = np.where((df_carteira['categoria'] == "AÇÕES") | (df_carteira['categoria'] == "FII"), 'BRL', 'USD')
 df_carteira['%_lucro'] =  (df_carteira['valor_mercado_brl'] - df_carteira['custo_brl']) / df_carteira['custo_brl']
 
-
-
 #-----------------------------------------------------------
-#Containers
+#Containers layout
 #-----------------------------------------------------------
 sl_cat_container = st.container(border=True)
 metrica_total_container = st.container(border=True, horizontal=True, horizontal_alignment='left')
 tabs_container = st.container()
-
 #-----------------------------------------------------------
 #Seletor
 #-----------------------------------------------------------
@@ -62,15 +60,9 @@ with col3:
 
 mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
-if ck_box_plan:
-    df_carteira['valor_plan_brl_'] = df_carteira['valor_mercado_brl'].sum() * (df_carteira['peso']/df_carteira['peso'].sum())
-else:
-    df_carteira['valor_plan_brl_'] = df_carteira['valor_plan_brl']
-
 
 # ordenação
 df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False])
-
 #-----------------------------------------------------------
 #Dataframe que vai utilizar
 #-----------------------------------------------------------
@@ -86,8 +78,10 @@ df_carteira_front['Valor de mercado'] = df_carteira['valor_mercado_brl']
 df_carteira_front['Lucro'] = df_carteira['lucro_brl']
 df_carteira_front['Peso'] = df_carteira['peso']
 df_carteira_front['Nota'] = df_carteira['nota']
-df_carteira_front['Valor Planejado'] = df_carteira['valor_plan_brl']
-
+if ck_box_plan:
+    df_carteira_front['Valor Planejado'] = df_carteira['valor_mercado_brl'].sum() * (df_carteira['peso']/df_carteira['peso'].sum())
+else:
+    df_carteira_front['Valor Planejado'] = df_carteira['valor_plan_brl']
 #-----------------------------------------------------------
 # Metricas
 #-----------------------------------------------------------
@@ -95,22 +89,20 @@ def numero_padrao(numero):
     return f"{numero:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 with metrica_total_container:
-    valor_total = df_carteira['valor_mercado_brl'].sum()
-    custo_total = df_carteira['custo_brl'].sum()
+    valor_total = df_carteira_front['valor_mercado_brl'].sum()
+    custo_total = df_carteira_front['custo_brl'].sum()
     lucro_total = valor_total - custo_total
     lucro_total_perc = 100*(valor_total - custo_total) / custo_total
 
     st.metric(label="Custo", value=f'{numero_padrao(custo_total)} R$')
     st.metric(label="Valor de mercado", value=f'{numero_padrao(valor_total)} R$')
     st.metric(label="Lucro", value=f"{numero_padrao(lucro_total)} R$", delta=f'{numero_padrao(lucro_total_perc)} %')
-
-
 #-----------------------------------------------------------
 # Criar abas
 #-----------------------------------------------------------
 tab1, tab2, tab3 = tabs_container.tabs(["Carteira", "Grafico barra", "Grafico pizza"])
 with tab1:  
-    df_carteira_st = (df_carteira.style.format(precision=2, thousands=".", decimal=",", subset=['quant',
+    df_carteira_st = (df_carteira_front.style.format(precision=2, thousands=".", decimal=",", subset=['quant',
                                                                                                 'custo_brl',
                                                                                                 'custo_usd',
                                                                                                 'valor_mercado_brl',
@@ -179,8 +171,7 @@ with tab2:
     st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
-
-    df = df_carteira
+    df = df_carteira_front
     op_valor = {
         'Valor de Mercado (R$)': "valor_mercado_brl",
         'Valor de Mercado ($)': "valor_mercado_usd"
