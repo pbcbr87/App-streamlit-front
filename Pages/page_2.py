@@ -49,9 +49,9 @@ with col1:
     mult_sl_cat = st.pills('categoria', df_cat, key='Key_SL_2', selection_mode="multi")
 with col2:
     with st.container(horizontal=True, horizontal_alignment='left'):
+        st.checkbox('Aplicar no Planejamento')
         st.button("",icon=':material/cancel:', type='tertiary', help='Desmarcar tudo', key='Key_BT_3', on_click=sl_nada_ex)
         st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
-        st.checkbox('Aplicar no Planejamento')
 with col3:
     op_ordem = {
         'Valor de Mercado (R$)': "valor_mercado_brl",
