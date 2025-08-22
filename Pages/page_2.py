@@ -52,7 +52,7 @@ with col3:
         'Percentual do lucro': "%_lucro"
     }
     st.selectbox("Ordendar por:", list(op_ordem.keys()), key='option')
-    st.write(op_ordem[option])
+    st.write(op_ordem[st.session_state['option']])
 
 
 
