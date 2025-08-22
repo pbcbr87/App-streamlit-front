@@ -52,12 +52,12 @@ with col2:
         st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 with col3:
     op_ordem = {
-                'Valor de Mercado': "Valor de Mercado",
+                'Valor de mercado': "Valor de mercado",
                 'Custo': "Custo",
                 'Lucro': "Lucro",
                 'Percentual do lucro': "Lucro %",
                 'Aporte': 'Aporte',
-                'Percentual do Aporte': 'Aporte %'
+                'Percentual do aporte': 'Aporte %'
                 }
     option = st.selectbox("Ordendar por", list(op_ordem.keys()))
 
