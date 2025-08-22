@@ -7,7 +7,7 @@ import plotly.express as px
 if 'carteira_api' not in st.session_state:
     st.session_state['carteira_api'] = False
 
-# st.title('Carteira')
+st.header('Carteira')
 
 
 # Buscando dados na API
