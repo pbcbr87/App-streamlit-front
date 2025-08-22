@@ -64,7 +64,7 @@ with metrica_total_container:
     lucro_total_perc = round(100*(valor_total - custo_total) / custo_total,2)
 
     st.metric(label="Valor de mercado", value=f'{numero_padrao(valor_total)} R$')
-    st.metric(label="Lucro", value=lucro_total, delta=f'{numero_padrao(lucro_total_perc)} %')
+    st.metric(label="Lucro", value=f"{numero(lucro_total)} R$", delta=f'{numero_padrao(lucro_total_perc)} %')
 
 #-----------------------------------------------------------
 # Criar abas
