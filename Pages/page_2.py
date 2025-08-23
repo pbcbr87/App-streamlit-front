@@ -51,6 +51,7 @@ with sl_cat_container:
     st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
     ck_box_plan = st.checkbox('Filtro no Planejamento', help='O filtro será aplicado para recalcular os valores de planejamento')
     st.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.01)
+    st.number_input('Quantos ativos', value=1, format=int, min_value=1)
 
     op_ordem = {
                 'Valor de mercado': "Valor de mercado",
@@ -90,6 +91,7 @@ else:
     df_carteira_front['Valor Planejado'] = df_carteira['valor_plan_brl']
 df_carteira_front['Aporte'] = df_carteira_front['Valor Planejado'] - df_carteira_front['Valor de mercado']
 df_carteira_front['Aporte %'] = df_carteira_front['Aporte']/df_carteira_front['Valor Planejado']
+
 
 # ordenação
 df_carteira_front = df_carteira_front.sort_values(op_ordem[option], ascending=[False])
