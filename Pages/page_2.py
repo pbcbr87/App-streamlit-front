@@ -129,7 +129,7 @@ with tab1:
 
 with tab2:
     df = df_carteira_front
-    fig = go.Figure()
+    fig = go.Figure(width=800, height=400)
     fig.update_layout()
 
     x = df['Código ativo']
