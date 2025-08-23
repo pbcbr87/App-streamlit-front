@@ -189,8 +189,9 @@ with tab2:
             tickmode="sync",
             tickformat=".2%"  
         ),
-        legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)')
-    )
+        legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)'),
+        hoverlabel_bordercolor='black'
+        )
     st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
