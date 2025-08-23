@@ -129,7 +129,7 @@ with tab1:
 
 with tab2:
     df = df_carteira_front
-    fig = go.Figure(width=800, height=400)
+    fig = go.Figure()
     fig.update_layout()
 
     x = df['Código ativo']
@@ -175,6 +175,7 @@ with tab2:
 
     fig.update_layout(
         separators= ",.",
+        height=200,
         yaxis=dict(
             title=dict(text="Valor em Reais"),
             side="left",
