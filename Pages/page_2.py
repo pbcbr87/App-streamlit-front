@@ -190,7 +190,7 @@ with tab2:
             tickformat=".2%"  
         ),
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)'),
-         plot_bgcolor='cyan'
+         plot_bgcolor='Azure2'
     )
     st.plotly_chart(fig, use_container_width=True)
 
