@@ -239,12 +239,12 @@ with tab3:
         st.plotly_chart(fig4)
 
 with tab4:
-    df_carteira_aporte = pd.DataFrame()
+    df_carteira_aporte = df_carteira_front.head(qt_ativo_aporte).sort_values('Aporte %', ascending=[False])
     df_carteira_aporte['Código ativo'] = df_carteira_front.head(qt_ativo_aporte)['Código ativo']
     df_carteira_aporte['Aporte'] = valor_aporte*df_carteira_front.head(qt_ativo_aporte)['Aporte']/df_carteira_front.head(qt_ativo_aporte)['Aporte'].sum()
     
 
-    st.dataframe(df_carteira_aporte, hide_index=True, use_container_width=True,
+    st.dataframe(df_carteira_aporte, hide_index=True, use_container_width=False,
                 column_config={
                     "Lucro %": st.column_config.NumberColumn("Lucro %", format="percent"),
                     "Aporte %": st.column_config.NumberColumn("Aporte %", format="percent")
