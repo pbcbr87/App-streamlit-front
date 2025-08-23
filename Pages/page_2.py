@@ -193,7 +193,7 @@ with tab2:
         ),
         legend=dict(orientation='h', yanchor='top', y=-0.1,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)'),
         margin=dict(b=10,t=40),        
-        paper_bgcolor=theme.primaryColor 
+        paper_bgcolor='theme.primaryColor' 
         )
     st.plotly_chart(fig, use_container_width=True)
 
