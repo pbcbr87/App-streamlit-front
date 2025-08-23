@@ -248,7 +248,7 @@ with tab4:
     df_carteira_aporte_ = df_carteira_front.sort_values('Aporte %', ascending=[False]).head(qt_ativo_aporte)
     
     df_carteira_aporte['Código ativo'] = df_carteira_aporte_['Código ativo']
-    if valor_aporte > 0:
+    if valor_aporte and valor_aporte > 0:
         df_carteira_aporte['Aporte'] = valor_aporte * df_carteira_aporte_['Aporte']/df_carteira_aporte_['Aporte'].sum()
     
         st.dataframe(df_carteira_aporte, hide_index=True, use_container_width=False,
