@@ -175,7 +175,7 @@ with tab2:
 
     fig.update_layout(
         separators= ",.",
-        height=200,
+        height=800,
         yaxis=dict(
             title=dict(text="Valor em Reais"),
             side="left",
