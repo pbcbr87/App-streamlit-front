@@ -103,7 +103,7 @@ else:
              st.Page(logout, title='Sair', icon= ':material/logout:')    
     ],
     "Sua Carteira": [
-        st.Page('Pages/page_1.py', title='Operações'),
+        # st.Page('Pages/page_1.py', title='Operações'),
         st.Page('Pages/page_2.py', title='Carteira')
     ],
     "Testes": [
