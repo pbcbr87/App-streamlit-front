@@ -113,7 +113,7 @@ with metrica_total_container:
 #-----------------------------------------------------------
 # Criar abas
 #-----------------------------------------------------------
-tab1, tab2, tab3 = tabs_container.tabs(["Carteira", "Grafico barra", "Grafico pizza"])
+tab1, tab2, tab3, tab4 = tabs_container.tabs(["Carteira", "Grafico barra", "Grafico pizza", "Aporte"])
 with tab1:  
     df_carteira_st = (df_carteira_front.style.format(precision=2, thousands=".", decimal=",", subset=['Qt',
                                                                                                 'Custo',
@@ -238,7 +238,15 @@ with tab3:
         st.plotly_chart(fig)
         st.plotly_chart(fig4)
 
-
+with tab4:
+    df_carteira_aporte = pd.DataFrame()
+    df_carteira_aporte['Código ativo'] = df_carteira_front.head(3)['Código ativo']
+    
+    st.dataframe(df_carteira_aporte, hide_index=True, use_container_width=True,
+                column_config={
+                    "Lucro %": st.column_config.NumberColumn("Lucro %", format="percent"),
+                    "Aporte %": st.column_config.NumberColumn("Aporte %", format="percent")
+                    })
 
 
 
