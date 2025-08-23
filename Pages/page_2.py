@@ -243,7 +243,6 @@ with tab4:
     df_carteira_aporte['Código ativo'] = df_carteira_aporte_['Código ativo']
     df_carteira_aporte['Aporte'] = valor_aporte*df_carteira_aporte_['Aporte']/df_carteira_aporte_['Aporte'].sum()
     
-
     st.dataframe(df_carteira_aporte, hide_index=True, use_container_width=False,
                 column_config={
                     "Lucro %": st.column_config.NumberColumn("Lucro %", format="percent"),
