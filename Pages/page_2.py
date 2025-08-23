@@ -9,6 +9,8 @@ if 'carteira_api' not in st.session_state:
     st.session_state['carteira_api'] = False
 
 st.header('Carteira')
+color = st.get_option("theme.primaryColor")
+st.write(color)
 #-----------------------------------------------------------
 # Buscando dados na API
 #-----------------------------------------------------------
