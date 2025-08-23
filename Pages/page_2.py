@@ -239,9 +239,9 @@ with tab3:
         st.plotly_chart(fig4)
 
 with tab4:
-    df_carteira_aporte = df_carteira_front.head(qt_ativo_aporte).sort_values('Aporte %', ascending=[False])
-    df_carteira_aporte['Código ativo'] = df_carteira_front.head(qt_ativo_aporte)['Código ativo']
-    df_carteira_aporte['Aporte'] = valor_aporte*df_carteira_front.head(qt_ativo_aporte)['Aporte']/df_carteira_front.head(qt_ativo_aporte)['Aporte'].sum()
+    df_carteira_aporte_ = df_carteira_front.sort_values('Aporte %', ascending=[False]).head(qt_ativo_aporte)
+    df_carteira_aporte['Código ativo'] = df_carteira_aporte_['Código ativo']
+    df_carteira_aporte['Aporte'] = valor_aporte*df_carteira_aporte_['Aporte']/df_carteira_aporte_['Aporte'].sum()
     
 
     st.dataframe(df_carteira_aporte, hide_index=True, use_container_width=False,
