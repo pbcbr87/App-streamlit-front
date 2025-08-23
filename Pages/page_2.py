@@ -174,6 +174,7 @@ with tab2:
                                     line=dict(color='black',width=1))))
 
     fig.update_layout(
+        showlegend=False,
         separators= ",.",
         yaxis=dict(
             title=dict(text="Valor em Reais"),
