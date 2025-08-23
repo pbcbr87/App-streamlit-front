@@ -190,8 +190,7 @@ with tab2:
             tickformat=".2%"  
         ),
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)'),        
-        paper_bgcolor='MintCream',   # Cor da "margem" (fundo da figura)
-        margin=dict(l=0, r=0, t=0, b=0)  
+        paper_bgcolor='WhiteSmoke' 
         )
     st.plotly_chart(fig, use_container_width=True)
 
