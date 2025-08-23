@@ -84,11 +84,7 @@ df_carteira_front['Lucro'] = df_carteira['lucro_brl']
 df_carteira_front['Lucro %'] = df_carteira['%_lucro']
 df_carteira_front['Peso'] = df_carteira['peso']
 df_carteira_front['Nota'] = df_carteira['nota']
-
-if ck_box_plan:
-    df_carteira_front['Valor Planejado'] = df_carteira['valor_mercado_brl'].sum() * (df_carteira['peso']/df_carteira['peso'].sum())   
-else:
-    df_carteira_front['Valor Planejado'] = df_carteira['valor_plan_brl']
+df_carteira_front['Valor Planejado'] = df_carteira['valor_plan_brl']
 df_carteira_front['Aporte'] = df_carteira_front['Valor Planejado'] - df_carteira_front['Valor de mercado']
 df_carteira_front['Aporte %'] = df_carteira_front['Aporte']/df_carteira_front['Valor Planejado']
 
@@ -240,6 +236,11 @@ with tab3:
 
 with tab4:
     ck_box_plan = st.checkbox('Filtro no Planejamento', help='O filtro será aplicado para recalcular os valores de planejamento')
+    if ck_box_plan:
+        df_carteira_front['Valor Planejado'] = df_carteira['valor_mercado_brl'].sum() * (df_carteira['peso']/df_carteira['peso'].sum())   
+    else:
+        df_carteira_front['Valor Planejado'] = df_carteira['valor_plan_brl']
+
     valor_aporte = st.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.01)
     qt_ativo_aporte = st.number_input('Quantos ativos', value=1, format='%i', min_value=1)
 
