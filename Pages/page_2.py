@@ -192,7 +192,7 @@ with tab2:
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)'),        
         plot_bgcolor='white',        # Cor da área do gráfico
         paper_bgcolor='lightblue',   # Cor da "margem" (fundo da figura)
-        margin=dict(l=10, r=10, t=10, b=1)  
+        margin=dict(l=0, r=0, t=0, b=0)  
         )
     st.plotly_chart(fig, use_container_width=True)
 
