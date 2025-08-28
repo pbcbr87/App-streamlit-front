@@ -21,8 +21,10 @@ def enviar_tabela(dataframe):
     linhas = loads(linhas)
     ordens_tabela = dumps({"ordens": linhas})
 
-    requests.post('https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordens_table', ordens_tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
-
+    resp = requests.post('https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordens_table', ordens_tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
+    if resp.status_code == 200:
+        st.toast('Dados enviados')
+        st.toast(resp.json())
 # Enviar dados para o banco de dados
 def envia_manual(ordem_manual):
     ordem_manual = dumps(ordem_manual)
