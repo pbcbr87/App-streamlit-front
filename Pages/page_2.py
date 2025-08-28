@@ -19,6 +19,8 @@ if st.session_state['carteira_api'] == False:
 
 
 # Trantando dados recebidos
+if st.session_state['carteira_api'] == []:
+    st.write('Carteira vazia ou não calculada')
 if not st.session_state['carteira_api'] == []:
     df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 
