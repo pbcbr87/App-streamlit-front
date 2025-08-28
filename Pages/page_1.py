@@ -42,16 +42,17 @@ def get_ativos():
     st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
 
 # Excluir operação
-def excluir_op():
-    for l in st.session_state['sl_op']:
-        try:
-            resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/{l}', headers={'Authorization':f'Bearer {st.session_state.token}'})
-            if resp.status_code == 200:
-                st.toast('Dados Excluidos')
-            else:
-                st.toast(f'Erro ao enviar, Erro: {resp}')
-        except:
-            st.error(f'Erro ao excluir, operção : {l}')
+def excluir_op(x):
+    print(x)
+    # for l in st.session_state['sl_op']:
+    #     try:
+    #         resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/{l}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+    #         if resp.status_code == 200:
+    #             st.toast('Dados Excluidos')
+    #         else:
+    #             st.toast(f'Erro ao enviar, Erro: {resp}')
+    #     except:
+    #         st.error(f'Erro ao excluir, operção : {l}')
 
 #Excluir todas as operações
 def excluir_tudo():
@@ -166,6 +167,8 @@ with tab4:
             
         col1, col2 = st.columns([1, 0.3])
         with col1:
-            st.button('Excluir', key='bt_3', disabled=st.session_state['bt_on'], on_click=excluir_op)  
+            st.button('Excluir', key='bt_3', disabled=st.session_state['bt_on'], on_click=excluir_op(1))  
         with col2:
             st.button('Excluir tudo', key='bt_4', on_click=excluir_tudo)
+    else:
+        st.write('Não tem ordens')
