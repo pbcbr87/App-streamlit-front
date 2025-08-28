@@ -74,12 +74,7 @@ def home():
     st.text(f'Bem Vindo {st.session_state.nome}')
     st.text(f'User: {st.session_state.user}')
     st.text(f'Id: {st.session_state.id}')
-    if st.button('Atualizar'):
-        with st.spinner("Wait for it...", show_time=True):
-            resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
-            if 'carteira_api' in st.session_state:
-                st.session_state['carteira_api'] = False
-        st.success("Done!")
+
     if st.button('Sair :material/logout:'):
         st.session_state.logado = False
         st.session_state.user = None
@@ -116,7 +111,13 @@ else:
     ],
     }            
     pg = st.navigation(pages, position="sidebar")
-    st.sidebar.button('Atualizar2')
+    with st.sidebar:
+        if st.button('Atualizar'):
+        with st.spinner("Wait for it...", show_time=True):
+            resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+            if 'carteira_api' in st.session_state:
+                st.session_state['carteira_api'] = False
+        st.success("Done!")
 pg.run()
 
 
