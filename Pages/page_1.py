@@ -21,7 +21,6 @@ def enviar_tabela(dataframe):
     linhas = loads(linhas)
     ordens_tabela = dumps({"dados": linhas})
     
-    st.write(ordens_tabela)
     resp = requests.post('https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordens_table', ordens_tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
     if resp.status_code == 200:
         st.toast('Dados enviados')
