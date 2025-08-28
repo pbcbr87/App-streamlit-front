@@ -156,7 +156,7 @@ with tab4:
             
         st.header('Lista para excluir')
         df_select = df_ordens.iloc[sl_df_op_exclui.get('selection').get('rows')] # type: ignore
-        st.write(df_ordens.iloc[sl_df_op_exclui.get('selection').get('rows')]['id'])
+        st.write(df_ordens.iloc[sl_df_op_exclui.get('selection').get('rows')]['id'].values.tolist())
         st.dataframe(df_select, hide_index=True) 
 
         if len(df_select) != 0:
