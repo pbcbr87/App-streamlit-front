@@ -19,10 +19,10 @@ def get_operacoes():
 def enviar_tabela(dataframe):
     linhas = dataframe.to_json(orient='records', date_format='iso')
     linhas = loads(linhas)
-    ordens_tabela = dumps({"ordens": linhas})
-
+    ordens_tabela = dumps({"dados": linhas})
+    
+    st.write(ordens_tabela)
     resp = requests.post('https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordens_table', ordens_tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
-    st.write(resp)
     if resp.status_code == 200:
         st.toast('Dados enviados')
         st.toast(resp.json())
