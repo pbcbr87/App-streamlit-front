@@ -43,16 +43,15 @@ def get_ativos():
 
 # Excluir operação
 def excluir_op():
-    st.toast(st.session_state['sl_op_excluir'])
-    # for l in st.session_state['sl_op']:
-    #     try:
-    #         resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/{l}', headers={'Authorization':f'Bearer {st.session_state.token}'})
-    #         if resp.status_code == 200:
-    #             st.toast('Dados Excluidos')
-    #         else:
-    #             st.toast(f'Erro ao enviar, Erro: {resp}')
-    #     except:
-    #         st.error(f'Erro ao excluir, operção : {l}')
+    for linha in st.session_state['sl_op_excluir']:
+        try:
+            resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/{linha}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+            if resp.status_code == 200:
+                st.toast('Dados Excluidos')
+            else:
+                st.toast(f'Erro ao enviar, Erro: {resp}')
+        except:
+            st.error(f'Erro ao excluir, operção : {linha}')
 
 #Excluir todas as operações
 def excluir_tudo():
