@@ -30,6 +30,7 @@ def envia_manual(ordem_manual):
     ordem_manual = dumps(ordem_manual)
     try:
         resp = requests.post('https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordem', ordem_manual, headers={'Authorization':f'Bearer {st.session_state.token}'})
+        st.write(resp)
         if resp.status_code == 200:
             st.toast('Dados enviados')
             st.toast(resp.json())
