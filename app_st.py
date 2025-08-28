@@ -116,7 +116,7 @@ else:
     ],
     }            
     pg = st.navigation(pages, position="sidebar")
-    st.sidebar.button
+    st.sidebar.button()
 pg.run()
 
 
