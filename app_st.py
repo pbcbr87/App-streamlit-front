@@ -49,8 +49,12 @@ def login():
     with st.container(horizontal_alignment ="center").form("login", width="content"):
         st.header("Log in")
         user_input = st.text_input('User')
-        senha_input = st.text_input('Senha', type='password')    
-        
+        senha_input = st.text_input('Senha', type='password')
+        if st.button('Atualizar'):
+            with st.spinner("Wait for it...", show_time=True):
+                resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+            st.success("Done!")
+
         if st.form_submit_button("Log in"):
             if (len(user_input) > 0) and (len(senha_input) > 0):
                 try:
@@ -103,7 +107,7 @@ else:
              st.Page(logout, title='Sair', icon= ':material/logout:')    
     ],
     "Sua Carteira": [
-        # st.Page('Pages/page_1.py', title='Operações'),
+        st.Page('Pages/page_1.py', title='Operações'),
         st.Page('Pages/page_2.py', title='Carteira')
     ],
     "Testes": [
