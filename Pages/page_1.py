@@ -43,7 +43,7 @@ def get_ativos():
 
 # Excluir operação
 def excluir_op(x):
-    st.write(x)
+    st.toast(x)
     # for l in st.session_state['sl_op']:
     #     try:
     #         resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/{l}', headers={'Authorization':f'Bearer {st.session_state.token}'})
