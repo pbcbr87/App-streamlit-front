@@ -85,6 +85,8 @@ with tab1:
     if len(ordens) != 0:    
         st.header("Operações")    
         st.dataframe(df_ordens,hide_index=True)
+    else:
+        st.write('Nenhum ordem cadastrada')
 #-------------------------------------------------------------------------------------------------------------
 #     Inserir dados via tabela
 #-------------------------------------------------------------------------------------------------------------    
@@ -171,4 +173,4 @@ with tab4:
         with col2:
             st.button('Excluir tudo', key='bt_4', on_click=excluir_tudo)
     else:
-        st.write('Não tem ordens')
+        st.write('Nenhum ordem cadastrada')
