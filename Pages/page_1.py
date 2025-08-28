@@ -42,8 +42,8 @@ def get_ativos():
     st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
 
 # Excluir operação
-def excluir_op(x):
-    st.toast(x)
+def excluir_op():
+    st.toast(st.session_state['sl_op_excluir'])
     # for l in st.session_state['sl_op']:
     #     try:
     #         resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/{l}', headers={'Authorization':f'Bearer {st.session_state.token}'})
@@ -148,7 +148,8 @@ with tab3:
 with tab4:
     if len(ordens) != 0:  
         st.header("Selecione as operações a ser excluida")
-        
+        if 'sl_op_excluir' not in st.session_state:
+            st.session_state['sl_op_excluir'] = []
         if 'bt_on' not in st.session_state:
             st.session_state['bt_on'] = True
                 
@@ -158,7 +159,7 @@ with tab4:
         st.header('Lista para excluir')
         df_select = df_ordens.iloc[sl_df_op_exclui.get('selection').get('rows')] # type: ignore
         st.dataframe(df_select, hide_index=True) 
-        sl_excluir = df_ordens.iloc[sl_df_op_exclui.get('selection').get('rows')]['id'].values.tolist()
+        st.session_state['sl_op_excluir'] = df_ordens.iloc[sl_df_op_exclui.get('selection').get('rows')]['id'].values.tolist()
 
         if len(df_select) != 0:
             st.session_state['bt_on'] = False
@@ -167,7 +168,7 @@ with tab4:
             
         col1, col2 = st.columns([1, 0.3])
         with col1:
-            st.button('Excluir', key='bt_3', disabled=st.session_state['bt_on'], on_click=excluir_op(sl_excluir))  
+            st.button('Excluir', key='bt_3', disabled=st.session_state['bt_on'], on_click=excluir_op)  
         with col2:
             st.button('Excluir tudo', key='bt_4', on_click=excluir_tudo)
     else:
