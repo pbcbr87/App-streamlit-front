@@ -151,14 +151,14 @@ with tab4:
         if 'bt_on' not in st.session_state:
             st.session_state['bt_on'] = True
                 
-                
         st.header('Operações existentes')
         sl_df_op_exclui = st.dataframe(df_ordens, hide_index=True, use_container_width=True, on_select="rerun", selection_mode='multi-row')
             
         st.header('Lista para excluir')
         df_select = df_ordens.iloc[sl_df_op_exclui.get('selection').get('rows')] # type: ignore
-        st.write(sl_df_op_exclui['selection']['rows'])
+        st.write(df_ordens.iloc[sl_df_op_exclui.get('selection').get('rows')]['id'])
         st.dataframe(df_select, hide_index=True) 
+
         if len(df_select) != 0:
             st.session_state['bt_on'] = False
         else:
