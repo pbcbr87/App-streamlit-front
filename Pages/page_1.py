@@ -157,7 +157,7 @@ with tab4:
             
         st.header('Lista para excluir')
         df_select = df_ordens.iloc[sl_df_op_exclui.get('selection').get('rows')] # type: ignore
-        st.write(sl_df_op_exclui.get('selection').get('rows'))
+        st.write(sl_df_op_exclui.get('selection').get('id'))
         st.dataframe(df_select, hide_index=True) 
         if len(df_select) != 0:
             st.session_state['bt_on'] = False
