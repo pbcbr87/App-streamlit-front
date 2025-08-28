@@ -77,6 +77,8 @@ def home():
     if st.button('Atualizar'):
         with st.spinner("Wait for it...", show_time=True):
             resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+            if 'carteira_api' in st.session_state:
+                st.session_state['carteira_api'] = False
         st.success("Done!")
     if st.button('Sair :material/logout:'):
         st.session_state.logado = False
