@@ -157,8 +157,8 @@ with tab4:
             
         st.header('Lista para excluir')
         df_select = df_ordens.iloc[sl_df_op_exclui.get('selection').get('rows')] # type: ignore
-        st.write(df_ordens.iloc[sl_df_op_exclui.get('selection').get('rows')]['id'].values.tolist())
         st.dataframe(df_select, hide_index=True) 
+        sl_excluir = df_ordens.iloc[sl_df_op_exclui.get('selection').get('rows')]['id'].values.tolist()
 
         if len(df_select) != 0:
             st.session_state['bt_on'] = False
@@ -167,7 +167,7 @@ with tab4:
             
         col1, col2 = st.columns([1, 0.3])
         with col1:
-            st.button('Excluir', key='bt_3', disabled=st.session_state['bt_on'], on_click=excluir_op(1))  
+            st.button('Excluir', key='bt_3', disabled=st.session_state['bt_on'], on_click=excluir_op(sl_excluir))  
         with col2:
             st.button('Excluir tudo', key='bt_4', on_click=excluir_tudo)
     else:
