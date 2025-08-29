@@ -192,7 +192,7 @@ if not st.session_state['carteira_api'] == []:
                 tickmode="sync",
                 tickformat=".2%"  
             ),
-            legend=dict(orientation='h', yanchor='top', y=-0.1,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)'),
+            legend=dict(orientation='h', yanchor='top', y=-0.2,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)'),
             margin=dict(b=10,t=40) 
             )
         st.plotly_chart(fig, use_container_width=True)
