@@ -96,8 +96,9 @@ with tab2:
     st.header("Inserir via tabela")
     
     uploaded_file  = st.file_uploader('Excolha o arquico com as operações')
-    if uploaded_file  is not None:
+    if uploaded_file  is not None:        
         dataframe = pd.read_excel(uploaded_file)
+        st.write(dataframe.keys)
         st.button('Enviar', key='bt_1', on_click=enviar_tabela, kwargs={'dataframe': dataframe})
 
         with st.expander('Exibir Dados input'):
