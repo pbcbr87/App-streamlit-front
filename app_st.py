@@ -109,11 +109,14 @@ else:
     "Testes": [
         st.Page('Pages/page_empty.py', title='Empty')
     ],
-    }            
+    }
+    #adicionar sidebar     
     pg = st.navigation(pages, position="sidebar")
+
+    #Adicionar componentes na sidebar
     with st.sidebar:
         if st.button('Atualizar'):
-            with st.spinner("Wait for it...", show_time=True):
+            with st.spinner("Aguardando...", show_time=True):
                 resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if 'carteira_api' in st.session_state:
                     st.session_state['carteira_api'] = False
