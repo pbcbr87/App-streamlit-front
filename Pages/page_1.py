@@ -94,7 +94,12 @@ with tab1:
 #-------------------------------------------------------------------------------------------------------------    
 with tab2:
     st.header("Inserir via tabela")
-    
+    with open("Operacao.xlsx", "rb") as file:
+        st.download_button( label="Download XLSX",
+                            data=file,
+                            file_name="Operacao.xlsx",
+                            icon=":material/download:",
+                            )
     uploaded_file  = st.file_uploader('Excolha o arquico com as operações')
     if uploaded_file  is not None:        
         dataframe = pd.read_excel(uploaded_file)
