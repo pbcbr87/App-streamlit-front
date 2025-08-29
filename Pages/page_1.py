@@ -98,7 +98,11 @@ with tab2:
     uploaded_file  = st.file_uploader('Excolha o arquico com as operações')
     if uploaded_file  is not None:        
         dataframe = pd.read_excel(uploaded_file)
-        st.write(dataframe.keys())
+        
+        titulo_padrao = ['data_operacao', 'categoria', 'codigo_ativo', 'c_v', 'quant', 'custo_operacao', 'corretora', 'taxas']
+        titulo = dataframe..columns.tolist()
+        if titulo_padrao == titulo:
+            st.write('Colunas fora do padrão')
         st.button('Enviar', key='bt_1', on_click=enviar_tabela, kwargs={'dataframe': dataframe})
 
         with st.expander('Exibir Dados input'):
