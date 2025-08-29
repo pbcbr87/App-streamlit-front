@@ -101,12 +101,14 @@ with tab2:
         
         titulo_padrao = ['data_operacao', 'categoria', 'codigo_ativo', 'c_v', 'quant', 'custo_operacao', 'corretora', 'taxas']
         titulo = dataframe.columns.tolist()
-        if titulo_padrao == titulo:
+        
+        if not titulo_padrao == titulo:
             st.write('Colunas fora do padrão')
-        st.button('Enviar', key='bt_1', on_click=enviar_tabela, kwargs={'dataframe': dataframe})
+        else:
+            st.button('Enviar', key='bt_1', on_click=enviar_tabela, kwargs={'dataframe': dataframe})
 
-        with st.expander('Exibir Dados input'):
-            st.dataframe(dataframe, use_container_width=True)
+            with st.expander('Exibir Dados input'):
+                st.dataframe(dataframe, use_container_width=True)
 #-------------------------------------------------------------------------------------------------------------
 #     Inserir dados manual
 #-------------------------------------------------------------------------------------------------------------
