@@ -95,7 +95,7 @@ with tab1:
 with tab2:
     st.header("Inserir via tabela")
     with open("Operacao.xlsx", "rb") as file:
-        st.download_button( label="Download XLSX",
+        st.download_button( label="Download .xlsx tabelas padrão",
                             data=file,
                             file_name="Operacao.xlsx",
                             icon=":material/download:",
