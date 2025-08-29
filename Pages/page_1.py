@@ -100,7 +100,7 @@ with tab2:
         dataframe = pd.read_excel(uploaded_file)
         
         titulo_padrao = ['data_operacao', 'categoria', 'codigo_ativo', 'c_v', 'quant', 'custo_operacao', 'corretora', 'taxas']
-        titulo = dataframe..columns.tolist()
+        titulo = dataframe.columns.tolist()
         if titulo_padrao == titulo:
             st.write('Colunas fora do padrão')
         st.button('Enviar', key='bt_1', on_click=enviar_tabela, kwargs={'dataframe': dataframe})
