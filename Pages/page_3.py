@@ -18,5 +18,3 @@ if not st.session_state['carteira_api'] == []:
     df_resp = st.data_editor(df_carteira, column_order =("codigo_ativo", "peso"), width = "content")
 
     fig = px.pie(df_carteira, values='peso', names='codigo_ativo', title='Ativos')
-        fig.update_traces(textposition='inside', textinfo='percent+label')
-        fig.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
