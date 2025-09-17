@@ -14,6 +14,9 @@ if st.session_state['carteira_api'] == []:
     st.write('Carteira vazia ou não calculada')
 if not st.session_state['carteira_api'] == []:
     df_carteira = pd.DataFrame(st.session_state['carteira_api'])
+    
+    df_carteira['pais'] = np.where((df_carteira['categoria'] == "AÇÕES") | (df_carteira['categoria'] == "FII"), 'BRL', 'USD')
+    df_carteira['%_lucro'] =  df_carteira['lucro_brl'] / df_carteira['custo_brl']
 
     df_carteira_front = pd.DataFrame()
     df_carteira_front['Código ativo'] = df_carteira['codigo_ativo']
