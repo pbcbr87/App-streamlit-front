@@ -106,6 +106,9 @@ else:
         st.Page('Pages/page_1.py', title='Operações'),
         st.Page('Pages/page_2.py', title='Carteira')
     ],
+    "PLanejar": [
+        st.Page('Pages/page_3.py', title='Planejar')
+    ],
     "Testes": [
         st.Page('Pages/page_empty.py', title='Empty')
     ],
