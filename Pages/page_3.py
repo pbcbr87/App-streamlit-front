@@ -15,4 +15,4 @@ if st.session_state['carteira_api'] == []:
 if not st.session_state['carteira_api'] == []:
     df_carteira = pd.DataFrame(st.session_state['carteira_api'])
     
-    df_resp = st.data_editor(df_carteira)
+    df_resp = st.data_editor(df_carteira, column_order =("codigo_ativo", "peso"))
