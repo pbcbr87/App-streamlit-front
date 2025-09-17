@@ -18,3 +18,4 @@ if not st.session_state['carteira_api'] == []:
     df_resp = st.data_editor(df_carteira, column_order =("codigo_ativo", "peso"), width = "content")
 
     fig = px.pie(df_carteira, values='peso', names='codigo_ativo', title='Ativos')
+    st.plotly_chart(fig)
