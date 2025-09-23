@@ -123,7 +123,7 @@ with tab3:
         if 'sl_cat' not in st.session_state:
             st.session_state['sl_cat'] = 'AÇÕES'
         if 'sl_ativo' not in st.session_state:
-            st.session_state['sl_ativo'] = ''
+            st.session_state['sl_ativo'] = ""
         if 'lista' not in st.session_state:
             lista = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
         else:
@@ -143,7 +143,7 @@ with tab3:
                 input_C_V = 'C'
             else:
                 input_C_V = 'V'
-            input_Ativo = st.selectbox('Ativo:', lista, placeholder="Ativo",key='sl_ativo' index=None, on_change=get_ativos)
+            input_Ativo = st.selectbox('Ativo:', lista, placeholder="Ativo",key='sl_ativo', index=None, on_change=get_ativos)
             input_Valor = st.number_input('Valor total da operção (Incluso as taxas):', format='%f',step=0.01, min_value=0.01, help='Valor total gasto, incluindo taxas')
             input_Corretora = st.text_input('Corretora:')           
         
