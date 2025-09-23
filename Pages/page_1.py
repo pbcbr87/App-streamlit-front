@@ -132,7 +132,7 @@ with tab3:
         col1, col2 = st.columns(2)
         with col1:
             input_data = st.date_input('Data: ', format='DD/MM/YYYY',max_value=datetime.today())
-            input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
+            input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat')
             input_qt = st.number_input('Quantidade:', format='%f',step=0.000001, min_value=0.000001, value=1.0)
             input_taxa = st.number_input('Taxas (Opcional):', value=0.00, format='%f',step=0.01, min_value=0.00, help='Essa taxa não impacta calculo da planilha, valor já incluso no valot total')
         with col2:
@@ -141,7 +141,7 @@ with tab3:
                 input_C_V = 'C'
             else:
                 input_C_V = 'V'
-            input_Ativo = st.selectbox('Ativo:', lista)
+            input_Ativo = st.selectbox('Ativo:', lista, placeholder="Ativo", index=None, on_change=get_ativos)
             input_Valor = st.number_input('Valor total da operção (Incluso as taxas):', format='%f',step=0.01, min_value=0.01, help='Valor total gasto, incluindo taxas')
             input_Corretora = st.text_input('Corretora:')           
         
