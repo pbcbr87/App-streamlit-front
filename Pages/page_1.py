@@ -164,8 +164,8 @@ with tab3:
             st.session_state['disabled_bt_2'] = True
         if st.button('Enviar', key='bt_2', disabled=st.session_state['disabled_bt_2']):
             if st.session_state['disabled_bt_2'] == False:
-                st.button('OK', on_click= envia_manual, kwargs={'ordem_manual': ordem_manual})
-                st.dataframe(ordem_manual)
+                st.button('Dados estão correto?', on_click= envia_manual, kwargs={'ordem_manual': ordem_manual})
+                st.dataframe(ordem_manual, width = "content")
 #-------------------------------------------------------------------------------------------------------------
 #     Excluir operações
 #-------------------------------------------------------------------------------------------------------------
