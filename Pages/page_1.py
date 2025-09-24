@@ -32,8 +32,6 @@ def envia_manual(ordem_manual):
         resp = requests.post('https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordem', ordem_manual, headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
             st.toast('Dados enviados')
-            st.toast(resp.json())
-            st.toast(loads(ordem_manual))
         else:
             st.error(f'Erro ao enviar, Erro: {resp}')
     except TypeError as e:
