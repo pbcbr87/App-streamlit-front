@@ -125,7 +125,7 @@ with tab3:
         if 'sl_ativo' not in st.session_state:
             st.session_state['sl_ativo'] = ""
         if 'lista' not in st.session_state:
-            lista = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
+            lista = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}&{st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
         else:
             lista = st.session_state['lista']       
         
