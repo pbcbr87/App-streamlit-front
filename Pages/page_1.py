@@ -25,6 +25,7 @@ def enviar_tabela(dataframe):
     if resp.status_code == 200:
         st.toast('Dados enviados')
         st.toast(resp.json())
+
 # Enviar dados para o banco de dados
 def envia_manual(ordem_manual):
     ordem_manual = dumps(ordem_manual)
