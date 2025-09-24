@@ -163,10 +163,9 @@ with tab3:
         else:
             st.session_state['disabled_bt_2'] = True
         if st.button('Enviar', key='bt_2', disabled=st.session_state['disabled_bt_2']):
-            if st.session_state['disabled_bt_2'] == True:
-                 st.session_state['bt_2'] = False
-            st.write(ordem_manual)
-            st.button('OK', on_click= envia_manual, kwargs={'ordem_manual': ordem_manual})
+            if st.session_state['disabled_bt_2'] == False:
+                st.write(ordem_manual)
+                st.button('OK', on_click= envia_manual, kwargs={'ordem_manual': ordem_manual})
 #-------------------------------------------------------------------------------------------------------------
 #     Excluir operações
 #-------------------------------------------------------------------------------------------------------------
