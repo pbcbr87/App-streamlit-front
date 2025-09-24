@@ -143,7 +143,7 @@ with tab3:
                 input_C_V = 'C'
             else:
                 input_C_V = 'V'
-            input_Ativo = st.selectbox('Ativo:', lista, placeholder="Ativo", index=None)
+            input_Ativo = st.pills('Ativo:', options=lista, placeholder="Ativo",selection_mode="single")
             input_Valor = st.number_input('Valor total da operção (Incluso as taxas):', format='%f',step=0.01, min_value=0.01, help='Valor total gasto, incluindo taxas')
             input_Corretora = st.text_input('Corretora:')           
         
