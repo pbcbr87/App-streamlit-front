@@ -143,8 +143,8 @@ with tab3:
                 input_C_V = 'C'
             else:
                 input_C_V = 'V'
-            st.text_input("Pesquisa ativo", label_visibility='collapsed', placeholder="Pesquisa ativo",key='sl_ativo')
-            input_Ativo = st.pills('Ativo:', options=lista, selection_mode="single")
+            st.text_input("Pesquisa ativo", label_visibility='collapsed', placeholder="Pesquisa ativo", key='sl_ativo', on_change=get_ativos)
+            input_Ativo = st.pills('Ativo:', options=lista, label_visibility='collapsed', selection_mode="single")
             input_Valor = st.number_input('Valor total da operção (Incluso as taxas):', format='%f',step=0.01, min_value=0.01, help='Valor total gasto, incluindo taxas')
             input_Corretora = st.text_input('Corretora:')           
         
