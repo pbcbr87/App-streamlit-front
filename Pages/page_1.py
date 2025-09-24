@@ -41,8 +41,8 @@ def envia_manual(ordem_manual):
 
 # Pegar lista de ativos
 def get_ativos():
-    st.session_state['link'] = f"https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}ativo={st.session_state['sl_ativo']}"
-    st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}&{st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
+    st.session_state['link'] = f"https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}"
+    st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
 
 # Excluir operação
 def excluir_op():
