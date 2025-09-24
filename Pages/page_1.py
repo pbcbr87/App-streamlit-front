@@ -41,7 +41,7 @@ def envia_manual(ordem_manual):
 
 # Pegar lista de ativos
 def get_ativos():
-    st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
+    st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}&{st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
 
 # Excluir operação
 def excluir_op():
@@ -125,9 +125,8 @@ with tab3:
         if 'sl_ativo' not in st.session_state:
             st.session_state['sl_ativo'] = ""
         if 'lista' not in st.session_state:
-            lista = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}&{st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
-        else:
-            lista = st.session_state['lista']       
+            st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
+    
         
         
         st.subheader('Dados da Operação')
@@ -144,7 +143,7 @@ with tab3:
             else:
                 input_C_V = 'V'
             st.text_input("Pesquisa ativo", label_visibility='collapsed', placeholder="Pesquisa ativo", key='sl_ativo', on_change=get_ativos)
-            input_Ativo = st.pills('Ativo:', options=lista, label_visibility='collapsed', selection_mode="single")
+            input_Ativo = st.pills('Ativo:', options=st.session_state['lista'], label_visibility='collapsed', selection_mode="single")
             input_Valor = st.number_input('Valor total da operção (Incluso as taxas):', format='%f',step=0.01, min_value=0.01, help='Valor total gasto, incluindo taxas')
             input_Corretora = st.text_input('Corretora:')           
         
