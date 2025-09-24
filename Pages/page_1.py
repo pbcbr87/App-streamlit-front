@@ -159,8 +159,10 @@ with tab3:
             "corretora": input_Corretora
             }
         if input_data and input_Cat and input_Ativo and input_C_V and input_qt and input_Valor:
+            st.write('Habilita')
             st.session_state['disabled_bt_2'] = True
         else:
+            st.write('Desabilita')
             st.session_state['disabled_bt_2'] = False
         st.button('Enviar', key='bt_2', on_click= envia_manual, kwargs={'ordem_manual': ordem_manual}, disabled=st.session_state['disabled_bt_2'])
 #-------------------------------------------------------------------------------------------------------------
