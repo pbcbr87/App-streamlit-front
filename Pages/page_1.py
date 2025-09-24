@@ -134,13 +134,13 @@ with tab3:
         with col1:
             input_data = st.date_input('Data: ', format='DD/MM/YYYY',max_value=datetime.today())
             input_qt = st.number_input('Quantidade:', format='%f',step=0.000001, min_value=0.000001, value=None)
-            input_Valor = st.number_input('Valor total da operção (Incluso as taxas):', format='%f',step=0.01, min_value=0.01, value=None, help='Valor total gasto, incluindo taxas')
+            input_Valor = st.number_input('Valor total da operação (Incluso as taxas):', format='%f',step=0.01, min_value=0.01, value=None, help='Valor total gasto, incluindo taxas')
             input_taxa = st.number_input('Taxas (Opcional):', value=None, format='%f',step=0.01, min_value=0.00, help='Essa taxa não impacta calculo da planilha, valor já incluso no valot total')
         with col2:            
             input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
             st.text_input("Pesquisa ativo", label_visibility='collapsed', placeholder="Pesquisa ativo", key='sl_ativo', on_change=get_ativos)
             input_Ativo = st.pills('Ativo:', options=st.session_state['lista'], label_visibility='collapsed', selection_mode="single")
-            input_C_V = st.radio('Compra ou Venda: ',['Compra', 'Venda'], horizontal=True)
+            input_C_V = st.radio('Compra ou Venda:',['Compra', 'Venda'],label_visibility='collapsed', horizontal=True)
             if input_C_V == 'Compra':
                 input_C_V = 'C'
             else:
