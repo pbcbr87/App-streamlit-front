@@ -38,6 +38,8 @@ if not 'lista' in st.session_state:
     get_ativos()
 if not 'block_envio' in st.session_state:
     st.session_state['block_envio'] = True
+if not 'tabela_peso' in st.session_state:
+    st.session_state['tabela_peso'] = None
 
 #-------------------------------------
 # Layout Aba adiconar novo ativo
@@ -65,7 +67,7 @@ with st.container(horizontal=True):
                     st.session_state['block_envio'] = True
             if not st.session_state['block_envio']:
                 st.button('Enviar', on_click= envia_manual, kwargs={'dados': dados})
-    st.button('Enviar Peso', on_click= envia_peso, kwargs={'dados': t.session_state['tabela_peso']})
+    st.button('Enviar Peso', on_click= envia_peso, kwargs={'dados': st.session_state['tabela_peso']})
 #-------------------------------------
 # Layout tabela e grafico
 #-------------------------------------
