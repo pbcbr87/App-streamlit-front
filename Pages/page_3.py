@@ -43,7 +43,7 @@ with st.popover("Adiconar Ativo"):
             input_nota = st.number_input('Peso:', format='%f',step=1, min_value=0, max_value=10, value=None)
         if input_nota:
             dados = {
-                "fk_usuario": st.session_state.id
+                "fk_usuario": st.session_state.id,
                 "fk_ativo": f'{input_Ativo}_{input_Cat}',
                 "peso": input_peso,
                 "nota": input_nota
