@@ -18,7 +18,6 @@ def envia_peso(dados):
         "peso": linha['peso'],
         "nota": linha['nota']
         }
-        st.write(x)
         dados = dumps(dado)
         try:
             resp = requests.put('https://pythonapi-production-6268.up.railway.app/carteira/update_peso_nota', dados, headers={'Authorization':f'Bearer {st.session_state.token}'})
