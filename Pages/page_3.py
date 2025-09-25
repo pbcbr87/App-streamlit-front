@@ -54,7 +54,7 @@ with st.popover("Adiconar Ativo"):
                 st.session_state['block_envio'] = False
             else:
                 st.session_state['block_envio'] = True
-        if st.session_state['block_envio']:
+        if not st.session_state['block_envio']:
             st.button('Enviar', on_click= envia_manual, kwargs={'dados': dados})
 
 
