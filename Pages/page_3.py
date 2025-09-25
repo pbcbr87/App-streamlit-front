@@ -38,16 +38,17 @@ with st.popover("Adiconar Ativo"):
         st.text_input("Pesquisa ativo", label_visibility='collapsed', placeholder="Pesquisa ativo", key='sl_ativo', on_change=get_ativos)
         input_Ativo = st.pills('Ativo:', options=st.session_state['lista'], label_visibility='collapsed', selection_mode="single")
     if input_Ativo:
-        input_peso = st.number_input('Peso:', format='%f',step=0.01, min_value=0.01, value=None)
-        input_nota = st.number_input('Nota:', step=1, min_value=0, max_value=10, value=None)
-        dados = {
-            "fk_usuario": st.session_state.id,
-            "fk_ativo": f'{input_Ativo}_{input_Cat}',
-            "peso": input_peso,
-            "nota": input_nota
-            }
-        if input_peso and input_nota:    
-            st.button('Enviar', on_click= envia_manual, kwargs={'dados': dados})
+        with st.container(border=True, horizontal=True):
+            input_peso = st.number_input('Peso:', format='%f',step=0.01, min_value=0.01, value=None)
+            input_nota = st.number_input('Nota:', step=1, min_value=0, max_value=10, value=None)
+            dados = {
+                "fk_usuario": st.session_state.id,
+                "fk_ativo": f'{input_Ativo}_{input_Cat}',
+                "peso": input_peso,
+                "nota": input_nota
+                }
+    if input_peso and input_nota:    
+        st.button('Enviar', on_click= envia_manual, kwargs={'dados': dados})
 
 
 if st.session_state['carteira_api'] == []:
