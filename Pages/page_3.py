@@ -22,7 +22,7 @@ def envia_manual(dados):
         st.error(f'Erro ao enviar: {e}')
 
 #--------------------------------------------------
-# Layout
+# declaração de memoria
 #--------------------------------------------------
 if st.session_state['carteira_api'] == False:
     #resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
@@ -36,7 +36,9 @@ if not 'lista' in st.session_state:
 if not 'block_envio' in st.session_state:
     st.session_state['block_envio'] = True
 
-
+#-------------------------------------
+# Layout Aba adiconar novo ativo
+#-------------------------------------
 with st.popover("Adiconar Ativo"):
     input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
     with st.container(border=True, horizontal=True):
@@ -60,13 +62,16 @@ with st.popover("Adiconar Ativo"):
         if not st.session_state['block_envio']:
             st.button('Enviar', on_click= envia_manual, kwargs={'dados': dados})
 
-
+#-------------------------------------
+# Layout tabela e grafico
+#-------------------------------------
 if st.session_state['carteira_api'] == []:
     st.write('Carteira vazia ou não calculada')
 if not st.session_state['carteira_api'] == []:
-    df_carteira = pd.DataFrame(st.session_state['carteira_api'])
+    with st.container(horizontal=True):
+        df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 
-    df_resp = st.data_editor(df_carteira, column_order =("codigo_ativo", "peso"), width = "content")
+        df_resp = st.data_editor(df_carteira, column_order =("codigo_ativo", "peso"), width = "content")
 
-    fig = px.pie(df_resp, values='peso', names='codigo_ativo', title='Ativos')
-    st.plotly_chart(fig)
+        fig = px.pie(df_resp, values='peso', names='codigo_ativo', title='Ativos')
+        st.plotly_chart(fig)
