@@ -31,6 +31,9 @@ if not 'sl_ativo' in st.session_state:
     st.session_state['sl_ativo'] = ''
 if not 'lista' in st.session_state:
     get_ativos()
+if not 'block_envio' in st.session_state:
+    st.session_state['block_envio'] = True
+
 
 with st.popover("Adiconar Ativo"):
     input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
@@ -48,7 +51,11 @@ with st.popover("Adiconar Ativo"):
                 "nota": input_nota
                 }
             if input_peso and input_nota:
-                st.button('Enviar', on_click= envia_manual, kwargs={'dados': dados})
+                st.session_state['block_envio'] = False
+            else:
+                st.session_state['block_envio'] = True
+        if st.session_state['block_envio']:
+            st.button('Enviar', on_click= envia_manual, kwargs={'dados': dados})
 
 
 if st.session_state['carteira_api'] == []:
