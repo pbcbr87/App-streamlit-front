@@ -32,6 +32,10 @@ if not 'sl_ativo' in st.session_state:
 if not 'lista' in st.session_state:
     get_ativos()
 
+input_peso = float
+input_nota = int
+input_Ativo = str
+
 with st.popover("Adiconar Ativo"):
     input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
     with st.container(border=True, horizontal=True):
