@@ -50,7 +50,8 @@ with st.popover("Adiconar Ativo"):
                 "peso": input_peso,
                 "nota": input_nota
                 }
-            if input_peso >=0 and input_nota >=0:
+           
+            if input_peso != None and input_nota != None:
                 st.session_state['block_envio'] = False
             else:
                 st.session_state['block_envio'] = True
