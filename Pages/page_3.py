@@ -8,6 +8,20 @@ import plotly.express as px
 def get_ativos():
     st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
 
+def envia_manual(dados):
+    dados = dumps(dados)
+    try:
+        resp = requests.post('https://pythonapi-production-6268.up.railway.app/carteira/inserir_ativo', dados, headers={'Authorization':f'Bearer {st.session_state.token}'})
+        if resp.status_code == 200:
+            st.toast('Dados enviados')
+        else:
+            st.error(f'Erro ao enviar, Erro: {resp}')
+    except TypeError as e:
+        st.error(f'Erro ao enviar: {e}')
+
+#--------------------------------------------------
+# Layout
+#--------------------------------------------------
 if st.session_state['carteira_api'] == False:
     #resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
     st.session_state['carteira_api'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/carteira/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
@@ -23,6 +37,18 @@ with st.popover("Adiconar Ativo"):
     with st.container(border=True, horizontal=True):
         st.text_input("Pesquisa ativo", label_visibility='collapsed', placeholder="Pesquisa ativo", key='sl_ativo', on_change=get_ativos)
         input_Ativo = st.pills('Ativo:', options=st.session_state['lista'], label_visibility='collapsed', selection_mode="single")
+        if input_Ativo:
+            input_peso = st.number_input('Peso:', format='%f',step=0.01, min_value=0.01, value=None)
+        if input_peso:
+            input_nota = st.number_input('Peso:', format='%f',step=1, min_value=0, max_value=10, value=None)
+        if input_nota:
+            dados = {
+                "fk_usuario": st.session_state.id
+                "fk_ativo": f'{input_Ativo}_{input_Cat}',
+                "peso": input_peso,
+                "nota": input_nota
+                }            
+            st.button('Enviar', on_click= envia_manual, kwargs={'dados': dados})
 
 
 if st.session_state['carteira_api'] == []:
