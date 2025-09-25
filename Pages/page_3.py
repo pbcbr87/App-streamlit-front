@@ -39,7 +39,7 @@ with st.popover("Adiconar Ativo"):
         input_Ativo = st.pills('Ativo:', options=st.session_state['lista'], label_visibility='collapsed', selection_mode="single")
     if input_Ativo:
         input_peso = st.number_input('Peso:', format='%f',step=0.01, min_value=0.01, value=None)
-        input_nota = st.number_input('Peso:', format='%f',step=1, min_value=0, max_value=10, value=None)
+        input_nota = st.number_input('Peso:', step=1, min_value=0, max_value=10, value=None)
         dados = {
             "fk_usuario": st.session_state.id,
             "fk_ativo": f'{input_Ativo}_{input_Cat}',
