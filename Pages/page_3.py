@@ -5,10 +5,19 @@ import numpy as np
 from plotly import graph_objects as go
 import plotly.express as px
 
+def get_ativos():
+    st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
 
 if st.session_state['carteira_api'] == False:
     #resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
     st.session_state['carteira_api'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/carteira/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
+if not 'sl_cat' in st.session_state:
+    st.session_state['sl_cat'] = 'AÇÕES'
+if not 'sl_ativo' in st.session_state:
+    st.session_state['sl_ativo'] = ''
+input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
+st.text_input("Pesquisa ativo", label_visibility='collapsed', placeholder="Pesquisa ativo", key='sl_ativo', on_change=get_ativos)
+input_Ativo = st.pills('Ativo:', options=st.session_state['lista'], label_visibility='collapsed', selection_mode="single")
 
 if st.session_state['carteira_api'] == []:
     st.write('Carteira vazia ou não calculada')
