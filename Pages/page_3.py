@@ -13,7 +13,7 @@ def envia_manual(dados):
     dados = dumps(dados)
     try:
         resp = requests.post('https://pythonapi-production-6268.up.railway.app/carteira/inserir_ativo', dados, headers={'Authorization':f'Bearer {st.session_state.token}'})
-        if resp.status_code == 200:
+        if resp.status_code == 201:
             st.toast('Dados enviados')
         else:
             st.error(f'Erro ao enviar, Erro: {resp}')
