@@ -11,7 +11,7 @@ def get_ativos():
 
 def envia_peso(dados):
     st.write(dados)
-    for dado in dados:
+    for dado in dados.iterrows():
         st.write(dado)
     x = {
     "fk_usuario": st.session_state.id,
