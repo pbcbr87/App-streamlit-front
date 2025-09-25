@@ -44,12 +44,12 @@ def grafico_planejamento(df, mask):
         ),
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)')
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='content')
 
 def tabela_planejamento(df, mask):
     #Tabela Cateira
     lista_col = ['Codigo_Ativo','Categoria','Nome','Setor','Qt','Custo_BRL','Valor_Mercado_BRL', 'Valor_Planejado_BRL','%_Lucro','Peso','Nota', 'Diferença_plan_BRL', 'Diferença_plan_BRL_%']
-    st.dataframe(df[mask][lista_col],use_container_width=True,hide_index=True)
+    st.dataframe(df[mask][lista_col],width='content',hide_index=True)
 
 def page_planejamento_def(df):
 

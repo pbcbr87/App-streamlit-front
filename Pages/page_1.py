@@ -112,7 +112,7 @@ with tab2:
             st.button('Enviar', key='bt_1', on_click=enviar_tabela, kwargs={'dataframe': dataframe})
 
             with st.expander('Exibir Dados input'):
-                st.dataframe(dataframe, use_container_width=True)
+                st.dataframe(dataframe, width='content')
 #-------------------------------------------------------------------------------------------------------------
 #     Inserir dados manual
 #-------------------------------------------------------------------------------------------------------------
@@ -177,7 +177,7 @@ with tab4:
             st.session_state['bt_on'] = True
                 
         st.header('Operações existentes')
-        sl_df_op_exclui = st.dataframe(df_ordens, hide_index=True, use_container_width=True, on_select="rerun", selection_mode='multi-row')
+        sl_df_op_exclui = st.dataframe(df_ordens, hide_index=True, width='content', on_select="rerun", selection_mode='multi-row')
             
         st.header('Lista para excluir')
         df_select = df_ordens.iloc[sl_df_op_exclui.get('selection').get('rows')] # type: ignore

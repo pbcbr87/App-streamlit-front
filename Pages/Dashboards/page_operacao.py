@@ -40,7 +40,7 @@ def add_operacao():
 def tabela_operacao(df_operacao, mask):
     #Tabela Cateira
     lista_col = list(df_operacao.columns)
-    st.dataframe(df_operacao[mask][lista_col],use_container_width=True,hide_index=True)
+    st.dataframe(df_operacao[mask][lista_col],width='content',hide_index=True)
 
 def grafico_operacao(df, mask):
     #Grafico 
@@ -60,7 +60,7 @@ def grafico_operacao(df, mask):
         ),
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)')
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='content')
 
 def page_operacao_def(df, df_operacao):
 

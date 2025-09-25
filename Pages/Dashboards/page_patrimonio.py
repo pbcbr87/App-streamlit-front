@@ -20,7 +20,7 @@ def metricas_patrimonio(df, mask):
 def tabela_patrimonio(df, mask):
     #Tabela Cateira
     lista_col = ['Codigo_Ativo','Categoria','Nome','Setor','Qt','Custo_BRL','Valor_Mercado_BRL', 'Valor_Planejado_BRL','%_Lucro','Peso','Nota', 'Diferença_plan_BRL', 'Diferença_plan_BRL_%']
-    st.dataframe(df[mask][lista_col],use_container_width=True,hide_index=True)
+    st.dataframe(df[mask][lista_col],width='content',hide_index=True)
 
 def grafico_patrimonio(df, mask):
     #Grafico 
@@ -61,13 +61,13 @@ def grafico_patrimonio(df, mask):
         ),
         legend=dict(orientation='h', yanchor='top', y=-0.5,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)')
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='content')
 
 def pizza_patrimonio(df, mask):
     fig = px.pie(df[mask], values='Valor_Mercado_BRL', names='Codigo_Ativo')
     fig.update_traces(textposition='inside',textinfo='percent+label')
     fig.update(layout_showlegend=False)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='content')
     
 def page_patrimonio_def(df):
     

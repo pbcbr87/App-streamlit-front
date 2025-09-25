@@ -124,7 +124,7 @@ if not st.session_state['carteira_api'] == []:
                                             .format(precision=2, thousands=".", decimal=",", subset=['Lucro %', 'Aporte %'])
                                             )
 
-        st.dataframe(df_carteira_st, hide_index=True, use_container_width=True,
+        st.dataframe(df_carteira_st, hide_index=True, width='content',
                     column_config={
                         "Lucro %": st.column_config.NumberColumn("Lucro %", format="percent"),
                         "Aporte %": st.column_config.NumberColumn("Aporte %", format="percent")
@@ -195,7 +195,7 @@ if not st.session_state['carteira_api'] == []:
             legend=dict(orientation='h', yanchor='top', y=-0.2,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)'),
             margin=dict(b=10,t=40) 
             )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='content')
 
     with tab3:
         df = df_carteira_front
@@ -254,7 +254,7 @@ if not st.session_state['carteira_api'] == []:
         if valor_aporte and valor_aporte > 0:
             df_carteira_aporte['Aporte'] = valor_aporte * df_carteira_aporte_['Aporte']/df_carteira_aporte_['Aporte'].sum()
         
-            st.dataframe(df_carteira_aporte, hide_index=True, use_container_width=False,
+            st.dataframe(df_carteira_aporte, hide_index=True, width='content',
                         column_config={
                             "Lucro %": st.column_config.NumberColumn("Lucro %", format="percent"),
                             "Aporte %": st.column_config.NumberColumn("Aporte %", format="percent")
