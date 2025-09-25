@@ -39,29 +39,30 @@ if not 'block_envio' in st.session_state:
 #-------------------------------------
 # Layout Aba adiconar novo ativo
 #-------------------------------------
-with st.popover("Adiconar Ativo"):
-    input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
-    with st.container(border=True, horizontal=True):
-        st.text_input("Pesquisa ativo", label_visibility='collapsed', placeholder="Pesquisa ativo", key='sl_ativo', on_change=get_ativos)
-        input_Ativo = st.pills('Ativo:', options=st.session_state['lista'], label_visibility='collapsed', selection_mode="single")
-    if input_Ativo:
+with st.container(horizontal=True):
+    with st.popover("Adiconar Ativo"):
+        input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
         with st.container(border=True, horizontal=True):
-            input_peso = st.number_input('Peso:', format='%f',step=0.01, min_value=0.01, value=None)
-            input_nota = st.number_input('Nota:', step=1, min_value=0, max_value=10, value=None)
-            dados = {
-                "fk_usuario": st.session_state.id,
-                "fk_ativo": f'{input_Ativo}_{input_Cat}',
-                "peso": input_peso,
-                "nota": input_nota
-                }
-           
-            if input_peso != None and input_nota != None:
-                st.session_state['block_envio'] = False
-            else:
-                st.session_state['block_envio'] = True
-        if not st.session_state['block_envio']:
-            st.button('Enviar', on_click= envia_manual, kwargs={'dados': dados})
-st.button('Enviar Peso')
+            st.text_input("Pesquisa ativo", label_visibility='collapsed', placeholder="Pesquisa ativo", key='sl_ativo', on_change=get_ativos)
+            input_Ativo = st.pills('Ativo:', options=st.session_state['lista'], label_visibility='collapsed', selection_mode="single")
+        if input_Ativo:
+            with st.container(border=True, horizontal=True):
+                input_peso = st.number_input('Peso:', format='%f',step=0.01, min_value=0.01, value=None)
+                input_nota = st.number_input('Nota:', step=1, min_value=0, max_value=10, value=None)
+                dados = {
+                    "fk_usuario": st.session_state.id,
+                    "fk_ativo": f'{input_Ativo}_{input_Cat}',
+                    "peso": input_peso,
+                    "nota": input_nota
+                    }
+            
+                if input_peso != None and input_nota != None:
+                    st.session_state['block_envio'] = False
+                else:
+                    st.session_state['block_envio'] = True
+            if not st.session_state['block_envio']:
+                st.button('Enviar', on_click= envia_manual, kwargs={'dados': dados})
+    st.button('Enviar Peso')
 #-------------------------------------
 # Layout tabela e grafico
 #-------------------------------------
