@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from plotly import graph_objects as go
 import plotly.express as px
+from json import loads, dumps
 
 def get_ativos():
     st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
