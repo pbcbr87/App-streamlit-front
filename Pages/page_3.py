@@ -12,13 +12,23 @@ def get_ativos():
 def envia_peso(dados):
     st.write(dados)
     for indice, linha in dados.iterrows():
-        x = {
+        dado = {
         "fk_usuario": st.session_state.id,
         "fk_ativo": f'{linha['codigo_ativo']}_{linha['categoria']}',
         "peso": linha['peso'],
         "nota": linha['nota']
         }
         st.write(x)
+        dados = dumps(dado)
+        try:
+            resp = requests.put('https://pythonapi-production-6268.up.railway.app/carteira/update_peso_nota', dados, headers={'Authorization':f'Bearer {st.session_state.token}'})
+            if resp.status_code == 200:
+                st.toast('Dados enviados')
+                st.session_state['carteira_api'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/carteira/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
+            else:
+                st.error(f'Erro ao enviar, Erro: {resp}')
+        except TypeError as e:
+            st.error(f'Erro ao enviar: {e}')
 
 def envia_manual(dados):
     dados = dumps(dados)
