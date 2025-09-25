@@ -12,13 +12,13 @@ def get_ativos():
 def envia_peso(dados):
     st.write(dados)
     for indice, linha in dados.iterrows():
-        st.write(linha['codigo_ativo'])
         x = {
         "fk_usuario": st.session_state.id,
         "fk_ativo": f'{linha['codigo_ativo']}_{linha['categoria']}',
         "peso": linha['peso'],
         "nota": linha['nota']
         }
+        st.write(x)
 
 def envia_manual(dados):
     dados = dumps(dados)
