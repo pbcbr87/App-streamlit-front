@@ -98,3 +98,6 @@ if not st.session_state['carteira_api'] == []:
         
         fig = px.pie(df_resp, values='peso', names='codigo_ativo', title='Ativos')
         st.plotly_chart(fig)
+
+        fig = px.pie(df_resp, values='peso', names='categoria', title='Categoria')
+        st.plotly_chart(fig)
