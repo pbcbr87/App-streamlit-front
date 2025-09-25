@@ -47,8 +47,8 @@ with st.popover("Adiconar Ativo"):
                 "peso": input_peso,
                 "nota": input_nota
                 }
-    if input_peso and input_nota:    
-        st.button('Enviar', on_click= envia_manual, kwargs={'dados': dados})
+            if input_peso and input_nota:
+                st.button('Enviar', on_click= envia_manual, kwargs={'dados': dados})
 
 
 if st.session_state['carteira_api'] == []:
