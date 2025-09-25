@@ -18,10 +18,9 @@ if not 'sl_ativo' in st.session_state:
 if not 'lista' in st.session_state:
     get_ativos()
 
-if st.button('Adiconar ativo'):
+with st.expander("Adiconar Ativo"):
+    input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
     with st.container(border=True, horizontal=True):
-
-        input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
         st.text_input("Pesquisa ativo", label_visibility='collapsed', placeholder="Pesquisa ativo", key='sl_ativo', on_change=get_ativos)
         input_Ativo = st.pills('Ativo:', options=st.session_state['lista'], label_visibility='collapsed', selection_mode="single")
 
