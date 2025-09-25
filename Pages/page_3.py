@@ -44,7 +44,7 @@ if not 'block_envio' in st.session_state:
 #-------------------------------------
 # Layout Aba adiconar novo ativo
 #-------------------------------------
-cont_botao = st.container(horizontal=True):
+cont_botao = st.container(horizontal=True)
 with cont_botao.st.popover("Adiconar Ativo"):
     input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
     with st.container(border=True, horizontal=True):
