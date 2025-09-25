@@ -85,11 +85,8 @@ def home():
 
 #Pagina de logut 
 def logout():
+    st.session_state.clear()
     st.session_state.logado = False
-    st.session_state.user = None
-    st.session_state.id = None
-    st.session_state.token = None
-    st.session_state.nome = None
     st.rerun()
 #------------------------------------------------
 #Extrutura de nevegação:
