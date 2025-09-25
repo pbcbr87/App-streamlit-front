@@ -15,6 +15,7 @@ def envia_manual(dados):
         resp = requests.post('https://pythonapi-production-6268.up.railway.app/carteira/inserir_ativo', dados, headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 201:
             st.toast('Dados enviados')
+            st.session_state['carteira_api'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/carteira/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
         else:
             st.error(f'Erro ao enviar, Erro: {resp}')
     except TypeError as e:
