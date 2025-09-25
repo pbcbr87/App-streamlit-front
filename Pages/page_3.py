@@ -45,7 +45,7 @@ if not 'block_envio' in st.session_state:
 # Layout Aba adiconar novo ativo
 #-------------------------------------
 cont_botao = st.container(horizontal=True)
-with cont_botao.st.popover("Adiconar Ativo"):
+with cont_botao.popover("Adiconar Ativo"):
     input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
     with st.container(border=True, horizontal=True):
         st.text_input("Pesquisa ativo", label_visibility='collapsed', placeholder="Pesquisa ativo", key='sl_ativo', on_change=get_ativos)
@@ -78,7 +78,7 @@ if not st.session_state['carteira_api'] == []:
 
         df_resp = st.data_editor(df_carteira, column_order =("codigo_ativo", "peso"), width = "content")
         
-        cont_botao.st.button('Enviar Peso', on_click= envia_peso, kwargs={'dados': df_resp})
+        cont_botao.button('Enviar Peso', on_click= envia_peso, kwargs={'dados': df_resp})
         
         fig = px.pie(df_resp, values='peso', names='codigo_ativo', title='Ativos')
         st.plotly_chart(fig)
