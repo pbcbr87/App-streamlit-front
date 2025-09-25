@@ -10,7 +10,6 @@ def get_ativos():
     st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
 
 def envia_peso(dados):
-    st.write(dados)
     for indice, linha in dados.iterrows():
         dado = {
         "fk_usuario": st.session_state.id,
