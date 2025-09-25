@@ -9,6 +9,9 @@ from json import loads, dumps
 def get_ativos():
     st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
 
+def envia_peso(dados):
+    st.write(dados)
+
 def envia_manual(dados):
     dados = dumps(dados)
     try:
@@ -62,7 +65,7 @@ with st.container(horizontal=True):
                     st.session_state['block_envio'] = True
             if not st.session_state['block_envio']:
                 st.button('Enviar', on_click= envia_manual, kwargs={'dados': dados})
-    st.button('Enviar Peso')
+    st.button('Enviar Peso', on_click= envia_peso, kwargs={'dados': t.session_state['tabela_peso']})
 #-------------------------------------
 # Layout tabela e grafico
 #-------------------------------------
@@ -72,7 +75,7 @@ if not st.session_state['carteira_api'] == []:
     with st.container(horizontal=True):
         df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 
-        df_resp = st.data_editor(df_carteira, column_order =("codigo_ativo", "peso"), width = "content")
+        df_resp = st.data_editor(df_carteira, column_order =("codigo_ativo", "peso"), width = "content", key='tabela_peso')
 
         fig = px.pie(df_resp, values='peso', names='codigo_ativo', title='Ativos')
         st.plotly_chart(fig)
