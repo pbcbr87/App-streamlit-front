@@ -45,7 +45,7 @@ with sl_cat_container:
     st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 
     op_ordem = {
-                'Aporte': 'Aporte',
+                'Aporte': 'aporte',
                 'Percentual do aporte': 'Aporte %'
                 }
     option = st.selectbox("Ordendar por", list(op_ordem.keys()))
@@ -56,10 +56,16 @@ st.write(df_carteira)
 #----------------------------------------------------------------------
 # Aporte
 #---------------------------------------------------------------------
-
 valor_aporte = st.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.01)
 if not valor_aporte:
     valor_aporte = 0
 qt_ativo_aporte = st.number_input('Quantos ativos', value=1, format='%i', min_value=1)
 
+#------------------------------------------------------------------------
+# Calculo
+#------------------------------------------------------------------------
+valor_total = df_carteira['valor_mercado_brl'].sum() + valor_aporte
+peso_total =  df_carteira['peso'].sum()
 
+df_carteira['valor_plan_brl'] = df_carteira['peso']*valor_total/peso_total
+df_carteira['aporte'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
