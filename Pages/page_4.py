@@ -7,8 +7,7 @@ import plotly.express as px
 from json import loads, dumps
 
 
-st.write("Aportes")
-
+st.header("Aportes")
 #-----------------------------------------------------------
 # Buscando dados na API
 #-----------------------------------------------------------
