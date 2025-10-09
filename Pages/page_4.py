@@ -65,6 +65,7 @@ peso_total =  df_carteira['peso'].sum()
 
 df_carteira['valor_plan_brl'] = df_carteira['peso']*valor_total/peso_total
 df_carteira['aporte'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
+st.dataframe(df_carteira, hide_index=True, width='content')
 df_carteira['aporte_per'] = np.where(df_carteira['valor_mercado_brl'] == 0, 1, df_carteira['aporte'] / df_carteira['valor_mercado_brl'])
 df_carteira = df_carteira[df_carteira['aporte'] > 0]
 
