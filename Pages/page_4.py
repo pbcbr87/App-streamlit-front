@@ -56,7 +56,7 @@ df_carteira = df_carteira[mask]
 # Aporte
 #---------------------------------------------------------------------
 # Valor a ser aportado
-valor_aporte = st.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.00)
+valor_aporte = sl_cat_container.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.00)
 if not valor_aporte:
     valor_aporte = 0
  
@@ -70,7 +70,7 @@ df_carteira['aporte_per'] = np.where(df_carteira['valor_mercado_brl'] == 0, 1, d
 df_carteira = df_carteira[df_carteira['aporte'] > 0]
 
 # quantidade de ativos
-qt_ativo_aporte = st.number_input('Quantos ativos', value=len(df_carteira), format='%i', min_value=0, max_value=len(df_carteira))
+qt_ativo_aporte = sl_cat_container.number_input('Quantos ativos', value=len(df_carteira), format='%i', min_value=0, max_value=len(df_carteira))
 df_carteira = df_carteira[['codigo_ativo', 'categoria','valor_mercado_brl', 'aporte', 'aporte_per']].head(qt_ativo_aporte).sort_values(op_ordem[option], ascending=[False]).style.format({
     'aporte_per': '{:,.2%}',    
     'valor_mercado_brl': 'R$ {:,.2f}',
