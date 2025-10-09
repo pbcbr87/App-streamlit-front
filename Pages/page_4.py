@@ -46,7 +46,7 @@ with sl_cat_container:
 
     op_ordem = {
                 'Aporte': 'aporte',
-                'Percentual do aporte': 'Aporte %'
+                'Percentual do aporte': 'aporte_pec'
                 }
     option = st.selectbox("Ordendar por", list(op_ordem.keys()))
     
@@ -67,9 +67,10 @@ peso_total =  df_carteira['peso'].sum()
 
 df_carteira['valor_plan_brl'] = df_carteira['peso']*valor_total/peso_total
 df_carteira['aporte'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
+df_carteira['aporte_pec'] =  df_carteira['aporte']/df_carteira['valor_mercado_brl']
 df_carteira = df_carteira[df_carteira['aporte'] > 0]
 st.write(df_carteira)
 
 # quantidade de ativos
 qt_ativo_aporte = st.number_input('Quantos ativos', value=len(df_carteira), format='%i', min_value=0, max_value=len(df_carteira))
-st.write(df_carteira.head(qt_ativo_aporte))
+st.write(df_carteira[['codigo_ativo', 'categoria', 'aporte', 'aporte_pec']].head(qt_ativo_aporte).sort_values(op_ordem[option], ascending=[False]))
