@@ -71,5 +71,5 @@ df_carteira = df_carteira[df_carteira['aporte'] > 0]
 st.write(df_carteira)
 
 # quantidade de ativos
-qt_ativo_aporte = st.number_input('Quantos ativos', value=len(df_carteira), format='%i', min_value=0, mix_value=len(df_carteira))
+qt_ativo_aporte = st.number_input('Quantos ativos', value=len(df_carteira), format='%i', min_value=0, max_value=len(df_carteira))
 st.write(df_carteira.head(qt_ativo_aporte))
