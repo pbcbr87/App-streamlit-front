@@ -239,13 +239,15 @@ if not st.session_state['carteira_api'] == []:
 
     with tab4:
         ck_box_plan = st.checkbox('Filtro no Planejamento', help='O filtro será aplicado para recalcular os valores de planejamento')
-        if ck_box_plan:
-            df_carteira_front['Valor Planejado'] = df_carteira['valor_mercado_brl'].sum() * (df_carteira['peso']/df_carteira['peso'].sum())   
-        else:
-            df_carteira_front['Valor Planejado'] = df_carteira['valor_plan_brl']
 
         valor_aporte = st.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.01)
         qt_ativo_aporte = st.number_input('Quantos ativos', value=1, format='%i', min_value=1)
+
+        if ck_box_plan:
+            df_carteira_front['Valor Planejado'] = (df_carteira['valor_mercado_brl'].sum() + valor_aporte)  * (df_carteira['peso']/df_carteira['peso'].sum())   
+        else:
+            df_carteira_front['Valor Planejado'] = df_carteira['valor_plan_brl']
+
 
         df_carteira_aporte = pd.DataFrame()
         df_carteira_aporte_ = df_carteira_front.sort_values('Aporte %', ascending=[False]).head(qt_ativo_aporte)
@@ -259,6 +261,7 @@ if not st.session_state['carteira_api'] == []:
                             "Lucro %": st.column_config.NumberColumn("Lucro %", format="percent"),
                             "Aporte %": st.column_config.NumberColumn("Aporte %", format="percent")
                             })
+
 
 
 
