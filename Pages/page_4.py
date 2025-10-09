@@ -64,15 +64,17 @@ valor_total = df_carteira['valor_mercado_brl'].sum() + valor_aporte
 peso_total =  df_carteira['peso'].sum()
 
 df_carteira['valor_plan_brl'] = df_carteira['peso']*valor_total/peso_total
+
 df_carteira['dif'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
 df_carteira = df_carteira[df_carteira['dif'] > 0]
+
 df_carteira['aporte'] = df_carteira['dif'] * valor_aporte/df_carteira['dif'].sum()
-st.dataframe(df_carteira, hide_index=True, width='content')
 df_carteira['aporte_per'] = np.where(df_carteira['valor_mercado_brl'] == 0, 100, df_carteira['aporte'] / df_carteira['valor_mercado_brl'])
 df_carteira = df_carteira[df_carteira['aporte'] > 0]
 
 # quantidade de ativos
 qt_ativo_aporte = sl_cat_container.number_input('Quantos ativos', value=len(df_carteira), format='%i', min_value=0, max_value=len(df_carteira))
+
 df_carteira = df_carteira[['codigo_ativo', 'categoria','valor_mercado_brl', 'aporte', 'aporte_per']].head(qt_ativo_aporte).sort_values(op_ordem[option], ascending=[False]).style.format({
     'aporte_per': '{:,.2%}',    
     'valor_mercado_brl': 'R$ {:,.2f}',
