@@ -100,17 +100,19 @@ if not st.session_state['carteira_api'] == []:
         fig.update_traces(textinfo='label+percent entry')
         st.plotly_chart(fig)
 
-    fig = px.pie(df_resp, values='peso', names='codigo_ativo', title='Ativos')
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-    st.plotly_chart(fig)
+    with st.container(horizontal=True):
+        fig = px.pie(df_resp, values='peso', names='codigo_ativo', title='Ativos')
+        fig.update_traces(textposition='inside', textinfo='percent+label')
+        st.plotly_chart(fig)
+    
+        fig = px.pie(df_resp, values='peso', names='setor', title='Setor')
+        fig.update_traces(textposition='inside', textinfo='percent+label')
+        st.plotly_chart(fig)
+    
+        fig = px.pie(df_resp, values='peso', names='categoria', title='Categoria')
+        fig.update_traces(textposition='inside', textinfo='percent+label')
+        st.plotly_chart(fig)
 
-    fig = px.pie(df_resp, values='peso', names='setor', title='Setor')
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-    st.plotly_chart(fig)
-
-    fig = px.pie(df_resp, values='peso', names='categoria', title='Categoria')
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-    st.plotly_chart(fig)
 
 
 
