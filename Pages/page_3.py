@@ -97,10 +97,11 @@ if not st.session_state['carteira_api'] == []:
         cont_botao.button('Enviar Peso', on_click= envia_peso, kwargs={'dados': df_resp})
         
         fig = px.pie(df_resp, values='peso', names='codigo_ativo', title='Ativos')
-        fig2.update_traces(textposition='inside', textinfo='percent+label')
+        fig.update_traces(textposition='inside', textinfo='percent+label')
         st.plotly_chart(fig)
 
         fig = px.pie(df_resp, values='peso', names='categoria', title='Categoria')
-        fig2.update_traces(textposition='inside', textinfo='percent+label')
+        fig.update_traces(textposition='inside', textinfo='percent+label')
         st.plotly_chart(fig)
+
 
