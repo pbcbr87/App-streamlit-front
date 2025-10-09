@@ -51,10 +51,11 @@ with sl_cat_container:
     option = st.selectbox("Ordendar por", list(op_ordem.keys()))
     
 mask = df_carteira['categoria'].isin(mult_sl_cat)
-df_carteira = df_carteira[mask]
+df_carteira = df_carteira[mask].sort_values(op_ordem[option], ascending=[False])
+st.write(df_carteira)
 #----------------------------------------------------------------------
 # Aporte
-#-----------------------------------------------------------------
+#---------------------------------------------------------------------
 
 valor_aporte = st.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.01)
 if not valor_aporte:
