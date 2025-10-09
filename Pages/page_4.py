@@ -73,7 +73,9 @@ st.write(df_carteira)
 
 # quantidade de ativos
 qt_ativo_aporte = st.number_input('Quantos ativos', value=len(df_carteira), format='%i', min_value=0, max_value=len(df_carteira))
-st.write(df_carteira[['codigo_ativo', 'categoria','valor_mercado_brl', 'aporte', 'aporte_per']].head(qt_ativo_aporte).sort_values(op_ordem[option], ascending=[False]).style.format({
+df = df_carteira[['codigo_ativo', 'categoria','valor_mercado_brl', 'aporte', 'aporte_per']].head(qt_ativo_aporte).sort_values(op_ordem[option], ascending=[False]).style.format({
     'aporte_per': '{:,.2%}',    
     'valor_mercado_brl': 'R$ {:.,2f}'
-}).format(precision=2, thousands=".", decimal=",", subset=['aporte_per']))
+})
+st.write(df)
+st.write(df.format(precision=2, thousands=".", decimal=",", subset=['aporte_per']))
