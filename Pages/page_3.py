@@ -95,23 +95,22 @@ if not st.session_state['carteira_api'] == []:
         df_resp = st.data_editor(df_carteira, column_order =("codigo_ativo","setor","categoria", "peso"), disabled=["codigo_ativo", "setor", "categoria"], width = "content", hide_index=True)
         
         cont_botao.button('Enviar Peso', on_click= envia_peso, kwargs={'dados': df_resp})
-        
-        fig = px.pie(df_resp, values='peso', names='codigo_ativo', title='Ativos')
-        fig.update_traces(textposition='inside', textinfo='percent+label')
-        st.plotly_chart(fig)
-
-        fig = px.pie(df_resp, values='peso', names='setor', title='Setor')
-        fig.update_traces(textposition='inside', textinfo='percent+label')
-        st.plotly_chart(fig)
-
-        fig = px.pie(df_resp, values='peso', names='categoria', title='Categoria')
-        fig.update_traces(textposition='inside', textinfo='percent+label')
-        st.plotly_chart(fig)
 
         fig = px.sunburst(df_resp, path=["categoria","setor", "codigo_ativo"], values='peso', color="categoria")
         fig.update_traces(textinfo='label+percent entry')
         st.plotly_chart(fig)
 
+    fig = px.pie(df_resp, values='peso', names='codigo_ativo', title='Ativos')
+    fig.update_traces(textposition='inside', textinfo='percent+label')
+    st.plotly_chart(fig)
+
+    fig = px.pie(df_resp, values='peso', names='setor', title='Setor')
+    fig.update_traces(textposition='inside', textinfo='percent+label')
+    st.plotly_chart(fig)
+
+    fig = px.pie(df_resp, values='peso', names='categoria', title='Categoria')
+    fig.update_traces(textposition='inside', textinfo='percent+label')
+    st.plotly_chart(fig)
 
 
 
