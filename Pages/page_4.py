@@ -52,7 +52,6 @@ with sl_cat_container:
     
 mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
-st.write(df_carteira)
 #----------------------------------------------------------------------
 # Aporte
 #---------------------------------------------------------------------
