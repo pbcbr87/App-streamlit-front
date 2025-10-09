@@ -17,6 +17,10 @@ if 'carteira_api' not in st.session_state:
 if st.session_state['carteira_api'] == False:
     #resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
     st.session_state['carteira_api'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/carteira/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
+
+df_carteira = pd.DataFrame(st.session_state['carteira_api'])
+df_carteira['pais'] = np.where((df_carteira['categoria'] == "AÇÕES") | (df_carteira['categoria'] == "FII"), 'BRL', 'USD')
+df_carteira['%_lucro'] =  df_carteira['lucro_brl'] / df_carteira['custo_brl']
 #-----------------------------------------------------------
 #Containers layout
 #-----------------------------------------------------------
