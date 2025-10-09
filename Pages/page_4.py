@@ -45,17 +45,20 @@ with sl_cat_container:
     st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 
     op_ordem = {
-                'Valor de mercado': "Valor de mercado",
-                'Custo': "Custo",
-                'Lucro': "Lucro",
-                'Percentual do lucro': "Lucro %",
-                'Valor Planejado': 'Valor Planejado',
                 'Aporte': 'Aporte',
                 'Percentual do aporte': 'Aporte %'
                 }
     option = st.selectbox("Ordendar por", list(op_ordem.keys()))
-
+    
 mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
+#----------------------------------------------------------------------
+# Aporte
+#-----------------------------------------------------------------
+
+valor_aporte = st.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.01)
+if not valor_aporte:
+    valor_aporte = 0
+qt_ativo_aporte = st.number_input('Quantos ativos', value=1, format='%i', min_value=1)
 
 
