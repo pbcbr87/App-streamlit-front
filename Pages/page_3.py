@@ -92,7 +92,7 @@ if not st.session_state['carteira_api'] == []:
     with st.container(horizontal=True):
         df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 
-        df_resp = st.data_editor(df_carteira, column_order =("codigo_ativo","categoria", "peso"), disabled=["codigo_ativo", "categoria"], width = "content", hide_index=True)
+        df_resp = st.data_editor(df_carteira, column_order =("codigo_ativo","setor","categoria", "peso"), disabled=["codigo_ativo", "setor", "categoria"], width = "content", hide_index=True)
         
         cont_botao.button('Enviar Peso', on_click= envia_peso, kwargs={'dados': df_resp})
         
@@ -100,4 +100,5 @@ if not st.session_state['carteira_api'] == []:
         st.plotly_chart(fig)
 
         fig = px.pie(df_resp, values='peso', names='categoria', title='Categoria')
+
         st.plotly_chart(fig)
