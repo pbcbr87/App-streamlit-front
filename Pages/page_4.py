@@ -56,14 +56,12 @@ st.write(df_carteira)
 #----------------------------------------------------------------------
 # Aporte
 #---------------------------------------------------------------------
+# Valor a ser aportado
 valor_aporte = st.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.00)
 if not valor_aporte:
     valor_aporte = 0
-qt_ativo_aporte = st.number_input('Quantos ativos', value=1, format='%i', min_value=1)
-
-#------------------------------------------------------------------------
+ 
 # Calculo
-#------------------------------------------------------------------------
 valor_total = df_carteira['valor_mercado_brl'].sum() + valor_aporte
 peso_total =  df_carteira['peso'].sum()
 
@@ -71,3 +69,7 @@ df_carteira['valor_plan_brl'] = df_carteira['peso']*valor_total/peso_total
 df_carteira['aporte'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
 df_carteira = df_carteira[df_carteira['aporte'] > 0]
 st.write(df_carteira)
+
+# quantidade de ativos
+qt_ativo_aporte = st.number_input('Quantos ativos', value=1, format='%i', min_value=len(df_carteira))
+st.write(df_carteira.head(qt_ativo_aporte))
