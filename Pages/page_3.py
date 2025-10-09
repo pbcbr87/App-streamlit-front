@@ -105,8 +105,9 @@ if not st.session_state['carteira_api'] == []:
         st.plotly_chart(fig)
 
         fig = px.sunburst(df_resp, path=["categoria","setor", "codigo_ativo"], values='peso', color="categoria")
-        fig.update_traces(textposition='inside', textinfo='percent+label')
+        fig.update_traces(textinfo='label+percent entry')
         st.plotly_chart(fig)
+
 
 
 
