@@ -65,8 +65,7 @@ peso_total =  df_carteira['peso'].sum()
 
 df_carteira['valor_plan_brl'] = df_carteira['peso']*valor_total/peso_total
 df_carteira['dif'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
-mask = df_carteira['dif'] > 0
-df_carteira['dif'] = df_carteira['dif']
+df_carteira['dif'] = df_carteira[df_carteira['dif'] > 0]
 #df_carteira['aporte'] = df_carteira['dif'] * valor_aporte/df_carteira['dif'].sum()
 df_carteira['aporte'] = 1
 st.dataframe(df_carteira, hide_index=True, width='content')
