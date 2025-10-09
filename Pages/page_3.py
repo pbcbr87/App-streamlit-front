@@ -100,6 +100,10 @@ if not st.session_state['carteira_api'] == []:
         fig.update_traces(textposition='inside', textinfo='percent+label')
         st.plotly_chart(fig)
 
+        fig = px.pie(df_resp, values='peso', names='setor', title='Setor')
+        fig.update_traces(textposition='inside', textinfo='percent+label')
+        st.plotly_chart(fig)
+
         fig = px.pie(df_resp, values='peso', names='categoria', title='Categoria')
         fig.update_traces(textposition='inside', textinfo='percent+label')
         st.plotly_chart(fig)
@@ -107,6 +111,7 @@ if not st.session_state['carteira_api'] == []:
         fig = px.sunburst(df_resp, path=["categoria","setor", "codigo_ativo"], values='peso', color="categoria")
         fig.update_traces(textinfo='label+percent entry')
         st.plotly_chart(fig)
+
 
 
 
