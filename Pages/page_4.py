@@ -51,7 +51,7 @@ with sl_cat_container:
     option = st.selectbox("Ordendar por", list(op_ordem.keys()))
     
 mask = df_carteira['categoria'].isin(mult_sl_cat)
-df_carteira = df_carteira[mask].sort_values(op_ordem[option], ascending=[False])
+df_carteira = df_carteira[mask]
 st.write(df_carteira)
 #----------------------------------------------------------------------
 # Aporte
