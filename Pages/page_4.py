@@ -69,3 +69,4 @@ peso_total =  df_carteira['peso'].sum()
 
 df_carteira['valor_plan_brl'] = df_carteira['peso']*valor_total/peso_total
 df_carteira['aporte'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
+st.write(df_carteira)
