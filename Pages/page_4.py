@@ -68,7 +68,7 @@ df_carteira['dif'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado
 df_carteira = df_carteira[df_carteira['dif'] > 0]
 df_carteira['aporte'] = df_carteira['dif'] * valor_aporte/df_carteira['dif'].sum()
 st.dataframe(df_carteira, hide_index=True, width='content')
-df_carteira['aporte_per'] = np.where(df_carteira['valor_mercado_brl'] == 0, 1, df_carteira['aporte'] / df_carteira['valor_mercado_brl'])
+df_carteira['aporte_per'] = np.where(df_carteira['valor_mercado_brl'] == 0, 100, df_carteira['aporte'] / df_carteira['valor_mercado_brl'])
 df_carteira = df_carteira[df_carteira['aporte'] > 0]
 
 # quantidade de ativos
