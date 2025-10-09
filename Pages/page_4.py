@@ -56,7 +56,7 @@ st.write(df_carteira)
 #----------------------------------------------------------------------
 # Aporte
 #---------------------------------------------------------------------
-valor_aporte = st.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.01)
+valor_aporte = st.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.00)
 if not valor_aporte:
     valor_aporte = 0
 qt_ativo_aporte = st.number_input('Quantos ativos', value=1, format='%i', min_value=1)
