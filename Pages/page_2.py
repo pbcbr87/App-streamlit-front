@@ -241,6 +241,8 @@ if not st.session_state['carteira_api'] == []:
         ck_box_plan = st.checkbox('Filtro no Planejamento', help='O filtro será aplicado para recalcular os valores de planejamento')
 
         valor_aporte = st.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.01)
+        if not valor_aporte:
+            valor_aporte = 0
         qt_ativo_aporte = st.number_input('Quantos ativos', value=1, format='%i', min_value=1)
 
         if ck_box_plan:
@@ -261,6 +263,7 @@ if not st.session_state['carteira_api'] == []:
                             "Lucro %": st.column_config.NumberColumn("Lucro %", format="percent"),
                             "Aporte %": st.column_config.NumberColumn("Aporte %", format="percent")
                             })
+
 
 
 
