@@ -44,8 +44,8 @@ with sl_cat_container:
     st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 
     op_ordem = {
-                'Aporte': 'aporte',
-                'Percentual do aporte': 'aporte_per'
+                'Valor': 'dif',
+                'Percentual sobre valor atual': 'dif_perc'
                 }
     option = st.selectbox("Ordendar por", list(op_ordem.keys()))
     
@@ -66,16 +66,18 @@ peso_total =  df_carteira['peso'].sum()
 df_carteira['valor_plan_brl'] = df_carteira['peso']*valor_total/peso_total
 
 df_carteira['dif'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
+df_carteira['dif_perc'] = df_carteira['dif'] / df_carteira['valor_mercado_brl']
 df_carteira = df_carteira[df_carteira['dif'] > 0]
+
+# quantidade de ativos
+qt_ativo_aporte = sl_cat_container.number_input('Quantos ativos', value=len(df_carteira), format='%i', min_value=0, max_value=len(df_carteira))
+df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False]).head(qt_ativo_aporte)
 
 df_carteira['aporte'] = df_carteira['dif'] * valor_aporte/df_carteira['dif'].sum()
 df_carteira['aporte_per'] = np.where(df_carteira['valor_mercado_brl'] == 0, 100, df_carteira['aporte'] / df_carteira['valor_mercado_brl'])
 df_carteira = df_carteira[df_carteira['aporte'] > 0]
 
-# quantidade de ativos
-qt_ativo_aporte = sl_cat_container.number_input('Quantos ativos', value=len(df_carteira), format='%i', min_value=0, max_value=len(df_carteira))
-
-df_carteira = df_carteira[['codigo_ativo', 'categoria','valor_mercado_brl', 'aporte', 'aporte_per']].head(qt_ativo_aporte).sort_values(op_ordem[option], ascending=[False]).style.format({
+df_carteira = df_carteira[['codigo_ativo', 'categoria','valor_mercado_brl', 'aporte', 'aporte_per']].style.format({
     'aporte_per': '{:,.2%}',    
     'valor_mercado_brl': 'R$ {:,.2f}',
     'aporte': 'R$ {:,.2f}'
