@@ -44,20 +44,19 @@ def get_ativos():
 
 # Excluir operação
 def excluir_op():
-    for linha in st.session_state['sl_op_excluir']:
-        try:
-            resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/{linha}', headers={'Authorization':f'Bearer {st.session_state.token}'})
-            if resp.status_code == 200:
-                st.toast('Dados Excluidos')
-            else:
-                st.toast(f'Erro ao enviar, Erro: {resp}')
-        except:
-            st.error(f'Erro ao excluir, operção : {linha}')
+    try:
+        resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/{st.session_state['sl_op_excluir']}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+        if resp.status_code == 200:
+            st.toast('Dados Excluidos')
+        else:
+            st.toast(f'Erro ao enviar, Erro: {resp}')
+    except:
+        st.error(f'Erro ao excluir, operção : {linha}')
 
 #Excluir todas as operações
 def excluir_tudo():
     try:
-        resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordems/', headers={'Authorization':f'Bearer {st.session_state.token}'})
+        resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_all/', headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
             st.toast('Dados Excluidos')
         else:
@@ -195,4 +194,5 @@ with tab4:
         with col2:
             st.button('Excluir tudo', key='bt_4', on_click=excluir_tudo)
     else:
+
         st.write('Nenhum ordem cadastrada')
