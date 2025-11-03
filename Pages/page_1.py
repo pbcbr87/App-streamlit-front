@@ -45,7 +45,8 @@ def get_ativos():
 # Excluir operação
 def excluir_op():
     try:
-        resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/{st.session_state['sl_op_excluir']}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+        lista_excluir = dumps(
+        resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/{lista_excluir}', headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
             st.toast('Dados Excluidos')
         else:
@@ -198,4 +199,5 @@ with tab4:
     else:
 
         st.write('Nenhum ordem cadastrada')
+
 
