@@ -52,7 +52,7 @@ def excluir_op():
         else:
             st.write(lista_excluir)
             st.text(type(lista_excluir))
-            st.toast(f'Erro ao enviar, Erro: {resp}')
+            st.toast(f'Erro ao enviar, Erro: {resp.json()}')
     except:
         st.error(f'Erro ao excluir, operção : {linha}')
 
@@ -199,6 +199,7 @@ with tab4:
     else:
 
         st.write('Nenhum ordem cadastrada')
+
 
 
 
