@@ -52,7 +52,7 @@ def excluir_op():
         else:
             st.toast(f'Erro ao enviar, Erro: {resp.jons()}')
     except:
-        st.error(f'Erro ao excluir, operção : {linha}')
+        st.error(f'Erro ao excluir, operção : {lista_excluir}')
 
 #Excluir todas as operações
 def excluir_tudo():
@@ -197,6 +197,7 @@ with tab4:
     else:
 
         st.write('Nenhum ordem cadastrada')
+
 
 
 
