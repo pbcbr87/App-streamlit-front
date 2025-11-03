@@ -49,6 +49,8 @@ def excluir_op():
         if resp.status_code == 200:
             st.toast('Dados Excluidos')
         else:
+            st.write(st.session_state['sl_op_excluir'])
+            st.write(type(st.session_state['sl_op_excluir']))
             st.toast(f'Erro ao enviar, Erro: {resp}')
     except:
         st.error(f'Erro ao excluir, operção : {linha}')
@@ -196,3 +198,4 @@ with tab4:
     else:
 
         st.write('Nenhum ordem cadastrada')
+
