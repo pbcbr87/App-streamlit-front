@@ -49,8 +49,8 @@ def excluir_op():
         resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/', data=lista_excluir, headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
             st.toast('Dados Excluidos')
-    else:
-        st.toast(f'Erro ao enviar, Erro: {resp.jons()}')
+        else:
+            st.toast(f'Erro ao enviar, Erro: {resp.jons()}')
    except:
         st.error(f'Erro ao excluir, operção : {lista_excluir}')
 
@@ -197,6 +197,7 @@ with tab4:
     else:
 
         st.write('Nenhum ordem cadastrada')
+
 
 
 
