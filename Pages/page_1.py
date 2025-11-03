@@ -46,13 +46,11 @@ def get_ativos():
 def excluir_op():
     try:
         lista_excluir = dumps(st.session_state['sl_op_excluir'])
-        resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/{lista_excluir}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+        resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/, lista_excluir, headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
             st.toast('Dados Excluidos')
         else:
-            st.write(lista_excluir)
-            st.text(type(lista_excluir))
-            st.toast(f'Erro ao enviar, Erro: {resp.text}')
+            st.toast(f'Erro ao enviar, Erro: {resp.jons()}')
     except:
         st.error(f'Erro ao excluir, operção : {linha}')
 
@@ -199,6 +197,7 @@ with tab4:
     else:
 
         st.write('Nenhum ordem cadastrada')
+
 
 
 
