@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 from json import loads, dumps
-from datetime import datetime
+from datetime import datetime, date
 
 
 
@@ -131,7 +131,7 @@ with tab3:
         st.subheader('Dados da Operação')
         col1, col2 = st.columns(2)
         with col1:
-            input_data = st.date_input('Data: ', format='DD/MM/YYYY', min_value=datetime.date(2000, 1, 1), max_value=datetime.today())
+            input_data = st.date_input('Data: ', format='DD/MM/YYYY', min_value=date(2000, 1, 1), max_value=datetime.today())
             input_qt = st.number_input('Quantidade:', format='%f',step=0.000001, min_value=0.000001, value=None)
             input_Valor = st.number_input('Valor total da operação (Incluso as taxas):', format='%f',step=0.01, min_value=0.01, value=None, help='Valor total gasto, incluindo taxas')
             input_taxa = st.number_input('Taxas (Opcional):', value=None, format='%f',step=0.01, min_value=0.00, help='Essa taxa não impacta calculo da planilha, valor já incluso no valot total')
@@ -197,6 +197,7 @@ with tab4:
     else:
 
         st.write('Nenhum ordem cadastrada')
+
 
 
 
