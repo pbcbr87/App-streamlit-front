@@ -195,7 +195,7 @@ if not st.session_state['carteira_api'] == []:
             legend=dict(orientation='h', yanchor='top', y=-0.2,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)'),
             margin=dict(b=10,t=40) 
             )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
     with tab3:
         df = df_carteira_front
