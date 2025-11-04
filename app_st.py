@@ -4,24 +4,7 @@ import requests
 
 #deixar visivel as session:
 #st.write(st.session_state)
-import locale
 
-
-# Tenta definir o locale para português do Brasil
-# É crucial tentar diferentes codificações para garantir compatibilidade com diversos sistemas operacionais
-try:
-    # 1. Tenta a forma padrão para Linux/macOS
-    locale.setlocale(locale.LC_ALL, 'latim')
-except locale.Error:
-    try:
-        # 2. Tenta a forma comum para Windows
-        locale.setlocale(locale.LC_ALL, 'Portuguese_Brazil.1252')
-    except locale.Error:
-        # 3. Tenta uma forma genérica, caso as outras falhem
-        try:
-             locale.setlocale(locale.LC_ALL, 'pt_BR')
-        except locale.Error:
-             st.warning("Não foi possível definir o locale pt-BR. Usando o padrão do sistema.")
 #------------------------------------------------
 #Congiguraçãoes iniciais
 #------------------------------------------------

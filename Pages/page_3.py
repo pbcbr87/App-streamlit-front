@@ -288,7 +288,6 @@ else:
     # ----------------------------------------------------
     # GRÁFICOS PIE (abaixo das colunas principais)
     # ----------------------------------------------------
-    st.write(df_resp)
     st.subheader("📊 Análise Detalhada (Porcentagem de Peso)")       
  
     st.write("##### Por Ativo")
