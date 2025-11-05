@@ -32,35 +32,35 @@ def get_ativos():
 def envia_peso(dados: pd.DataFrame):
     """Atualiza o peso e nota dos ativos existentes na carteira."""
     token = st.session_state.get('token')
-    
+    lista_dados = []
     for _, linha in dados.iterrows():
         dado = {
-            "fk_usuario": st.session_state.id,
             "fk_ativo": f'{linha["codigo_ativo"]}_{linha["categoria"]}',
             "peso": linha['peso'],
             "nota": linha['nota']
         }
         
-        try:
-            resp = requests.put(
-                'https://pythonapi-production-6268.up.railway.app/carteira/update_peso_nota',
-                dumps(dado),
-                headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
-            )
-            if resp.status_code == 200:
-                st.toast(f'Peso de {linha["codigo_ativo"]} atualizado com sucesso!', icon="✅")
-            else:
-                st.error(f'Erro ao atualizar {linha["codigo_ativo"]}, Erro: {resp.text}')
-        except requests.exceptions.RequestException as e:
-            st.error(f'Erro de conexão ao enviar peso: {e}')
-        except TypeError as e:
-            st.error(f'Erro de tipo ao enviar peso: {e}')
+        lista_dados.append(dado)
+
+
+    try:
+        resp = requests.put(
+            'https://pythonapi-production-6268.up.railway.app/carteira/update_peso_nota',
+            dumps(lista_dados),
+            headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+        )
+        if resp.status_code == 200:
+            st.toast(f'Dados atualizado com sucesso!', icon="✅")
+        else:
+            st.error(f'Erro ao atualizar, Erro: {resp.text}')
+    except requests.exceptions.RequestException as e:
+        st.error(f'Erro de conexão ao enviar peso: {e}')
+    except TypeError as e:
+        st.error(f'Erro de tipo ao enviar peso: {e}')
 
     # Recarrega os dados da carteira após o loop
-    st.session_state['carteira_api'] = requests.get(
-        'https://pythonapi-production-6268.up.railway.app/carteira/pegar_carteira', 
-        headers={'Authorization': f'Bearer {token}'}
-    ).json()
+    st.session_state['carteira_api'] = requests.get('https://pythonapi-production-6268.up.railway.app/carteira/pegar_carteira', 
+                                                    headers={'Authorization': f'Bearer {token}'}).json()
 
 def envia_manual(dados: dict):
     """Insere um novo ativo manualmente na carteira."""
