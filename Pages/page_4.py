@@ -5,17 +5,16 @@ import numpy as np
 from plotly import graph_objects as go
 import plotly.express as px
 from json import loads, dumps
+from decimal import Decimal
 
 
 st.header("Aportes")
 #-----------------------------------------------------------
 # Buscando dados na API
 #-----------------------------------------------------------
-if 'carteira_api' not in st.session_state:
-    st.session_state['carteira_api'] = False
-if st.session_state['carteira_api'] == False:
-    #resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/Calcular/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
-    st.session_state['carteira_api'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/carteira/pegar_carteira', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
+if not st.session_state['carteira_api']:
+   st.info('Carteira vazia ou não calculada. Adicione um ativo para começar.')
+   st.stop()
 
 df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 df_carteira['pais'] = np.where((df_carteira['categoria'] == "AÇÕES") | (df_carteira['categoria'] == "FII"), 'BRL', 'USD')
@@ -57,7 +56,9 @@ df_carteira = df_carteira[mask]
 # Valor a ser aportado
 valor_aporte = sl_cat_container.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.00)
 if not valor_aporte:
-    valor_aporte = 0
+    valor_aporte = Decimal('0')
+else:
+    valor_aporte = Decimal(str(valor_aporte))
  
 # Calculo
 valor_total = df_carteira['valor_mercado_brl'].sum() + valor_aporte

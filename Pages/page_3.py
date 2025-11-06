@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from json import loads, dumps
+from decimal import Decimal
 
 # ==============================================================================
 # 🗃️ 1. FUNÇÕES DE API (LÓGICA DE NEGÓCIO)
@@ -148,16 +149,6 @@ if 'token' not in st.session_state or 'id' not in st.session_state:
     # st.warning("Token ou ID de usuário não encontrado na sessão. Certifique-se de estar logado.")
     # st.stop() 
 
-if 'carteira_api' not in st.session_state or st.session_state['carteira_api'] is False:
-    # Inicializa a carteira
-    try:
-        st.session_state['carteira_api'] = requests.get(
-            'https://pythonapi-production-6268.up.railway.app/carteira/pegar_carteira', 
-            headers={'Authorization': f'Bearer {st.session_state.token}'}
-        ).json()
-    except:
-        st.session_state['carteira_api'] = [] # Garante que seja uma lista vazia em caso de falha
-
 # Inicializa variáveis de estado
 if 'sl_cat' not in st.session_state:
     st.session_state['sl_cat'] = 'AÇÕES'
@@ -215,89 +206,90 @@ with cont_top_bar:
 
 if not st.session_state['carteira_api']:
     st.info('Carteira vazia ou não calculada. Adicione um ativo para começar.')
-else:
-    df_carteira = pd.DataFrame(st.session_state['carteira_api'])
-    df_cat_unique = list(df_carteira['categoria'].unique())
-    
-    if 'Key_SL_2' not in st.session_state:
-        st.session_state['Key_SL_2'] = df_cat_unique # Seleciona tudo por padrão
-    
-    # Filtros e botões de ação na barra superior (cont_top_bar)
-    with cont_top_bar:
-        with col_pills:
-            mult_sl_cat = st.pills('Categoria:', df_cat_unique, key='Key_SL_2', selection_mode="multi")
+    st.stop()
 
-        with col_bt_tudo:
-            st.button("", icon=':material/checklist_rtl:', type='tertiary', help='Selecionar todas as categorias', on_click=sl_tudo_ex, width='stretch')
-            
-        with col_bt_nada:
-            st.button("", icon=':material/cancel:', type='tertiary', help='Desmarcar todas as categorias', on_click=sl_nada_ex, width='stretch')
+df_carteira = pd.DataFrame(st.session_state['carteira_api'])
+df_cat_unique = list(df_carteira['categoria'].unique())
 
-    # Aplica a máscara de filtro
-    mask = df_carteira['categoria'].isin(st.session_state['Key_SL_2'])
-    df_filtered = df_carteira[mask].copy()
+if 'Key_SL_2' not in st.session_state:
+    st.session_state['Key_SL_2'] = df_cat_unique # Seleciona tudo por padrão
 
-    # Verifica se há dados filtrados para exibir
-    if df_filtered.empty:
-        st.warning('Nenhum dado para exibir. Selecione uma ou mais categorias acima.')
-        with cont_top_bar:
-             col_bt_envio.button('Enviar Pesos', disabled=True, width='stretch')
-        st.stop() 
+# Filtros e botões de ação na barra superior (cont_top_bar)
+with cont_top_bar:
+    with col_pills:
+        mult_sl_cat = st.pills('Categoria:', df_cat_unique, key='Key_SL_2', selection_mode="multi")
 
-
-    # ----------------------------------------------------
-    # 🌟 LAYOUT: TABELA AO LADO DO SUNBURST
-    # ----------------------------------------------------
-    
-    col_tabela, col_sunburst = st.columns([1, 1.5])
-    
-    # 1. TABELA DE EDIÇÃO (na primeira coluna)
-    with col_tabela:
-        st.subheader("📝 Edição da Carteira")
+    with col_bt_tudo:
+        st.button("", icon=':material/checklist_rtl:', type='tertiary', help='Selecionar todas as categorias', on_click=sl_tudo_ex, width='stretch')
         
-        # O data_editor vai preencher a largura da coluna
-        df_resp = st.data_editor(
-            df_filtered, 
-            column_order =("codigo_ativo", "setor", "categoria", "peso", "nota"), 
-            column_config={
-                "codigo_ativo": st.column_config.Column("Ativo", disabled=True),
-                "setor": st.column_config.Column("Setor", disabled=True),
-                "categoria": st.column_config.Column("Categoria", disabled=True),
-                "peso": st.column_config.NumberColumn("Peso", format="%.2f", min_value=0.01),
-                "nota": st.column_config.NumberColumn("Nota (0-10)", format="%d", min_value=0, max_value=10)
-            },
-            hide_index=True,
-            width='stretch', 
-            height=600 # Altura fixa para melhor alinhamento visual
-        )
-    
-    # 2. SUNBURST CHART (na segunda coluna)
-    with col_sunburst:
-        st.subheader("Distribuição")
-        fig_sunburst = create_sunburst_chart(df_resp)
-        st.plotly_chart(fig_sunburst, width='stretch')
+    with col_bt_nada:
+        st.button("", icon=':material/cancel:', type='tertiary', help='Desmarcar todas as categorias', on_click=sl_nada_ex, width='stretch')
 
-    # Botão de envio dos pesos (na barra superior)
+# Aplica a máscara de filtro
+mask = df_carteira['categoria'].isin(st.session_state['Key_SL_2'])
+df_filtered = df_carteira[mask].copy()
+
+# Verifica se há dados filtrados para exibir
+if df_filtered.empty:
+    st.warning('Nenhum dado para exibir. Selecione uma ou mais categorias acima.')
     with cont_top_bar:
-        # Pega as colunas modificadas (apenas peso e nota)
-        df_envio = df_resp[['codigo_ativo', 'categoria', 'peso', 'nota']]
-        col_bt_envio.button('Enviar Pesos', on_click=envia_peso, kwargs={'dados': df_envio}, width='stretch')
+            col_bt_envio.button('Enviar Pesos', disabled=True, width='stretch')
+    st.stop() 
 
-    st.divider()
 
-    # ----------------------------------------------------
-    # GRÁFICOS PIE (abaixo das colunas principais)
-    # ----------------------------------------------------
-    st.subheader("📊 Análise Detalhada (Porcentagem de Peso)")       
- 
-    st.write("##### Por Ativo")
-    fig_ativo = create_pie_chart(df_resp, 'codigo_ativo', '')
-    st.plotly_chart(fig_ativo, width='stretch')
+# ----------------------------------------------------
+# 🌟 LAYOUT: TABELA AO LADO DO SUNBURST
+# ----------------------------------------------------
 
-    st.write("##### Por Setor")
-    fig_setor = create_pie_chart(df_resp, 'setor', '')
-    st.plotly_chart(fig_setor, width='stretch')
+col_tabela, col_sunburst = st.columns([1, 1.5])
 
-    st.write("##### Por Categoria")
-    fig_categoria = create_pie_chart(df_resp, 'categoria', '')
-    st.plotly_chart(fig_categoria, width='stretch')
+# 1. TABELA DE EDIÇÃO (na primeira coluna)
+with col_tabela:
+    st.subheader("📝 Edição da Carteira")
+    
+    # O data_editor vai preencher a largura da coluna
+    df_resp = st.data_editor(
+        df_filtered, 
+        column_order =("codigo_ativo", "setor", "categoria", "peso", "nota"), 
+        column_config={
+            "codigo_ativo": st.column_config.Column("Ativo", disabled=True),
+            "setor": st.column_config.Column("Setor", disabled=True),
+            "categoria": st.column_config.Column("Categoria", disabled=True),
+            "peso": st.column_config.NumberColumn("Peso", format="%.2f", min_value=0.00),
+            "nota": st.column_config.NumberColumn("Nota (0-10)", format="%d", min_value=0, max_value=10)
+        },
+        hide_index=True,
+        width='stretch', 
+        height=600 # Altura fixa para melhor alinhamento visual
+    )
+
+# 2. SUNBURST CHART (na segunda coluna)
+with col_sunburst:
+    st.subheader("Distribuição")
+    fig_sunburst = create_sunburst_chart(df_resp)
+    st.plotly_chart(fig_sunburst, width='stretch')
+
+# Botão de envio dos pesos (na barra superior)
+with cont_top_bar:
+    # Pega as colunas modificadas (apenas peso e nota)
+    df_envio = df_resp[['codigo_ativo', 'categoria', 'peso', 'nota']]
+    col_bt_envio.button('Enviar Pesos', on_click=envia_peso, kwargs={'dados': df_envio}, width='stretch')
+
+st.divider()
+
+# ----------------------------------------------------
+# GRÁFICOS PIE (abaixo das colunas principais)
+# ----------------------------------------------------
+st.subheader("📊 Análise Detalhada (Porcentagem de Peso)")       
+
+st.write("##### Por Ativo")
+fig_ativo = create_pie_chart(df_resp, 'codigo_ativo', '')
+st.plotly_chart(fig_ativo, width='stretch')
+
+st.write("##### Por Setor")
+fig_setor = create_pie_chart(df_resp, 'setor', '')
+st.plotly_chart(fig_setor, width='stretch')
+
+st.write("##### Por Categoria")
+fig_categoria = create_pie_chart(df_resp, 'categoria', '')
+st.plotly_chart(fig_categoria, width='stretch')

@@ -5,15 +5,17 @@ from json import loads, dumps
 from datetime import datetime, date
 
 
-
 # requisição de datos
 def get_operacoes():
-    try:
-        dados_ordens = requests.get(f'https://pythonapi-production-6268.up.railway.app/ordem_input/pegar_ordens', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()    
-    except:
-        dados_ordens = []
-        st.toast(f'Sem dados')
-    return dados_ordens
+    with st.spinner("Aguardando...", show_time=True):
+        try:
+            resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/ordem_input/pegar_ordens', headers={'Authorization':f'Bearer {st.session_state.token}'})   
+            if resp.status_code == 200:
+                dados_ordens = resp.json() 
+        except Exception as e:
+            dados_ordens = []
+            st.toast("Erro ao pegar dados: {e}")
+        return dados_ordens
 
 # Enviar dados para o banco de dados
 def enviar_tabela(dataframe):
