@@ -12,6 +12,9 @@ def get_operacoes():
             resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/ordem_input/pegar_ordens', headers={'Authorization':f'Bearer {st.session_state.token}'})   
             if resp.status_code == 200:
                 dados_ordens = resp.json() 
+            if resp.status_code != 200:
+                st.toast(f'Erro ao pegar dados, Erro: {resp}')
+                dados_ordens = []
         except Exception as e:
             dados_ordens = []
             st.toast("Erro ao pegar dados: {e}")
