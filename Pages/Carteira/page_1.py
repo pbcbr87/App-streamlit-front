@@ -27,9 +27,8 @@ def enviar_tabela(dataframe):
     ordens_tabela = dumps({"dados": linhas})
     
     resp = requests.post('https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordens_table', ordens_tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
-    if resp.status_code == 200:
-        st.toast('Dados enviados')
-        st.toast(resp.json())
+    return resp
+    
 
 # Enviar dados para o banco de dados
 def envia_manual(ordem_manual):
@@ -114,10 +113,42 @@ with tab2:
         if not titulo_padrao == titulo:
             st.warning('Colunas fora do padrão')
         else:
-            st.button('Enviar', key='bt_1', on_click=enviar_tabela, kwargs={'dataframe': dataframe})
-
             with st.expander('Exibir Dados input'):
                 st.dataframe(dataframe, width='content')
+
+            if st.button('Enviar', key='bt_1', kwargs={'dataframe': dataframe}):
+                resp = enviar_tabela(dataframe)
+                try:
+                    resposta_json = resp.json()
+                except:
+                    st.error(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
+
+                    # --- Tratamento de Sucesso (200 OK) ---
+                if resp.status_code == 200:
+                    st.success('✅ Dados enviados com sucesso!')                    
+                                           
+                # --- Tratamento de Erro de Validação (422 Unprocessable Entity) ---
+                elif resp.status_code == 422:
+                    st.error('❌ Existe dados inválidos no seu arquivo. Veja abaixo os detalhes:')
+                                        
+                    detail = resposta_json.get('detail', {})
+                    linhas_rejeitadas = detail.get('linhas_rejeitadas', [])
+                    
+                    if linhas_rejeitadas:
+                        st.warning(f"Foram encontradas {len(linhas_rejeitadas)} linha(s) com erro de validação.")
+                        df_erros = pd.DataFrame(linhas_rejeitadas)
+
+                        st.dataframe(df_erros, width='content',
+                                     column_config={"msg": st.column_config.ListColumn(width='large'),
+                                                    "data_operacao": st.column_config.DateColumn(format="DD.MM.YYYY")})
+                    else:
+                        st.text(f"Detalhe de erro da API: {detail}")
+
+                else:
+                    st.error(f"⚠️ Erro HTTP inesperado: Status {resp.status_code}")
+                    st.text(f"Detalhes da Resposta: {dumps(resposta_json, indent=2)}")
+
+
 #-------------------------------------------------------------------------------------------------------------
 #     Inserir dados manual
 #-------------------------------------------------------------------------------------------------------------
