@@ -163,8 +163,9 @@ def navegacao():
                     st.success("Carteira atualizada com sucesso!")
                     # Recarregar dados da carteira
                     if 'carteira_api' in st.session_state:
-                        dados_processados = get_carteira_data(st.session_state.token)        
-                        st.session_state['carteira_api'] = dados_processados
+                        get_carteira_data.clear()
+                        st.session_state['carteira_api'] = []
+                        st.session_state['carteira_api'] = get_carteira_data(st.session_state.token) 
                 else:
                     st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")
     return pg

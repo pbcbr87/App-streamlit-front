@@ -8,41 +8,6 @@ from decimal import Decimal
 
 
 API_URL = 'https://pythonapi-production-6268.up.railway.app/'
-# Função de busca e conversão de dados da carteira
-@st.cache_data(show_spinner="Carregando e convertendo dados da carteira...")
-def get_carteira_data(token: str) -> list:
-    """Busca a carteira da API e converte strings numéricas para Decimal."""
-    
-    resp = requests.get(
-        f'{API_URL}/carteira/pegar_carteira', 
-        headers={'Authorization':f'Bearer {token}'}
-    )
-    
-    if resp.status_code != 200:
-        st.error(f"Erro ao carregar carteira: Status {resp.status_code}")
-        return []
-    
-    dict_resp = resp.json()
-    
-    if not isinstance(dict_resp, list):
-         # Lida com o erro de formato de API (visto em conversas anteriores)
-         st.error(f"Formato da API inesperado. Recebido tipo: {type(dict_resp)}")
-         return []
-
-    for item in dict_resp:
-        for item_key, valor in item.items():
-            if isinstance(valor, str):
-                valor_limpo = valor.strip()
-                print(type(valor_limpo), valor_limpo)
-                if not valor_limpo:
-                    continue
-                try:
-                    # A conversão de str para Decimal
-                    item[item_key] = Decimal(valor_limpo)
-                except Exception:
-                    pass # Deixa como string se não for um número
-
-    return dict_resp
 
 # requisição de datos
 def get_operacoes():
@@ -72,7 +37,7 @@ def enviar_tabela(dataframe):
 def envia_manual(ordem_manual):
     ordem_manual = dumps(ordem_manual)
     try:
-        resp = requests.post('https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordem', ordem_manual, headers={'Authorization':f'Bearer {st.session_state.token}'})
+        resp = requests.post(f'{API_URL}ordem_input/inserir_ordem', ordem_manual, headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
             st.success('Dados enviados')
             with st.spinner("Aguardando...", show_time=True):
@@ -80,9 +45,8 @@ def envia_manual(ordem_manual):
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
                     # Recarregar dados da carteira
-                    if 'carteira_api' in st.session_state:
-                        dados_processados = get_carteira_data(st.session_state.token)        
-                        st.session_state['carteira_api'] = dados_processados
+                    if 'carteira_api' in st.session_state:        
+                        st.cache_resource.clear()
                 else:
                     st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")  
         else:
@@ -106,9 +70,8 @@ def excluir_op():
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
                     # Recarregar dados da carteira
-                    if 'carteira_api' in st.session_state:
-                        dados_processados = get_carteira_data(st.session_state.token)        
-                        st.session_state['carteira_api'] = dados_processados
+                    if 'carteira_api' in st.session_state:  
+                        st.cache_resource.clear()
                 else:
                     st.error(f"Erro ao atualizar carteira: Status {resp.status_code}") 
         else:
@@ -127,9 +90,8 @@ def excluir_tudo():
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
                     # Recarregar dados da carteira
-                    if 'carteira_api' in st.session_state:
-                        dados_processados = get_carteira_data(st.session_state.token)        
-                        st.session_state['carteira_api'] = dados_processados
+                    if 'carteira_api' in st.session_state:      
+                        st.cache_resource.clear()
                 else:
                     st.error(f"Erro ao atualizar carteira: Status {resp.status_code}") 
         else:
@@ -199,9 +161,10 @@ with tab2:
                         if resp.status_code == 200:
                             st.success("Carteira atualizada com sucesso!")
                             # Recarregar dados da carteira
-                            if 'carteira_api' in st.session_state:
-                                dados_processados = get_carteira_data(st.session_state.token)        
-                                st.session_state['carteira_api'] = dados_processados
+                            if 'carteira_api' in st.session_state:      
+                                st.cache_resource.clear()
+                                ordens = get_operacoes()
+                                df_ordens = pd.DataFrame(ordens)
                         else:
                             st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")                    
                                            
@@ -225,8 +188,6 @@ with tab2:
                 else:
                     st.error(f"⚠️ Erro HTTP inesperado: Status {resp.status_code}")
                     st.text(f"Detalhes da Resposta: {dumps(resposta_json, indent=2)}")
-
-
 #-------------------------------------------------------------------------------------------------------------
 #     Inserir dados manual
 #-------------------------------------------------------------------------------------------------------------
@@ -271,14 +232,12 @@ with tab3:
             "taxas": input_taxa,
             "corretora": input_Corretora
             }
-        if input_data and input_Cat and input_Ativo and input_C_V and input_qt and input_Valor:
-            st.session_state['disabled_bt_2'] = False
-        else:
-            st.session_state['disabled_bt_2'] = True
-        if st.button('OK', key='bt_2', disabled=st.session_state['disabled_bt_2']):
-            if st.session_state['disabled_bt_2'] == False:
-                st.button('Enviar?', on_click= envia_manual, kwargs={'ordem_manual': ordem_manual})
-                st.dataframe(ordem_manual, width = "content")
+        is_valid_input = bool(input_data and input_Cat and input_Ativo and input_C_V and input_qt and input_Valor)
+        is_disabled = not is_valid_input or st.session_state.get('disabled_bt_2', False)
+        if is_valid_input: # Se os dados necessários estão presentes, o botão deve ser visível
+            if st.button('Enviar', on_click=envia_manual, kwargs={'ordem_manual': ordem_manual},disabled=is_disabled):
+                ordens = get_operacoes()
+                df_ordens = pd.DataFrame(ordens)
 #-------------------------------------------------------------------------------------------------------------
 #     Excluir operações
 #-------------------------------------------------------------------------------------------------------------
@@ -305,9 +264,13 @@ with tab4:
             
         col1, col2 = st.columns([1, 0.3])
         with col1:
-            st.button('Excluir', key='bt_3', disabled=st.session_state['bt_on'], on_click=excluir_op)  
+            if st.button('Excluir', key='bt_3', disabled=st.session_state['bt_on'], on_click=excluir_op):
+                ordens = get_operacoes()
+                df_ordens = pd.DataFrame(ordens)  
         with col2:
-            st.button('Excluir tudo', key='bt_4', on_click=excluir_tudo)
+            if st.button('Excluir tudo', key='bt_4', on_click=excluir_tudo):
+                ordens = get_operacoes()
+                df_ordens = pd.DataFrame(ordens)
     else:
 
         st.write('Nenhum ordem cadastrada')
