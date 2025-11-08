@@ -3,8 +3,46 @@ import pandas as pd
 import requests
 from json import loads, dumps
 from datetime import datetime, date
-from app_st import get_carteira_data
+from decimal import Decimal
 
+
+
+API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+# Função de busca e conversão de dados da carteira
+@st.cache_data(show_spinner="Carregando e convertendo dados da carteira...")
+def get_carteira_data(token: str) -> list:
+    """Busca a carteira da API e converte strings numéricas para Decimal."""
+    
+    resp = requests.get(
+        f'{API_URL}/carteira/pegar_carteira', 
+        headers={'Authorization':f'Bearer {token}'}
+    )
+    
+    if resp.status_code != 200:
+        st.error(f"Erro ao carregar carteira: Status {resp.status_code}")
+        return []
+    
+    dict_resp = resp.json()
+    
+    if not isinstance(dict_resp, list):
+         # Lida com o erro de formato de API (visto em conversas anteriores)
+         st.error(f"Formato da API inesperado. Recebido tipo: {type(dict_resp)}")
+         return []
+
+    for item in dict_resp:
+        for item_key, valor in item.items():
+            if isinstance(valor, str):
+                valor_limpo = valor.strip()
+                print(type(valor_limpo), valor_limpo)
+                if not valor_limpo:
+                    continue
+                try:
+                    # A conversão de str para Decimal
+                    item[item_key] = Decimal(valor_limpo)
+                except Exception:
+                    pass # Deixa como string se não for um número
+
+    return dict_resp
 
 # requisição de datos
 def get_operacoes():
@@ -29,15 +67,24 @@ def enviar_tabela(dataframe):
     
     resp = requests.post('https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordens_table', ordens_tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
     return resp
-    
-
+ 
 # Enviar dados para o banco de dados
 def envia_manual(ordem_manual):
     ordem_manual = dumps(ordem_manual)
     try:
         resp = requests.post('https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordem', ordem_manual, headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
-            st.toast('Dados enviados')
+            st.success('Dados enviados')
+            with st.spinner("Aguardando...", show_time=True):
+                resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+                if resp.status_code == 200:
+                    st.success("Carteira atualizada com sucesso!")
+                    # Recarregar dados da carteira
+                    if 'carteira_api' in st.session_state:
+                        dados_processados = get_carteira_data(st.session_state.token)        
+                        st.session_state['carteira_api'] = dados_processados
+                else:
+                    st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")  
         else:
             st.error(f'Erro ao enviar, Erro: {resp}')
     except TypeError as e:
@@ -53,9 +100,19 @@ def excluir_op():
         lista_excluir = dumps(st.session_state['sl_op_excluir'])
         resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/', data=lista_excluir, headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
-            st.toast('Dados Excluidos')
+            st.success('Dados Excluidos')
+            with st.spinner("Aguardando...", show_time=True):
+                resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+                if resp.status_code == 200:
+                    st.success("Carteira atualizada com sucesso!")
+                    # Recarregar dados da carteira
+                    if 'carteira_api' in st.session_state:
+                        dados_processados = get_carteira_data(st.session_state.token)        
+                        st.session_state['carteira_api'] = dados_processados
+                else:
+                    st.error(f"Erro ao atualizar carteira: Status {resp.status_code}") 
         else:
-            st.toast(f'Erro ao enviar, Erro: {resp.jons()}')
+            st.error(f'Erro ao enviar, Erro: {resp.jons()}')
    except:
         st.error(f'Erro ao excluir, operção : {lista_excluir}')
 
@@ -64,9 +121,19 @@ def excluir_tudo():
     try:
         resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_all/', headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
-            st.toast('Dados Excluidos')
+            st.success('Dados Excluidos')
+            with st.spinner("Aguardando...", show_time=True):
+                resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+                if resp.status_code == 200:
+                    st.success("Carteira atualizada com sucesso!")
+                    # Recarregar dados da carteira
+                    if 'carteira_api' in st.session_state:
+                        dados_processados = get_carteira_data(st.session_state.token)        
+                        st.session_state['carteira_api'] = dados_processados
+                else:
+                    st.error(f"Erro ao atualizar carteira: Status {resp.status_code}") 
         else:
-            st.toast(f'Erro ao enviar, Erro: {resp}')
+            st.success(f'Erro ao enviar, Erro: {resp}')
     except TypeError as e:
         st.error(f'Erro ao excluir, {e}') 
     
@@ -127,7 +194,7 @@ with tab2:
                     # --- Tratamento de Sucesso (200 OK) ---
                 if resp.status_code == 200:
                     st.success('✅ Dados enviados com sucesso!')
-                    with st.spinner("Recalculando Carteira Aguardando...", show_time=True):
+                    with st.spinner("Aguardando...", show_time=True):
                         resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                         if resp.status_code == 200:
                             st.success("Carteira atualizada com sucesso!")

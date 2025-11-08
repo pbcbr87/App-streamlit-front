@@ -46,7 +46,6 @@ def get_carteira_data(token: str) -> list:
         for item_key, valor in item.items():
             if isinstance(valor, str):
                 valor_limpo = valor.strip()
-                print(type(valor_limpo), valor_limpo)
                 if not valor_limpo:
                     continue
                 try:
