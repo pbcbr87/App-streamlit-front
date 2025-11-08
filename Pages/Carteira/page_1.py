@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 from json import loads, dumps
 from datetime import datetime, date
+from app_st import get_carteira_data
 
 
 # requisição de datos
@@ -125,7 +126,17 @@ with tab2:
 
                     # --- Tratamento de Sucesso (200 OK) ---
                 if resp.status_code == 200:
-                    st.success('✅ Dados enviados com sucesso!')                    
+                    st.success('✅ Dados enviados com sucesso!')
+                    with st.spinner("Recalculando Carteira Aguardando...", show_time=True):
+                        resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+                        if resp.status_code == 200:
+                            st.success("Carteira atualizada com sucesso!")
+                            # Recarregar dados da carteira
+                            if 'carteira_api' in st.session_state:
+                                dados_processados = get_carteira_data(st.session_state.token)        
+                                st.session_state['carteira_api'] = dados_processados
+                        else:
+                            st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")                    
                                            
                 # --- Tratamento de Erro de Validação (422 Unprocessable Entity) ---
                 elif resp.status_code == 422:

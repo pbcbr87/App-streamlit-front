@@ -132,18 +132,18 @@ def navegacao():
     #------------------------------------------------
     #Estrutura de navegação principal
     #------------------------------------------------
-    conta_pages = [st.Page("Pages/Conta/home.py",title='inicio', icon=":material/home:", default=True),
+    conta_pages = [st.Page("Pages/Conta/home.py",title='inicio', icon=":material/home:"),
                     st.Page("Pages/Conta/settings.py", title="Meus cadastro", icon=":material/settings:"),
                     st.Page(logout, title='Sair', icon= ':material/logout:')    
                     ]
-    cateira_pages = [st.Page('Pages/Carteira/page_1.py', title='Operações'),
-                    st.Page('Pages/Carteira/page_2.py', title='Carteira'),
+    cateira_pages = [st.Page('Pages/Carteira/page_2.py', title='Carteira', default=True),
+                    st.Page('Pages/Carteira/page_1.py', title='Operações'),
                     st.Page('Pages/Carteira/page_3.py', title='Planejar'),
                     st.Page('Pages/Carteira/page_4.py', title='Aporte')
                     ]
     admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:')]
 
-    pages = {"Conta": conta_pages,"Sua Carteira": cateira_pages}
+    pages = {"Sua Carteira": cateira_pages, "Conta": conta_pages}
 
     if st.session_state.admin == True:
         pages["Admin"] = admin_pages
