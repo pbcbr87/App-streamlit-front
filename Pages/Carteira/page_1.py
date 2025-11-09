@@ -36,23 +36,38 @@ def enviar_tabela(dataframe):
 # Enviar dados para o banco de dados
 def envia_manual(ordem_manual):
     ordem_manual = dumps(ordem_manual)
+    resp = requests.post(f'https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordem', ordem_manual, headers={'Authorization':f'Bearer {st.session_state.token}'})
     try:
-        resp = requests.post(f'{API_URL}ordem_input/inserir_ordem', ordem_manual, headers={'Authorization':f'Bearer {st.session_state.token}'})
-        if resp.status_code == 200:
-            st.success('Dados enviados')
-            with st.spinner("Aguardando...", show_time=True):
-                resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
-                if resp.status_code == 200:
-                    st.success("Carteira atualizada com sucesso!")
-                    # Recarregar dados da carteira
-                    if 'carteira_api' in st.session_state:        
-                        st.cache_resource.clear()
-                else:
-                    st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")  
+        resposta_json = resp.json()
+    except:
+        st.error(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
+    if resp.status_code == 200:
+        st.success('Dados enviados')
+        with st.spinner("Aguardando...", show_time=True):
+            resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+            if resp.status_code == 200:
+                st.success("Carteira atualizada com sucesso!")
+                # Recarregar dados da carteira
+                if 'carteira_api' in st.session_state:        
+                    st.cache_resource.clear()
+            else:
+                st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")  
+    # --- Tratamento de Erro de Validação (422 Unprocessable Entity) ---
+    elif resp.status_code == 422:
+        st.error('❌ Existe dados inválidos no seu arquivo. Veja abaixo os detalhes:')
+                            
+        detail = resposta_json.get('detail', {})
+        linhas_rejeitadas = detail.get('linhas_rejeitadas', [])
+        
+        if linhas_rejeitadas:
+            st.warning(f"Foram encontradas {len(linhas_rejeitadas)} linha(s) com erro de validação.")
+            df_erros = pd.DataFrame(linhas_rejeitadas)
+
+            st.dataframe(df_erros, width='content',
+                            column_config={"msg": st.column_config.ListColumn(width='large'),
+                                        "data_operacao": st.column_config.DateColumn(format="DD.MM.YYYY")})
         else:
-            st.error(f'Erro ao enviar, Erro: {resp}')
-    except TypeError as e:
-        st.error(f'Erro ao enviar: {e}')
+            st.text(f"Detalhe de erro da API: {detail}")
 
 # Pegar lista de ativos
 def get_ativos():
@@ -60,7 +75,7 @@ def get_ativos():
 
 # Excluir operação
 def excluir_op():
-   try:
+    try:
         lista_excluir = dumps(st.session_state['sl_op_excluir'])
         resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/', data=lista_excluir, headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
@@ -76,8 +91,8 @@ def excluir_op():
                     st.error(f"Erro ao atualizar carteira: Status {resp.status_code}") 
         else:
             st.error(f'Erro ao enviar, Erro: {resp.jons()}')
-   except:
-        st.error(f'Erro ao excluir, operção : {lista_excluir}')
+    except:
+            st.error(f'Erro ao excluir, operção : {lista_excluir}')
 
 #Excluir todas as operações
 def excluir_tudo():
@@ -209,7 +224,7 @@ with tab3:
             input_data = st.date_input('Data: ', format='DD/MM/YYYY', min_value=date(2000, 1, 1), max_value=datetime.today())
             input_qt = st.number_input('Quantidade:', format='%f',step=0.000001, min_value=0.000001, value=None)
             input_Valor = st.number_input('Valor total da operação (Incluso as taxas):', format='%f',step=0.01, min_value=0.01, value=None, help='Valor total gasto, incluindo taxas')
-            input_taxa = st.number_input('Taxas (Opcional):', value=None, format='%f',step=0.01, min_value=0.00, help='Essa taxa não impacta calculo da planilha, valor já incluso no valot total')
+            input_taxa = st.number_input('Taxas (Opcional):', value=0.00, format='%f',step=0.01, min_value=0.00, help='Essa taxa não impacta calculo da planilha, valor já incluso no valot total')
         with col2:            
             input_Cat = st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
             st.text_input("Pesquisa ativo", label_visibility='collapsed', placeholder="Pesquisa ativo", key='sl_ativo', on_change=get_ativos)
@@ -235,7 +250,7 @@ with tab3:
         is_valid_input = bool(input_data and input_Cat and input_Ativo and input_C_V and input_qt and input_Valor)
         is_disabled = not is_valid_input or st.session_state.get('disabled_bt_2', False)
         if is_valid_input: # Se os dados necessários estão presentes, o botão deve ser visível
-            if st.button('Enviar', on_click=envia_manual, kwargs={'ordem_manual': ordem_manual},disabled=is_disabled):
+            if st.button('Enviar', on_click=envia_manual, kwargs={'ordem_manual': ordem_manual}, disabled=is_disabled):
                 ordens = get_operacoes()
                 df_ordens = pd.DataFrame(ordens)
 #-------------------------------------------------------------------------------------------------------------
@@ -272,7 +287,6 @@ with tab4:
                 ordens = get_operacoes()
                 df_ordens = pd.DataFrame(ordens)
     else:
-
         st.write('Nenhum ordem cadastrada')
 
 
