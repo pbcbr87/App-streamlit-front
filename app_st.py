@@ -5,9 +5,9 @@ from decimal import Decimal
 
 #deixar visivel as session:
 # st.write(st.session_state)
+# st.context.cookies
 #------------------------------------------------
 API_URL = 'https://pythonapi-production-6268.up.railway.app/'
-#------------------------------------------------
 #------------------------------------------------
 #Congiguraçãoes iniciais
 #------------------------------------------------
@@ -57,16 +57,38 @@ def get_carteira_data(token: str) -> list:
     return dict_resp
 
 #função para pegar o token de autenticação
-@st.cache_data
+@st.cache_data()
 def get_user(tk):
     usuario = requests.get(f'{API_URL}/usuarios/', headers={'Authorization':f'Bearer {tk}'}).json()
     return usuario
+
+@st.cache_data(persist="disk")
+def cookie_token():
+    if 'token' in st.session_state:
+        return {'token': st.session_state.token}
+    return {}
 
 #------------------------------------------------
 #Delcarar sessions
 #------------------------------------------------
 if 'logado' not in st.session_state:    
     st.session_state.logado = False
+
+if not st.session_state.logado and 'token' in cookie_token():
+    tk_cookie = cookie_token()['token']
+    
+    user_data =  get_user(tk_cookie)
+                
+    if user_data:
+        st.session_state.token = tk_cookie
+        st.session_state.nome = user_data['nome'].upper()
+        st.session_state.user = user_data['login'].upper()
+        st.session_state.email = user_data['email'].upper()
+        st.session_state.admin = user_data['admin']
+        st.session_state.id = user_data['id']
+        st.session_state.logado = True
+    else:
+        cookie_token.clear()
 
 if st.session_state.logado == False:
     st.session_state.user = None
@@ -85,32 +107,67 @@ if "user" not in st.session_state:
 #------------------------------------------------
 #Pagina de login
 def login():
-    with st.container(horizontal_alignment ="center").form("login", width="content"):
+    with st.container(horizontal_alignment="center").form("login", width="content", enter_to_submit=True, clear_on_submit=True):
         st.header("Log in")
         user_input = st.text_input('User')
         senha_input = st.text_input('Senha', type='password')
 
         if st.form_submit_button("Log in"):
-            if (len(user_input) > 0) and (len(senha_input) > 0):
-                try:
-                    get_token = requests.post('https://pythonapi-production-6268.up.railway.app/auth/token', {'username': user_input, 'password': senha_input}).json()
-                    if 'access_token' in get_token:
-                        st.session_state.logado = True
-                        st.session_state.token = get_token['access_token']
-                        st.session_state.nome = get_user(get_token['access_token'])['nome'].upper()
-                        st.session_state.user = get_user(get_token['access_token'])['login'].upper()
-                        st.session_state.email = get_user(get_token['access_token'])['email'].upper()
-                        st.session_state.admin = get_user(get_token['access_token'])['admin']
-                        st.session_state.id = get_user(get_token['access_token'])['id']
-                        st.rerun()
-                except Exception as e:
-                    print("Erro: ", e)
-                    st.warning(f'Conexão com backend, Detalhes: {e}')            
-                    st.session_state.logado = False               
-            else:
+            if not user_input or not senha_input:
                 st.warning('Usuário ou senha vazio')
+                return
+            
+            try:
+                resp = requests.post('https://pythonapi-production-6268.up.railway.app/auth/token', {'username': user_input, 'password': senha_input})
+            except Exception as e:
+                print("Erro: ", e)
+                st.warning(f'Conexão com backend, Detalhes: {e}')            
+                st.session_state.logado = False
+                return
+            
+            if not resp:
+                return
+
+            if resp.status_code == 200:         
+                resp_token = resp.json()
+
+                token = resp_token.get('access_token', None)
+                if not token:
+                    st.error("API não enviou o Token de acesso.")
+                    return
+                
+                st.session_state.logado = True
+                st.session_state.token = token
+                
+                cookie_token.clear()
+                cookie_token()
+
+                user_data =  get_user(st.session_state.token)
+                
+                st.session_state.nome = user_data['nome'].upper()
+                st.session_state.user = user_data['login'].upper()
+                st.session_state.email = user_data['email'].upper()
+                st.session_state.admin = user_data['admin']
+                st.session_state.id = user_data['id']
+                st.rerun()
+            elif resp.status_code in [400, 401]:
+                try:
+                    resp_token = resp.json()
+                    detail = resp_token.get('detail', 'Erro de autenticação desconhecido.')
+                    if isinstance(detail, str):
+                        st.error(f"Falha ao logar: {detail}")
+                    else:
+                        st.error("Falha ao logar. Verifique suas credenciais.")
+                except Exception:
+                    st.error("Resposta da API inválida ou credenciais incorretas.")                    
+            else:
+                # OUTROS ERROS DA API (5xx)
+                st.error(f"Erro inesperado da API: Status {resp.status_code}")
+
 #Pagina de logut 
 def logout():
+    cookie_token.clear()
+    st.cache_data.clear()
     st.session_state.clear()
     st.rerun()
 #------------------------------------------------

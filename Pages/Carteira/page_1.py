@@ -6,10 +6,10 @@ from datetime import datetime, date
 from decimal import Decimal
 
 
-
 API_URL = 'https://pythonapi-production-6268.up.railway.app/'
 
 # requisição de datos
+@st.cache_data()
 def get_operacoes():
     with st.spinner("Aguardando...", show_time=True):
         try:
@@ -114,14 +114,6 @@ def excluir_tudo():
     except TypeError as e:
         st.error(f'Erro ao excluir, {e}') 
     
-
-#Declarar Variáveis
-ordens = get_operacoes()
-if len(ordens) == 0:
-    st.title('Planilha vazia')
-    
-df_ordens = pd.DataFrame(ordens)
-
 # Titulo da pagina
 st.title('Ordens de Operações')
 
@@ -132,6 +124,12 @@ tab1, tab2, tab3, tab4 = st.tabs(["Operações", "Inserir via tabela", "Inserir 
 #     Lista de operações
 #-------------------------------------------------------------------------------------------------------------
 with tab1:
+    #Declarar Variáveis
+    ordens = get_operacoes()
+    if len(ordens) == 0:
+        st.title('Planilha vazia')
+        
+    df_ordens = pd.DataFrame(ordens)
     if len(ordens) != 0:    
         st.header("Operações")    
         st.dataframe(df_ordens,hide_index=True)
@@ -216,8 +214,7 @@ with tab3:
         if 'lista' not in st.session_state:
             st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
     
-        
-        
+                
         st.subheader('Dados da Operação')
         col1, col2 = st.columns(2)
         with col1:
