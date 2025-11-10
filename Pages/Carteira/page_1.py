@@ -176,8 +176,8 @@ with tab2:
                             # Recarregar dados da carteira
                             if 'carteira_api' in st.session_state:      
                                 st.cache_resource.clear()
-                                ordens = get_operacoes()
-                                df_ordens = pd.DataFrame(ordens)
+                                get_operacoes.clear()
+                                st.switch_page("Pages/Carteira/page_1.py")
                         else:
                             st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")                    
                                            
@@ -248,8 +248,9 @@ with tab3:
         is_disabled = not is_valid_input or st.session_state.get('disabled_bt_2', False)
         if is_valid_input: # Se os dados necessários estão presentes, o botão deve ser visível
             if st.button('Enviar', on_click=envia_manual, kwargs={'ordem_manual': ordem_manual}, disabled=is_disabled):
-                ordens = get_operacoes()
-                df_ordens = pd.DataFrame(ordens)
+                get_operacoes.clear()
+                st.switch_page("Pages/Carteira/page_1.py")
+
 #-------------------------------------------------------------------------------------------------------------
 #     Excluir operações
 #-------------------------------------------------------------------------------------------------------------
@@ -277,12 +278,14 @@ with tab4:
         col1, col2 = st.columns([1, 0.3])
         with col1:
             if st.button('Excluir', key='bt_3', disabled=st.session_state['bt_on'], on_click=excluir_op):
-                ordens = get_operacoes()
-                df_ordens = pd.DataFrame(ordens)  
+                get_operacoes.clear()
+                st.switch_page("Pages/Carteira/page_1.py")
+                # st.rerun
         with col2:
             if st.button('Excluir tudo', key='bt_4', on_click=excluir_tudo):
-                ordens = get_operacoes()
-                df_ordens = pd.DataFrame(ordens)
+                get_operacoes.clear()
+                st.switch_page("Pages/Carteira/page_1.py")
+                # st.rerun
     else:
         st.write('Nenhum ordem cadastrada')
 

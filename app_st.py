@@ -21,6 +21,23 @@ st.set_page_config(
     }
 )
 
+def ajustar_CSS_main():
+    """
+    Injeta CSS para reduzir o tamanho do VALOR e AUMENTAR o tamanho do LABEL.
+    O valor 'escala' controla o tamanho geral.
+    """
+    st.markdown(
+        f"""
+        <style>
+        /* Regra Crítica: Remove o padding superior do container principal do Streamlit (Confirmado como eficaz) */
+        .stMainBlockContainer {{
+            padding-top: 2rem !important; 
+            margin-top: 1rem !important;
+        }}</style>
+        """,
+        unsafe_allow_html=True,
+    )
+
 # Função de busca e conversão de dados da carteira
 @st.cache_data(show_spinner="Carregando e convertendo dados da carteira...")
 def get_carteira_data(token: str) -> list:
@@ -68,6 +85,8 @@ def cookie_token():
         return {'token': st.session_state.token}
     return {}
 
+
+ajustar_CSS_main()
 #------------------------------------------------
 #Delcarar sessions
 #------------------------------------------------
@@ -149,7 +168,9 @@ def login():
                 st.session_state.email = user_data['email'].upper()
                 st.session_state.admin = user_data['admin']
                 st.session_state.id = user_data['id']
+                
                 st.rerun()
+                return
             elif resp.status_code in [400, 401]:
                 try:
                     resp_token = resp.json()

@@ -32,9 +32,53 @@ def divisao_percentual_segura(row: pd.Series, coluna_numerador: str, coluna_deno
     except Exception:
         # Captura qualquer outro erro de operação, como tipos misturados
         return Decimal('0')
-    
 
-st.header('Carteira')
+def ajustar_tamanho_metricas(escala=0.8, gap_rem="0.5rem"):
+    """
+    Injeta CSS para reduzir o tamanho do VALOR e AUMENTAR o tamanho do LABEL.
+    O valor 'escala' controla o tamanho geral.
+    """
+    st.markdown(
+        f"""
+        <style>
+         /* Reduz o gap (espaço) entre as colunas dentro de st.columns */
+        div[data-testid="stHorizontalBlock"] {{
+            gap: {gap_rem} !important;
+        }}
+        
+        /* Estilo para o valor principal (Reduzido!) */
+        [data-testid="stMetricValue"] {{
+            /* 1.8 é menor que o 2.5 original -> reduz o número */
+            font-size: {escala * 1.8}rem; 
+        }}
+        
+        /* Estilo para o label (Aumentado!) */
+        [data-testid="stMetricLabel"] p {{
+            /* 1.3 é maior que o 1.0 original -> aumenta o label */
+            font-size: {escala * 1.3}rem; 
+        }}
+
+        /* Estilo para o delta (mantido na proporção) */
+        [data-testid="stMetricDelta"] {{
+            font-size: {escala * 1.25}rem; 
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+def create_sunburst_chart(df: pd.DataFrame):
+    """Cria o gráfico Sunburst com margens mínimas."""
+    fig = px.sunburst(df, path=["Categoria", "Setor", "Código ativo"], values='Valor de mercado', color="Categoria")
+    fig.update_traces(textinfo='label+percent entry')
+    fig.update_layout(
+        margin=dict(b=0, t=0, l=0, r=0),
+        # Adiciona um pequeno padding visual no fundo (opcional)
+        plot_bgcolor='rgba(0,0,0,0)' 
+    )
+    return fig
+
+st.title('Carteira')
 
 #-----------------------------------------------------------
 # Buscando dados na API
@@ -54,8 +98,9 @@ df_carteira['%_lucro'] =  df_carteira.apply(lambda row: divisao_percentual_segur
 #-----------------------------------------------------------
 #Containers layout
 #-----------------------------------------------------------
-sl_cat_container = st.container(border=True, horizontal=True, vertical_alignment='center')
-metrica_total_container = st.container(border=True, horizontal=True, horizontal_alignment='left', vertical_alignment='center')
+col1, col2 = st.columns([4,3])
+sl_cat_container = col1.container(border=True, horizontal=True, vertical_alignment='center')
+metrica_total_container = col2.container(border=True, horizontal=True, horizontal_alignment='left', vertical_alignment='center')
 tabs_container = st.container()
 #-----------------------------------------------------------
 #Seletor
@@ -130,9 +175,10 @@ with metrica_total_container:
     lucro_total = valor_total - custo_total
     lucro_total_perc = 100*(valor_total - custo_total) / custo_total if custo_total != 0 else Decimal('0')
 
-    st.metric(label="Custo", value=f'{numero_padrao(custo_total)} R$')
-    st.metric(label="Valor de mercado", value=f'{numero_padrao(valor_total)} R$')
-    st.metric(label="Lucro", value=f"{numero_padrao(lucro_total)} R$", delta=f'{numero_padrao(lucro_total_perc)} %')
+    ajustar_tamanho_metricas(0.7, "0.5rem")
+    st.metric(label="Custo", value=f'{numero_padrao(custo_total)} R$', width ='stretch')
+    st.metric(label="Valor de mercado", value=f'{numero_padrao(valor_total)} R$', width ='stretch')
+    st.metric(label="Lucro", value=f"{numero_padrao(lucro_total)} R$", delta=f'{numero_padrao(lucro_total_perc)} %', width ='stretch')
 #-----------------------------------------------------------
 # Criar abas
 #-----------------------------------------------------------
@@ -228,6 +274,9 @@ with tab3:
         'Custo': 'Custo'
     }
     option_valor = st.selectbox("Valor:", list(op_valor.keys()))
+
+    fig_sunburst = create_sunburst_chart(df)
+    st.plotly_chart(fig_sunburst, width='stretch')
 
     #Pizza tipos
     fig = px.pie(df, values=op_valor[option_valor], names='Categoria', title='Tipo de ativos',
