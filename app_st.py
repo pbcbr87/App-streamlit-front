@@ -77,10 +77,14 @@ def get_carteira_data(token: str) -> list:
 def get_operacoes(token):
     resp = requests.get(f'{API_URL}/ordem_input/pegar_ordens', headers={'Authorization':f'Bearer {token}'})   
     
+    if resp.status_code == 404:
+        st.error(f'Operações vazias: {resp.text}.')
+        return []
+
     if resp.status_code != 200:
         st.error(f"Erro ao carregar carteira: Status {resp.status_code}")
         return []
-
+    
     dict_resp = resp.json()
     if not isinstance(dict_resp, list):
         # Lida com o erro de formato de API (visto em conversas anteriores)
