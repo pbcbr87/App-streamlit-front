@@ -47,6 +47,9 @@ def get_carteira_data(token: str) -> list:
         f'{API_URL}/carteira/pegar_carteira', 
         headers={'Authorization':f'Bearer {token}'}
     )
+    if resp.status_code == 404:
+        st.error(f'Carteira vazias: {resp.text}.')
+        return []
     
     if resp.status_code != 200:
         st.error(f"Erro ao carregar carteira: Status {resp.status_code}")
