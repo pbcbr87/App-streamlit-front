@@ -236,12 +236,14 @@ def navegacao():
     with st.sidebar:
         if st.button('Atualizar Carteira', type='primary', key='atualizar_carteira'):
             with st.spinner("Aguardando...", show_time=True):
+                st.session_state['carteira_api'] = []
+                st.session_state['operacao_api'] = []
+                get_carteira_data.clear()
+                get_operacoes.clear()
                 resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
                     # Recarregar dados da carteira
-                    get_carteira_data.clear()
-                    get_operacoes.clear()
                     st.session_state['carteira_api'] = get_carteira_data(st.session_state.token)
                     st.session_state['operacao_api'] = get_operacoes(st.session_state.token) 
                 else:
