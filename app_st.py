@@ -151,7 +151,8 @@ def login():
                 st.session_state.logado = False
                 return
 
-            if resp.status_code == 200:  
+            if resp.status_code == 200:         
+                resp_token = resp.json()
                 token = resp_token.get('access_token', None)
                 if not token:
                     st.error("API não enviou o Token de acesso.")
