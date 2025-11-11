@@ -8,21 +8,6 @@ from decimal import Decimal
 
 API_URL = 'https://pythonapi-production-6268.up.railway.app/'
 
-# requisição de datos
-@st.cache_data()
-def get_operacoes():
-    with st.spinner("Aguardando...", show_time=True):
-        try:
-            resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/ordem_input/pegar_ordens', headers={'Authorization':f'Bearer {st.session_state.token}'})   
-            if resp.status_code == 200:
-                dados_ordens = resp.json() 
-            if resp.status_code != 200:
-                st.toast(f'Erro ao pegar dados, Erro: {resp}')
-                dados_ordens = []
-        except Exception as e:
-            dados_ordens = []
-            st.toast("Erro ao pegar dados: {e}")
-        return dados_ordens
 
 # Enviar dados para o banco de dados
 def enviar_tabela(dataframe):
@@ -125,7 +110,7 @@ tab1, tab2, tab3, tab4 = st.tabs(["Operações", "Inserir via tabela", "Inserir 
 #-------------------------------------------------------------------------------------------------------------
 with tab1:
     #Declarar Variáveis
-    ordens = get_operacoes()
+    ordens = st.session_state['operacao_api']
     if len(ordens) == 0:
         st.title('Planilha vazia')
         

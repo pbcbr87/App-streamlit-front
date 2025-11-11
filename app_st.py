@@ -73,17 +73,39 @@ def get_carteira_data(token: str) -> list:
 
     return dict_resp
 
+@st.cache_data(show_spinner="Carregando operações...")
+def get_operacoes(token):
+    resp = requests.get(f'{API_URL}/ordem_input/pegar_ordens', headers={'Authorization':f'Bearer {token}'})   
+    
+    if resp.status_code != 200:
+        st.error(f"Erro ao carregar carteira: Status {resp.status_code}")
+        return []
+
+    dict_resp = resp.json()
+    if not isinstance(dict_resp, list):
+        # Lida com o erro de formato de API (visto em conversas anteriores)
+        st.error(f"Formato da API inesperado. Recebido tipo: {type(dict_resp)}")
+        return []
+
+    for item in dict_resp:
+        for item_key, valor in item.items():
+            if isinstance(valor, str):
+                valor_limpo = valor.strip()
+                if not valor_limpo:
+                    continue
+                try:
+                    # A conversão de str para Decimal
+                    item[item_key] = Decimal(valor_limpo)
+                except Exception:
+                    pass # Deixa como string se não for um número
+
+    return dict_resp
+
 #função para pegar o token de autenticação
 @st.cache_data()
 def get_user(tk):
     usuario = requests.get(f'{API_URL}/usuarios/', headers={'Authorization':f'Bearer {tk}'}).json()
     return usuario
-
-@st.cache_data(persist="disk")
-def cookie_token():
-    if 'token' in st.session_state:
-        return {'token': st.session_state.token}
-    return {}
 
 
 ajustar_CSS_main()
@@ -93,21 +115,6 @@ ajustar_CSS_main()
 if 'logado' not in st.session_state:    
     st.session_state.logado = False
 
-if not st.session_state.logado and 'token' in cookie_token():
-    tk_cookie = cookie_token()['token']
-    
-    user_data =  get_user(tk_cookie)
-                
-    if user_data:
-        st.session_state.token = tk_cookie
-        st.session_state.nome = user_data['nome'].upper()
-        st.session_state.user = user_data['login'].upper()
-        st.session_state.email = user_data['email'].upper()
-        st.session_state.admin = user_data['admin']
-        st.session_state.id = user_data['id']
-        st.session_state.logado = True
-    else:
-        cookie_token.clear()
 
 if st.session_state.logado == False:
     st.session_state.user = None
@@ -158,9 +165,6 @@ def login():
                 st.session_state.logado = True
                 st.session_state.token = token
                 
-                cookie_token.clear()
-                cookie_token()
-
                 user_data =  get_user(st.session_state.token)
                 
                 st.session_state.nome = user_data['nome'].upper()
@@ -187,7 +191,6 @@ def login():
 
 #Pagina de logut 
 def logout():
-    cookie_token.clear()
     st.cache_data.clear()
     st.session_state.clear()
     st.rerun()
@@ -228,9 +231,10 @@ def navegacao():
     pg = st.navigation(pages, position="sidebar")
     
     #Carregar dados da carteira na session
-    if 'carteira_api' not in st.session_state or st.session_state['carteira_api'] is None:
-        dados_processados = get_carteira_data(st.session_state.token)        
-        st.session_state['carteira_api'] = dados_processados
+    if 'carteira_api' not in st.session_state or st.session_state['carteira_api'] is None:     
+        st.session_state['carteira_api'] = get_carteira_data(st.session_state.token) 
+    if 'operacao_api' not in st.session_state or st.session_state['operacao_api'] is None:    
+        st.session_state['operacao_api'] = get_operacoes(st.session_state.token) 
 
     #Adicionar componentes na sidebar
     with st.sidebar:
@@ -240,10 +244,10 @@ def navegacao():
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
                     # Recarregar dados da carteira
-                    if 'carteira_api' in st.session_state:
-                        get_carteira_data.clear()
-                        st.session_state['carteira_api'] = []
-                        st.session_state['carteira_api'] = get_carteira_data(st.session_state.token) 
+                    get_carteira_data.clear()
+                    get_operacoes.clear()
+                    st.session_state['carteira_api'] = get_carteira_data(st.session_state.token)
+                    st.session_state['operacao_api'] = get_operacoes(st.session_state.token) 
                 else:
                     st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")
     return pg
