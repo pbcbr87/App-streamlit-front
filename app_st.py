@@ -150,13 +150,8 @@ def login():
                 st.warning(f'Conexão com backend, Detalhes: {e}')            
                 st.session_state.logado = False
                 return
-            
-            if not resp:
-                return
 
-            if resp.status_code == 200:         
-                resp_token = resp.json()
-
+            if resp.status_code == 200:  
                 token = resp_token.get('access_token', None)
                 if not token:
                     st.error("API não enviou o Token de acesso.")
