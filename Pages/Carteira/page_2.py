@@ -7,6 +7,9 @@ import plotly.express as px
 from decimal import Decimal, DivisionByZero
 
 
+#------------------------------------------------
+API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+#------------------------------------------------
 
 def divisao_percentual_segura(row: pd.Series, coluna_numerador: str, coluna_denominador: str) -> Decimal:     
     # 1. Tenta extrair os valores (eles devem ser objetos Decimal)
@@ -78,11 +81,56 @@ def create_sunburst_chart(df: pd.DataFrame):
     )
     return fig
 
-st.title('Carteira')
+def numero_padrao(numero):
+    return f"{numero:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-#-----------------------------------------------------------
-# Buscando dados na API
-#-----------------------------------------------------------
+# Função de busca e conversão de dados da carteira
+def get_carteira_data(token: str) -> list:
+    """Busca a carteira da API e converte strings numéricas para Decimal."""
+    
+    resp = requests.get(
+        f'{API_URL}/carteira/pegar_carteira', 
+        headers={'Authorization':f'Bearer {token}'}
+    )
+    if resp.status_code == 404:
+        st.error(f'Carteira vazias: {resp.text}.')
+        return []
+    
+    if resp.status_code != 200:
+        st.error(f"Erro ao carregar carteira: Status {resp.status_code}")
+        return []
+    
+    dict_resp = resp.json()
+    
+    if not isinstance(dict_resp, list):
+         # Lida com o erro de formato de API (visto em conversas anteriores)
+         st.error(f"Formato da API inesperado. Recebido tipo: {type(dict_resp)}")
+         return []
+
+    for item in dict_resp:
+        for item_key, valor in item.items():
+            if isinstance(valor, str):
+                valor_limpo = valor.strip()
+                if not valor_limpo:
+                    continue
+                try:
+                    # A conversão de str para Decimal
+                    item[item_key] = Decimal(valor_limpo)
+                except Exception:
+                    pass # Deixa como string se não for um número
+
+    return dict_resp
+
+#------------------------------------------------
+# Delcarar sessions
+#------------------------------------------------
+if 'carteira_api' not in st.session_state or st.session_state['carteira_api'] is None:     
+    st.session_state['carteira_api'] = get_carteira_data(st.session_state.token)
+#-----------------------------------------------
+# Layout
+#-----------------------------------------------
+
+st.title('Carteira')
 
 # Trantando dados recebidos
 if not st.session_state['carteira_api']:
@@ -166,9 +214,6 @@ df_carteira_front = df_carteira_front.sort_values(op_ordem[option], ascending=[F
 #-----------------------------------------------------------
 # Metricas
 #-----------------------------------------------------------
-def numero_padrao(numero):
-    return f"{numero:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
 with metrica_total_container:
     valor_total = df_carteira_front['Valor de mercado'].sum()
     custo_total = df_carteira_front['Custo'].sum()
@@ -182,133 +227,139 @@ with metrica_total_container:
 #-----------------------------------------------------------
 # Criar abas
 #-----------------------------------------------------------
+if df_carteira.empty:
+    st.info("Selecione alguma categoria.")
+    
 tab1, tab2, tab3 = tabs_container.tabs(["Carteira", "Grafico barra", "Grafico pizza"])
-with tab1:  
-    df_carteira_st = (df_carteira_front.style.format(precision=2, thousands=".", decimal=",", subset=['Qt',
-                                                                                                'Custo',
-                                                                                                'Valor de mercado',
-                                                                                                'Lucro',
-                                                                                                'Valor Planejado',
-                                                                                                'Aporte'])
-                                        .format(precision=0, thousands=".", decimal=",", subset=['Peso', 'Nota'])
-                                        .format(precision=2, thousands=".", decimal=",", subset=['Lucro %', 'Aporte %'])
-                                        )
+with tab1:
+    if not df_carteira_front.empty:
+        df_carteira_st = (df_carteira_front.style.format(precision=2, thousands=".", decimal=",", subset=['Qt',
+                                                                                                    'Custo',
+                                                                                                    'Valor de mercado',
+                                                                                                    'Lucro',
+                                                                                                    'Valor Planejado',
+                                                                                                    'Aporte'])
+                                            .format(precision=0, thousands=".", decimal=",", subset=['Peso', 'Nota'])
+                                            .format(precision=2, thousands=".", decimal=",", subset=['Lucro %', 'Aporte %'])
+                                            )
 
-    st.dataframe(df_carteira_st, hide_index=True, width='content',
-                column_config={
-                    "Lucro %": st.column_config.NumberColumn("Lucro %", format="percent"),
-                    "Aporte %": st.column_config.NumberColumn("Aporte %", format="percent")
-                    })
+        st.dataframe(df_carteira_st, hide_index=True, width='content',
+                    column_config={
+                        "Lucro %": st.column_config.NumberColumn("Lucro %", format="percent"),
+                        "Aporte %": st.column_config.NumberColumn("Aporte %", format="percent")
+                        })
 
 with tab2:
     df = df_carteira_front
-    fig = go.Figure()
-    fig.update_layout()
+    if not df.empty:
+        fig = go.Figure()
+        fig.update_layout()
 
-    x = df['Código ativo']
-    
-    y = df['Custo']
-    fig.add_trace(go.Bar(x=x.values, y=y.values,name='Custo'))
+        x = df['Código ativo']
+        
+        y = df['Custo']
+        fig.add_trace(go.Bar(x=x.values, y=y.values,name='Custo'))
 
-    y = df['Valor de mercado']
-    fig.add_trace(go.Bar(x=x.values, y=y.values, name='Valor Atual'))
+        y = df['Valor de mercado']
+        fig.add_trace(go.Bar(x=x.values, y=y.values, name='Valor Atual'))
 
-    y = df['Valor Planejado']
-    fig.add_trace(go.Bar(x=x.values, 
-                        y=y.values, 
-                        name='Valor Planejado',
-                        marker=dict(color='green', line=dict(color='black'))
-                        ))
+        y = df['Valor Planejado']
+        fig.add_trace(go.Bar(x=x.values, 
+                            y=y.values, 
+                            name='Valor Planejado',
+                            marker=dict(color='green', line=dict(color='black'))
+                            ))
 
-    y = df['Lucro %']
-    fig.add_trace(go.Bar(x=x.values, 
-                        y=y.values, 
-                        yaxis="y2", 
-                        name='Lucro %', 
-                        textposition='auto',
-                        texttemplate = "%{value:.2%}",
-                        textfont = dict(color='black'),
-                        marker=dict(color=y.where(y > 0 , 'IndianRed').where(y <= 0 , 'gray'),
-                                    opacity=0.5,
-                                    line=dict(color='black',width=1))))
+        y = df['Lucro %']
+        fig.add_trace(go.Bar(x=x.values, 
+                            y=y.values, 
+                            yaxis="y2", 
+                            name='Lucro %', 
+                            textposition='auto',
+                            texttemplate = "%{value:.2%}",
+                            textfont = dict(color='black'),
+                            marker=dict(color=y.where(y > 0 , 'IndianRed').where(y <= 0 , 'gray'),
+                                        opacity=0.5,
+                                        line=dict(color='black',width=1))))
 
 
 
-    y = df['Aporte %']
-    fig.add_trace(go.Bar(x=x.values, 
-                        y=y.values, 
-                        yaxis="y2", 
-                        name='Aporte %', 
-                        textposition='auto',
-                        texttemplate = "%{value:.2%}",
-                        textfont = dict(color='black'),
-                        marker=dict(color=y.where(y > 0 , 'darkseagreen').where(y <= 0 , 'darkcyan'),
-                                    opacity=0.5,
-                                    line=dict(color='black',width=1))))
+        y = df['Aporte %']
+        fig.add_trace(go.Bar(x=x.values, 
+                            y=y.values, 
+                            yaxis="y2", 
+                            name='Aporte %', 
+                            textposition='auto',
+                            texttemplate = "%{value:.2%}",
+                            textfont = dict(color='black'),
+                            marker=dict(color=y.where(y > 0 , 'darkseagreen').where(y <= 0 , 'darkcyan'),
+                                        opacity=0.5,
+                                        line=dict(color='black',width=1))))
 
-    fig.update_layout(
-        separators= ",.",
-        yaxis=dict(
-            title=dict(text="Valor em Reais"),
-            side="left",
-            range=None,
-            tickformat=",.2f"   
-        ),
-        yaxis2=dict(
-            title=dict(text="%"),
-            side="right",
-            range=None,
-            overlaying="y",
-            tickmode="sync",
-            tickformat=".2%"  
-        ),
-        legend=dict(orientation='h', yanchor='top', y=-0.2,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)'),
-        margin=dict(b=10,t=40) 
-        )
-    st.plotly_chart(fig, width='stretch')
+        fig.update_layout(
+            separators= ",.",
+            yaxis=dict(
+                title=dict(text="Valor em Reais"),
+                side="left",
+                range=None,
+                tickformat=",.2f"   
+            ),
+            yaxis2=dict(
+                title=dict(text="%"),
+                side="right",
+                range=None,
+                overlaying="y",
+                tickmode="sync",
+                tickformat=".2%"  
+            ),
+            legend=dict(orientation='h', yanchor='top', y=-0.2,xanchor='center',x=0.5,bgcolor='rgba(0,0,0,0)'),
+            margin=dict(b=10,t=40) 
+            )
+        st.plotly_chart(fig, width='stretch')
 
 with tab3:
     df = df_carteira_front
-    op_valor = {
-        'Valor de Mercado': "Valor de mercado",
-        'Custo': 'Custo'
-    }
-    option_valor = st.selectbox("Valor:", list(op_valor.keys()))
+    if not df.empty:
+        op_valor = {
+            'Valor de Mercado': "Valor de mercado",
+            'Custo': 'Custo'
+        }
+        option_valor = st.selectbox("Valor:", list(op_valor.keys()))
 
-    fig_sunburst = create_sunburst_chart(df)
-    st.plotly_chart(fig_sunburst, width='stretch')
+        fig_sunburst = create_sunburst_chart(df)
+        st.plotly_chart(fig_sunburst, width='stretch')
 
-    #Pizza tipos
-    fig = px.pie(df, values=op_valor[option_valor], names='Categoria', title='Tipo de ativos',
-            hover_data=['Qt'], labels={'Qt':'Quantidade de ativos'})
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-    fig.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
+        #Pizza tipos
+        fig = px.pie(df, values=op_valor[option_valor], names='Categoria', title='Tipo de ativos',
+                hover_data=['Qt'], labels={'Qt':'Quantidade de ativos'})
+        fig.update_traces(textposition='inside', textinfo='percent+label')
+        fig.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
-    #Pizza Ativos
-    fig2 = px.pie(df, values=op_valor[option_valor], names='Código ativo', title='Ativos',
-            hover_data=['Qt'], labels={'Qt':'Quantidade de ativos'})
-    fig2.update_traces(textposition='inside', textinfo='percent+label')
-    fig2.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
+        #Pizza Ativos
+        fig2 = px.pie(df, values=op_valor[option_valor], names='Código ativo', title='Ativos',
+                hover_data=['Qt'], labels={'Qt':'Quantidade de ativos'})
+        fig2.update_traces(textposition='inside', textinfo='percent+label')
+        fig2.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
-    #Pizza Setor
-    fig3 = px.pie(df, values=op_valor[option_valor], names='Setor', title='Setores',
-            hover_data=['Qt'], labels={'Qt':'Quantidade de ativos'})
-    fig3.update_traces(textposition='inside', textinfo='percent+label')
-    fig3.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
+        #Pizza Setor
+        fig3 = px.pie(df, values=op_valor[option_valor], names='Setor', title='Setores',
+                hover_data=['Qt'], labels={'Qt':'Quantidade de ativos'})
+        fig3.update_traces(textposition='inside', textinfo='percent+label')
+        fig3.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
-    #Pizza país
-    fig4 = px.pie(df, values=op_valor[option_valor], names='País', title='País',
-            hover_data=['Qt'], labels={'Qt':'Quantidade de ativos'})
-    fig4.update_traces(textposition='inside', textinfo='percent+label')
-    fig4.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
+        #Pizza país
+        fig4 = px.pie(df, values=op_valor[option_valor], names='País', title='País',
+                hover_data=['Qt'], labels={'Qt':'Quantidade de ativos'})
+        fig4.update_traces(textposition='inside', textinfo='percent+label')
+        fig4.update_layout(title={'y':0.9, 'x':0.5, 'xanchor':'center', 'yanchor':'top'})
 
-    #Plotar valores
-    with st.container(horizontal=True, horizontal_alignment='left'):        
-        st.plotly_chart(fig2)
-        st.plotly_chart(fig3)
-    with st.container(horizontal=True, horizontal_alignment='left'):
-        st.plotly_chart(fig)
-        st.plotly_chart(fig4)
+        #Plotar valores
+        with st.container(horizontal=True, horizontal_alignment='left'):        
+            st.plotly_chart(fig2)
+            st.plotly_chart(fig3)
+        with st.container(horizontal=True, horizontal_alignment='left'):
+            st.plotly_chart(fig)
+            st.plotly_chart(fig4)
 
    
 

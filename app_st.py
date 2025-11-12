@@ -21,6 +21,7 @@ st.set_page_config(
     }
 )
 
+# Função que ajusta via CSS a paigina
 def ajustar_CSS_main():
     """
     Injeta CSS para reduzir o tamanho do VALOR e AUMENTAR o tamanho do LABEL.
@@ -38,80 +39,9 @@ def ajustar_CSS_main():
         unsafe_allow_html=True,
     )
 
-# Função de busca e conversão de dados da carteira
-@st.cache_data(show_spinner="Carregando e convertendo dados da carteira...")
-def get_carteira_data(token: str) -> list:
-    """Busca a carteira da API e converte strings numéricas para Decimal."""
-    
-    resp = requests.get(
-        f'{API_URL}/carteira/pegar_carteira', 
-        headers={'Authorization':f'Bearer {token}'}
-    )
-    if resp.status_code == 404:
-        st.error(f'Carteira vazias: {resp.text}.')
-        return []
-    
-    if resp.status_code != 200:
-        st.error(f"Erro ao carregar carteira: Status {resp.status_code}")
-        return []
-    
-    dict_resp = resp.json()
-    
-    if not isinstance(dict_resp, list):
-         # Lida com o erro de formato de API (visto em conversas anteriores)
-         st.error(f"Formato da API inesperado. Recebido tipo: {type(dict_resp)}")
-         return []
-
-    for item in dict_resp:
-        for item_key, valor in item.items():
-            if isinstance(valor, str):
-                valor_limpo = valor.strip()
-                if not valor_limpo:
-                    continue
-                try:
-                    # A conversão de str para Decimal
-                    item[item_key] = Decimal(valor_limpo)
-                except Exception:
-                    pass # Deixa como string se não for um número
-
-    return dict_resp
-
-@st.cache_data(show_spinner="Carregando operações...")
-def get_operacoes(token):
-    resp = requests.get(f'{API_URL}/ordem_input/pegar_ordens', headers={'Authorization':f'Bearer {token}'})   
-    
-    if resp.status_code == 404:
-        st.error(f'Operações vazias: {resp.text}.')
-        return []
-
-    if resp.status_code != 200:
-        st.error(f"Erro ao carregar carteira: Status {resp.status_code}")
-        return []
-    
-    dict_resp = resp.json()
-    if not isinstance(dict_resp, list):
-        # Lida com o erro de formato de API (visto em conversas anteriores)
-        st.error(f"Formato da API inesperado. Recebido tipo: {type(dict_resp)}")
-        return []
-
-    for item in dict_resp:
-        for item_key, valor in item.items():
-            if isinstance(valor, str):
-                valor_limpo = valor.strip()
-                if not valor_limpo:
-                    continue
-                try:
-                    # A conversão de str para Decimal
-                    item[item_key] = Decimal(valor_limpo)
-                except Exception:
-                    pass # Deixa como string se não for um número
-
-    return dict_resp
-
 #função para pegar o token de autenticação
-@st.cache_data()
-def get_user(tk):
-    usuario = requests.get(f'{API_URL}/usuarios/', headers={'Authorization':f'Bearer {tk}'}).json()
+def get_user(token: str):
+    usuario = requests.get(f'{API_URL}/usuarios/', headers={'Authorization':f'Bearer {token}'}).json()
     return usuario
 
 
@@ -119,11 +49,8 @@ ajustar_CSS_main()
 #------------------------------------------------
 #Delcarar sessions
 #------------------------------------------------
-if 'logado' not in st.session_state:    
+if 'logado' not in st.session_state or st.session_state.logado == False:    
     st.session_state.logado = False
-
-
-if st.session_state.logado == False:
     st.session_state.user = None
     st.session_state.id = None
     st.session_state.token = None
@@ -194,7 +121,6 @@ def login():
 
 #Pagina de logut 
 def logout():
-    st.cache_data.clear()
     st.session_state.clear()
     st.rerun()
 #------------------------------------------------
@@ -233,26 +159,15 @@ def navegacao():
 
     pg = st.navigation(pages, position="sidebar")
     
-    #Carregar dados da carteira na session
-    if 'carteira_api' not in st.session_state or st.session_state['carteira_api'] is None:     
-        st.session_state['carteira_api'] = get_carteira_data(st.session_state.token) 
-    if 'operacao_api' not in st.session_state or st.session_state['operacao_api'] is None:    
-        st.session_state['operacao_api'] = get_operacoes(st.session_state.token) 
-
     #Adicionar componentes na sidebar
     with st.sidebar:
         if st.button('Atualizar Carteira', type='primary', key='atualizar_carteira'):
+            st.session_state['carteira_api'] = None
+            st.session_state['operacao_api'] = None
             with st.spinner("Aguardando...", show_time=True):
-                st.session_state['carteira_api'] = []
-                st.session_state['operacao_api'] = []
-                get_carteira_data.clear()
-                get_operacoes.clear()
                 resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
-                    # Recarregar dados da carteira
-                    st.session_state['carteira_api'] = get_carteira_data(st.session_state.token)
-                    st.session_state['operacao_api'] = get_operacoes(st.session_state.token) 
                 else:
                     st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")
     return pg

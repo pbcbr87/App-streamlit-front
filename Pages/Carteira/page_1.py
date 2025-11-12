@@ -8,35 +8,67 @@ from decimal import Decimal
 
 API_URL = 'https://pythonapi-production-6268.up.railway.app/'
 
+def get_operacoes(token):
+    resp = requests.get(f'{API_URL}/ordem_input/pegar_ordens', headers={'Authorization':f'Bearer {token}'})   
+    
+    if resp.status_code == 404:
+        st.toast(f'ℹ️ Operações vazias: {resp.text}.')
+        st.session_state['operacao_api'] = []
+        return
+
+    if resp.status_code != 200:
+        st.toast(f"🚨 Erro ao carregar carteira: Status {resp.status_code}")
+        st.session_state['operacao_api'] = []
+        return
+    
+    dict_resp = resp.json()
+    if not isinstance(dict_resp, list):
+        # Lida com o erro de formato de API (visto em conversas anteriores)
+        st.toast(f"🚨 Formato da API inesperado. Recebido tipo: {type(dict_resp)}")
+        st.session_state['operacao_api'] = []
+        return
+
+    for item in dict_resp:
+        for item_key, valor in item.items():
+            if isinstance(valor, str):
+                valor_limpo = valor.strip()
+                if not valor_limpo:
+                    continue
+                try:
+                    # A conversão de str para Decimal
+                    item[item_key] = Decimal(valor_limpo)
+                except Exception:
+                    pass # Deixa como string se não for um número
+    st.session_state['operacao_api'] = dict_resp
+    return dict_resp
 
 # Enviar dados para o banco de dados
+@st.dialog("Enviando Dados", on_dismiss='rerun')
 def enviar_tabela(dataframe):
+    st.session_state['carteira_api'] = None
+    st.session_state['operacao_api'] = None
+
     linhas = dataframe.to_json(orient='records', date_format='iso')
     linhas = loads(linhas)
     ordens_tabela = dumps({"dados": linhas})
     
-    resp = requests.post('https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordens_table', ordens_tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
-    return resp
- 
-# Enviar dados para o banco de dados
-def envia_manual(ordem_manual):
-    ordem_manual = dumps(ordem_manual)
-    resp = requests.post(f'https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordem', ordem_manual, headers={'Authorization':f'Bearer {st.session_state.token}'})
+    resp = requests.post(f'{API_URL}ordem_input/inserir_ordens_table', ordens_tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
     try:
         resposta_json = resp.json()
     except:
         st.error(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
+
+        # --- Tratamento de Sucesso (200 OK) ---
     if resp.status_code == 200:
-        st.success('Dados enviados')
+        st.success('✅ Dados enviados com sucesso!')
         with st.spinner("Aguardando...", show_time=True):
-            resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+            resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
             if resp.status_code == 200:
                 st.success("Carteira atualizada com sucesso!")
-                # Recarregar dados da carteira
-                if 'carteira_api' in st.session_state:        
-                    st.cache_resource.clear()
+                # Recarregar dados da carteira    
             else:
-                st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")  
+                st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")                    
+                                
     # --- Tratamento de Erro de Validação (422 Unprocessable Entity) ---
     elif resp.status_code == 422:
         st.error('❌ Existe dados inválidos no seu arquivo. Veja abaixo os detalhes:')
@@ -54,12 +86,60 @@ def envia_manual(ordem_manual):
         else:
             st.text(f"Detalhe de erro da API: {detail}")
 
+    else:
+        st.error(f"⚠️ Erro HTTP inesperado: Status {resp.status_code}")
+
+# Enviar dados para o banco de dados
+@st.dialog("Enviando Dados", on_dismiss='rerun')
+def envia_manual(ordem_manual):
+    if st.session_state.get('is_disabled', True):
+        st.warning('Está faltando dados')
+    else:
+        st.session_state['carteira_api'] = None
+        st.session_state['operacao_api'] = None
+
+        ordem_manual = dumps(ordem_manual)
+        resp = requests.post(f'https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordem', ordem_manual, headers={'Authorization':f'Bearer {st.session_state.token}'})
+        try:
+            resposta_json = resp.json()
+        except:
+            st.error(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
+        if resp.status_code == 200:
+            st.success('Dados enviados')
+            with st.spinner("Aguardando...", show_time=True):
+                resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+                if resp.status_code == 200:
+                    st.success("Carteira atualizada com sucesso!")
+                    # Recarregar dados da carteira
+                else:
+                    st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")  
+        # --- Tratamento de Erro de Validação (422 Unprocessable Entity) ---
+        elif resp.status_code == 422:
+            st.error('❌ Existe dados inválidos no seu arquivo. Veja abaixo os detalhes:')
+                                
+            detail = resposta_json.get('detail', {})
+            linhas_rejeitadas = detail.get('linhas_rejeitadas', [])
+            
+            if linhas_rejeitadas:
+                st.warning(f"Foram encontradas {len(linhas_rejeitadas)} linha(s) com erro de validação.")
+                df_erros = pd.DataFrame(linhas_rejeitadas)
+
+                st.dataframe(df_erros, width='content',
+                                column_config={"msg": st.column_config.ListColumn(width='large'),
+                                            "data_operacao": st.column_config.DateColumn(format="DD.MM.YYYY")})
+            else:
+                st.text(f"Detalhe de erro da API: {detail}")
+
 # Pegar lista de ativos
 def get_ativos():
     st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
 
 # Excluir operação
+@st.dialog("Enviando Dados", on_dismiss='rerun')
 def excluir_op():
+    st.session_state['carteira_api'] = None
+    st.session_state['operacao_api'] = None
+
     try:
         lista_excluir = dumps(st.session_state['sl_op_excluir'])
         resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/', data=lista_excluir, headers={'Authorization':f'Bearer {st.session_state.token}'})
@@ -69,9 +149,6 @@ def excluir_op():
                 resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
-                    # Recarregar dados da carteira
-                    if 'carteira_api' in st.session_state:  
-                        st.cache_resource.clear()
                 else:
                     st.error(f"Erro ao atualizar carteira: Status {resp.status_code}") 
         else:
@@ -80,7 +157,11 @@ def excluir_op():
             st.error(f'Erro ao excluir, operção : {lista_excluir}')
 
 #Excluir todas as operações
+@st.dialog("Enviando Dados", on_dismiss='rerun')
 def excluir_tudo():
+    st.session_state['carteira_api'] = None
+    st.session_state['operacao_api'] = None
+
     try:
         resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_all/', headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
@@ -89,16 +170,22 @@ def excluir_tudo():
                 resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
-                    # Recarregar dados da carteira
-                    if 'carteira_api' in st.session_state:      
-                        st.cache_resource.clear()
                 else:
                     st.error(f"Erro ao atualizar carteira: Status {resp.status_code}") 
         else:
             st.success(f'Erro ao enviar, Erro: {resp}')
     except TypeError as e:
         st.error(f'Erro ao excluir, {e}') 
-    
+
+
+#------------------------------
+# Iniciar session
+#-------------------------------
+if 'operacao_api' not in st.session_state or st.session_state['operacao_api'] is None:    
+    get_operacoes(st.session_state.token) 
+#----------------------------------
+# Layout
+#----------------------------------
 # Titulo da pagina
 st.title('Ordens de Operações')
 
@@ -110,16 +197,14 @@ tab1, tab2, tab3, tab4 = st.tabs(["Operações", "Inserir via tabela", "Inserir 
 #-------------------------------------------------------------------------------------------------------------
 with tab1:
     #Declarar Variáveis
-    ordens = st.session_state['operacao_api']
-    if len(ordens) == 0:
-        st.title('Planilha vazia')
-        
-    df_ordens = pd.DataFrame(ordens)
-    if len(ordens) != 0:    
+    ordens = st.session_state.get('operacao_api', [])
+    if not ordens:
+        st.info('Nenhum ordem cadastrada')
+    else:  
+        df_ordens = pd.DataFrame(ordens)
+ 
         st.header("Operações")    
         st.dataframe(df_ordens,hide_index=True)
-    else:
-        st.write('Nenhum ordem cadastrada')
 #-------------------------------------------------------------------------------------------------------------
 #     Inserir dados via tabela
 #-------------------------------------------------------------------------------------------------------------    
@@ -144,48 +229,7 @@ with tab2:
             with st.expander('Exibir Dados input'):
                 st.dataframe(dataframe, width='content')
 
-            if st.button('Enviar', key='bt_1', kwargs={'dataframe': dataframe}):
-                resp = enviar_tabela(dataframe)
-                try:
-                    resposta_json = resp.json()
-                except:
-                    st.error(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
-
-                    # --- Tratamento de Sucesso (200 OK) ---
-                if resp.status_code == 200:
-                    st.success('✅ Dados enviados com sucesso!')
-                    with st.spinner("Aguardando...", show_time=True):
-                        resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
-                        if resp.status_code == 200:
-                            st.success("Carteira atualizada com sucesso!")
-                            # Recarregar dados da carteira
-                            if 'carteira_api' in st.session_state:      
-                                st.cache_resource.clear()
-                                st.cache_data.clear()
-                                st.switch_page("Pages/Carteira/page_1.py")
-                        else:
-                            st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")                    
-                                           
-                # --- Tratamento de Erro de Validação (422 Unprocessable Entity) ---
-                elif resp.status_code == 422:
-                    st.error('❌ Existe dados inválidos no seu arquivo. Veja abaixo os detalhes:')
-                                        
-                    detail = resposta_json.get('detail', {})
-                    linhas_rejeitadas = detail.get('linhas_rejeitadas', [])
-                    
-                    if linhas_rejeitadas:
-                        st.warning(f"Foram encontradas {len(linhas_rejeitadas)} linha(s) com erro de validação.")
-                        df_erros = pd.DataFrame(linhas_rejeitadas)
-
-                        st.dataframe(df_erros, width='content',
-                                     column_config={"msg": st.column_config.ListColumn(width='large'),
-                                                    "data_operacao": st.column_config.DateColumn(format="DD.MM.YYYY")})
-                    else:
-                        st.text(f"Detalhe de erro da API: {detail}")
-
-                else:
-                    st.error(f"⚠️ Erro HTTP inesperado: Status {resp.status_code}")
-                    st.text(f"Detalhes da Resposta: {dumps(resposta_json, indent=2)}")
+            st.button('Enviar', key='bt_1', kwargs={'dataframe': dataframe}, on_click=enviar_tabela)            
 #-------------------------------------------------------------------------------------------------------------
 #     Inserir dados manual
 #-------------------------------------------------------------------------------------------------------------
@@ -230,18 +274,14 @@ with tab3:
             "corretora": input_Corretora
             }
         is_valid_input = bool(input_data and input_Cat and input_Ativo and input_C_V and input_qt and input_Valor)
-        is_disabled = not is_valid_input or st.session_state.get('disabled_bt_2', False)
-        if is_valid_input: # Se os dados necessários estão presentes, o botão deve ser visível
-            if st.button('Enviar', on_click=envia_manual, kwargs={'ordem_manual': ordem_manual}, disabled=is_disabled):
-                st.cache_data.clear()
-                st.cache_resource.clear()
-                st.switch_page("Pages/Carteira/page_1.py")
-
+        st.session_state['is_disabled'] = not is_valid_input
+        if is_valid_input: # Se os dados necessários estão presentes, o botão deve ser visível            
+            st.button('Enviar', on_click=envia_manual, kwargs={'ordem_manual': ordem_manual}, disabled=st.session_state.get('is_disabled', True))
 #-------------------------------------------------------------------------------------------------------------
 #     Excluir operações
 #-------------------------------------------------------------------------------------------------------------
 with tab4:
-    if len(ordens) != 0:  
+    if ordens:  
         st.header("Selecione as operações a ser excluida")
         if 'sl_op_excluir' not in st.session_state:
             st.session_state['sl_op_excluir'] = []
@@ -263,17 +303,9 @@ with tab4:
             
         col1, col2 = st.columns([1, 0.3])
         with col1:
-            if st.button('Excluir', key='bt_3', disabled=st.session_state['bt_on'], on_click=excluir_op):
-                st.cache_data.clear()
-                st.cache_resource.clear()
-                st.switch_page("Pages/Carteira/page_1.py")
-                # st.rerun
+            st.button('Excluir', key='bt_3', disabled=st.session_state['bt_on'], on_click=excluir_op)
         with col2:
-            if st.button('Excluir tudo', key='bt_4', on_click=excluir_tudo):
-                st.cache_data.clear()
-                st.cache_resource.clear()
-                st.switch_page("Pages/Carteira/page_1.py")
-                # st.rerun
+            st.button('Excluir tudo', key='bt_4', on_click=excluir_tudo)
     else:
         st.write('Nenhum ordem cadastrada')
 
