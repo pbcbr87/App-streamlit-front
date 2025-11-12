@@ -49,7 +49,6 @@ def envia_peso(dados: pd.DataFrame):
         
         lista_dados.append(dado)
     dados = dumps(lista_dados, ensure_ascii=False)
-    print(dados)
 
     try:
         resp = requests.put(
