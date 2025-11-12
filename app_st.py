@@ -165,7 +165,6 @@ def navegacao():
             st.session_state['carteira_api'] = None
             st.session_state['operacao_api'] = None
             with st.spinner("Aguardando...", show_time=True):
-                print(f'{API_URL}comandos_api/calcular/{st.session_state.get("id", 0)}')
                 resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.get("id", 0)}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")

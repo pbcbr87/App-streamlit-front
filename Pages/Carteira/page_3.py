@@ -74,7 +74,7 @@ def envia_manual(dados: dict):
     
     try:
         resp = requests.post(
-            f'{API_URL}carteira/inserir_ativo',
+            f'{API_URL}carteira/inserir_ativo/{st.session_state.get("id", 0)}',
             dumps(dados),
             headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
         )
