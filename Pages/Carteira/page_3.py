@@ -51,7 +51,7 @@ def envia_peso(dados: pd.DataFrame):
 
     try:
         resp = requests.put(
-            f'{API_URL}carteira/update_peso_nota/{st.session_state.get(id, 0)}',
+            f'{API_URL}carteira/update_peso_nota/{st.session_state.get("id", 0)}',
             dumps(lista_dados),
             headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
         )
@@ -65,7 +65,7 @@ def envia_peso(dados: pd.DataFrame):
         st.error(f'Erro de tipo ao enviar peso: {e}')
 
     # Recarrega os dados da carteira após o loop
-    st.session_state['carteira_api'] = requests.get(f'{API_URL}pegar_carteira/{st.session_state.get(id, 0)}', 
+    st.session_state['carteira_api'] = requests.get(f'{API_URL}pegar_carteira/{st.session_state.get("id", 0)}', 
                                                     headers={'Authorization': f'Bearer {token}'}).json()
 
 def envia_manual(dados: dict):
@@ -82,7 +82,7 @@ def envia_manual(dados: dict):
             st.toast('Ativo adicionado com sucesso!', icon="✨")
             # Recarrega a carteira
             st.session_state['carteira_api'] = requests.get(
-                f'{API_URL}carteira/pegar_carteira/{st.session_state.get(id, 0)}', 
+                f'{API_URL}carteira/pegar_carteira/{st.session_state.get("id", 0)}', 
                 headers={'Authorization': f'Bearer {token}'}
             ).json()
         else:
