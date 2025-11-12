@@ -89,7 +89,7 @@ def get_carteira_data(token: str) -> list:
     """Busca a carteira da API e converte strings numéricas para Decimal."""
     
     resp = requests.get(
-        f'{API_URL}carteira/pegar_carteira/{st.session_state.get(id, 0)}', 
+        f'{API_URL}carteira/pegar_carteira/{st.session_state.get("id", 0)}', 
         headers={'Authorization':f'Bearer {token}'}
     )
     if resp.status_code == 404:

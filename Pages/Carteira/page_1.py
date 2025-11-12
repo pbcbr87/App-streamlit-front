@@ -62,7 +62,7 @@ def enviar_tabela(dataframe):
     if resp.status_code == 200:
         st.success('✅ Dados enviados com sucesso!')
         with st.spinner("Aguardando...", show_time=True):
-            resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+            resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.get("id", 0)}', headers={'Authorization':f'Bearer {st.session_state.token}'})
             if resp.status_code == 200:
                 st.success("Carteira atualizada com sucesso!")
                 # Recarregar dados da carteira    
@@ -107,7 +107,7 @@ def envia_manual(ordem_manual):
         if resp.status_code == 200:
             st.success('Dados enviados')
             with st.spinner("Aguardando...", show_time=True):
-                resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+                resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.get("id", 0)}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
                     # Recarregar dados da carteira
@@ -146,7 +146,7 @@ def excluir_op():
         if resp.status_code == 200:
             st.success('Dados Excluidos')
             with st.spinner("Aguardando...", show_time=True):
-                resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+                resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.get("id", 0)}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
                 else:
@@ -167,7 +167,7 @@ def excluir_tudo():
         if resp.status_code == 200:
             st.success('Dados Excluidos')
             with st.spinner("Aguardando...", show_time=True):
-                resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+                resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.get("id", 0)}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
                 else:
