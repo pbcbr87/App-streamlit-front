@@ -5,20 +5,91 @@ import numpy as np
 from plotly import graph_objects as go
 import plotly.express as px
 from json import loads, dumps
-from decimal import Decimal
+from decimal import Decimal, DivisionByZero
+
+
+
+
+#------------------------------------------------
+API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+#------------------------------------------------
+
+def get_carteira_data(token: str) -> list:
+    """Busca a carteira da API e converte strings numéricas para Decimal."""
+    
+    resp = requests.get(
+        f'{API_URL}carteira/pegar_carteira/{st.session_state.get("id", 0)}', 
+        headers={'Authorization':f'Bearer {token}'}
+    )
+    if resp.status_code == 404:
+        st.error(f'Carteira vazias: {resp.text}.')
+        return []
+    
+    if resp.status_code != 200:
+        st.error(f"Erro ao carregar carteira: Status {resp.status_code}")
+        return []
+    
+    dict_resp = resp.json()
+    
+    if not isinstance(dict_resp, list):
+         # Lida com o erro de formato de API (visto em conversas anteriores)
+         st.error(f"Formato da API inesperado. Recebido tipo: {type(dict_resp)}")
+         return []
+
+    for item in dict_resp:
+        for item_key, valor in item.items():
+            if isinstance(valor, str):
+                valor_limpo = valor.strip()
+                if not valor_limpo:
+                    continue
+                try:
+                    # A conversão de str para Decimal
+                    item[item_key] = Decimal(valor_limpo)
+                except Exception:
+                    pass # Deixa como string se não for um número
+
+    return dict_resp
+
+def divisao_percentual_segura(row: pd.Series, coluna_numerador: str, coluna_denominador: str) -> Decimal:     
+    # 1. Tenta extrair os valores (eles devem ser objetos Decimal)
+    numerador = row.get(coluna_numerador)
+    denominador = row.get(coluna_denominador)
+    
+    # Se algum valor estiver faltando ou for None, retorna 0
+    if numerador is None or denominador is None:
+        return Decimal('0')
+    # 2. Verifica e trata a divisão por zero
+    try:
+        if denominador == Decimal('0'):
+            return Decimal('0')
+    except Exception:
+        # Se o denominador não for um Decimal válido (ex: 'abc'), tratamos como 0
+        return Decimal('0')
+    # 3. Tenta a divisão real
+    try:
+        return numerador / denominador
+    except DivisionByZero:
+        # Linha de defesa contra o erro Decimal.
+        return Decimal('0')
+    except Exception:
+        # Captura qualquer outro erro de operação, como tipos misturados
+        return Decimal('0')
+
+
+if 'carteira_api' not in st.session_state or st.session_state['carteira_api'] is None:     
+    st.session_state['carteira_api'] = get_carteira_data(st.session_state.token)
 
 
 st.header("Aportes")
-#-----------------------------------------------------------
-# Buscando dados na API
-#-----------------------------------------------------------
+
 if not st.session_state['carteira_api']:
    st.info('Carteira vazia ou não calculada. Adicione um ativo para começar.')
    st.stop()
 
 df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 df_carteira['pais'] = np.where((df_carteira['categoria'] == "AÇÕES") | (df_carteira['categoria'] == "FII"), 'BRL', 'USD')
-df_carteira['%_lucro'] =  df_carteira['lucro_brl'] / df_carteira['custo_brl']
+df_carteira['%_lucro'] =  df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='lucro_brl', coluna_denominador='custo_brl'), axis=1)
+
 #-----------------------------------------------------------
 #Containers layout
 #-----------------------------------------------------------
@@ -63,24 +134,31 @@ else:
 # Calculo
 valor_total = df_carteira['valor_mercado_brl'].sum() + valor_aporte
 peso_total =  df_carteira['peso'].sum()
-
-df_carteira['valor_plan_brl'] = df_carteira['peso']*valor_total/peso_total
+if peso_total != 0:
+    df_carteira['valor_plan_brl'] = df_carteira['peso']*valor_total/peso_total
 
 df_carteira['dif'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
-df_carteira['dif_perc'] = df_carteira['dif'] / df_carteira['valor_mercado_brl']
+df_carteira['dif_perc'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='dif', coluna_denominador='valor_mercado_brl'), axis=1)
+
 df_carteira = df_carteira[df_carteira['dif'] > 0]
 
 # quantidade de ativos
 qt_ativo_aporte = sl_cat_container.number_input('Quantos ativos', value=len(df_carteira), format='%i', min_value=0, max_value=len(df_carteira))
 df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False]).head(qt_ativo_aporte)
-
-df_carteira['aporte'] = df_carteira['dif'] * valor_aporte/df_carteira['dif'].sum()
-df_carteira['aporte_per'] = np.where(df_carteira['valor_mercado_brl'] == 0, 100, df_carteira['aporte'] / df_carteira['valor_mercado_brl'])
+if df_carteira['dif'].sum() != 0:
+    df_carteira['aporte'] = df_carteira['dif'] * valor_aporte/df_carteira['dif'].sum()
+else:
+    df_carteira['aporte'] = Decimal("0")
+# df_carteira['aporte_per'] = np.where(df_carteira['valor_mercado_brl'] == 0, 100, df_carteira['aporte'] / df_carteira['valor_mercado_brl'])
+df_carteira['aporte_per'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='aporte', coluna_denominador='valor_mercado_brl'), axis=1)
 df_carteira = df_carteira[df_carteira['aporte'] > 0]
 
-df_carteira = df_carteira[['codigo_ativo', 'categoria','valor_mercado_brl', 'aporte', 'aporte_per']].style.format({
-    'aporte_per': '{:,.2%}',    
-    'valor_mercado_brl': 'R$ {:,.2f}',
-    'aporte': 'R$ {:,.2f}'
-})
-st.dataframe(df_carteira, hide_index=True, width='content')
+if not df_carteira.empty:
+    df_carteira = df_carteira[['codigo_ativo', 'categoria','valor_mercado_brl', 'aporte', 'aporte_per']].style.format({
+        'aporte_per': '{:,.2%}',    
+        'valor_mercado_brl': 'R$ {:,.2f}',
+        'aporte': 'R$ {:,.2f}'
+    })
+    st.dataframe(df_carteira, hide_index=True, width='content')
+else:
+    st.info("Insira o valor de porte e selecione a categoria")
