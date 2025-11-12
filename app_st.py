@@ -78,7 +78,7 @@ def login():
                 return
             
             try:
-                resp = requests.post('https://pythonapi-production-6268.up.railway.app/auth/token', {'username': user_input, 'password': senha_input})
+                resp = requests.post(f'{API_URL}auth/token', {'username': user_input, 'password': senha_input})
             except Exception as e:
                 print("Erro: ", e)
                 st.warning(f'Conexão com backend, Detalhes: {e}')            
@@ -165,7 +165,7 @@ def navegacao():
             st.session_state['carteira_api'] = None
             st.session_state['operacao_api'] = None
             with st.spinner("Aguardando...", show_time=True):
-                resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+                resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
                 else:

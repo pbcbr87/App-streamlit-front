@@ -3,6 +3,9 @@ import requests
 import time
 
 
+API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+
+
 @st.cache_data
 def get_user(tk):
     usuario = requests.get(f'{API_URL}/usuarios/', headers={'Authorization':f'Bearer {tk}'}).json()
@@ -10,7 +13,7 @@ def get_user(tk):
 
 def alterar_senha():
     try:
-        get_token = requests.post('https://pythonapi-production-6268.up.railway.app/auth/token', {'username': st.session_state.get('user', ''), 'password': senha_atual}).json()
+        get_token = requests.post(f'{API_URL}auth/token', {'username': st.session_state.get('user', ''), 'password': senha_atual}).json()
         if 'access_token' not in get_token:
             st.warning("Senha atual incorreta. Tente novamente.")
             return
@@ -38,7 +41,7 @@ def alterar_senha():
     
 def alterar_cadastro():
     try:
-        get_token = requests.post('https://pythonapi-production-6268.up.railway.app/auth/token', {'username': st.session_state.get('user', ''), 'password': senha_atual}).json()
+        get_token = requests.post('{API_URL}auth/token', {'username': st.session_state.get('user', ''), 'password': senha_atual}).json()
         if 'access_token' not in get_token:
             st.warning("Senha atual incorreta. Tente novamente.")
             return
@@ -59,7 +62,7 @@ def alterar_cadastro():
             st.session_state.email = novo_email
             
             try:
-                get_token = requests.post('https://pythonapi-production-6268.up.railway.app/auth/token', {'username': novo_login, 'password': senha_atual}).json()
+                get_token = requests.post(f'{API_URL}auth/token', {'username': novo_login, 'password': senha_atual}).json()
                 if 'access_token' in get_token:
                     st.session_state.logado = True
                     st.session_state.token = get_token['access_token']
@@ -79,15 +82,10 @@ def alterar_cadastro():
             st.error(f"❌ Erro na Atualização: {msg}")
 
     except requests.exceptions.RequestException as e:
-        st.error(f"❌ Erro de conexão com a API: {e}")
-    
- 
-
+        st.error(f"❌ Erro de conexão com a API: {e}") 
 
     return
 
-# Defina a URL base da sua API
-API_URL = 'https://pythonapi-production-6268.up.railway.app/'
 
 # --- Verificações de Sessão ---
 if not st.session_state.get('logado'):

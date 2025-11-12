@@ -6,6 +6,11 @@ import plotly.express as px
 from json import loads, dumps
 from decimal import Decimal
 
+
+#------------------------------------------------
+API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+#------------------------------------------------
+
 # ==============================================================================
 # 🗃️ 1. FUNÇÕES DE API (LÓGICA DE NEGÓCIO)
 # ==============================================================================
@@ -17,7 +22,7 @@ def get_ativos():
     token = st.session_state.get('token')
     
     try:
-        url = f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{cat}?ativo={ativo}'
+        url = f'{API_URL}Ativos/lista_ativos/{cat}?ativo={ativo}'
         resp = requests.get(url, headers={'Authorization': f'Bearer {token}'})
         
         if resp.status_code == 200:
@@ -46,7 +51,7 @@ def envia_peso(dados: pd.DataFrame):
 
     try:
         resp = requests.put(
-            'https://pythonapi-production-6268.up.railway.app/carteira/update_peso_nota',
+            f'{API_URL}carteira/update_peso_nota/{st.session_state.get(id, 0)}',
             dumps(lista_dados),
             headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
         )
@@ -60,7 +65,7 @@ def envia_peso(dados: pd.DataFrame):
         st.error(f'Erro de tipo ao enviar peso: {e}')
 
     # Recarrega os dados da carteira após o loop
-    st.session_state['carteira_api'] = requests.get('https://pythonapi-production-6268.up.railway.app/carteira/pegar_carteira', 
+    st.session_state['carteira_api'] = requests.get(f'{API_URL}pegar_carteira/{st.session_state.get(id, 0)}', 
                                                     headers={'Authorization': f'Bearer {token}'}).json()
 
 def envia_manual(dados: dict):
@@ -69,7 +74,7 @@ def envia_manual(dados: dict):
     
     try:
         resp = requests.post(
-            'https://pythonapi-production-6268.up.railway.app/carteira/inserir_ativo',
+            f'{API_URL}carteira/inserir_ativo',
             dumps(dados),
             headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
         )
@@ -77,7 +82,7 @@ def envia_manual(dados: dict):
             st.toast('Ativo adicionado com sucesso!', icon="✨")
             # Recarrega a carteira
             st.session_state['carteira_api'] = requests.get(
-                'https://pythonapi-production-6268.up.railway.app/carteira/pegar_carteira', 
+                f'{API_URL}carteira/pegar_carteira/{st.session_state.get(id, 0)}', 
                 headers={'Authorization': f'Bearer {token}'}
             ).json()
         else:

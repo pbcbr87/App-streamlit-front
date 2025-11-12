@@ -99,7 +99,7 @@ def envia_manual(ordem_manual):
         st.session_state['operacao_api'] = None
 
         ordem_manual = dumps(ordem_manual)
-        resp = requests.post(f'https://pythonapi-production-6268.up.railway.app/ordem_input/inserir_ordem', ordem_manual, headers={'Authorization':f'Bearer {st.session_state.token}'})
+        resp = requests.post(f'{API_URL}ordem_input/inserir_ordem', ordem_manual, headers={'Authorization':f'Bearer {st.session_state.token}'})
         try:
             resposta_json = resp.json()
         except:
@@ -107,7 +107,7 @@ def envia_manual(ordem_manual):
         if resp.status_code == 200:
             st.success('Dados enviados')
             with st.spinner("Aguardando...", show_time=True):
-                resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+                resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
                     # Recarregar dados da carteira
@@ -132,7 +132,7 @@ def envia_manual(ordem_manual):
 
 # Pegar lista de ativos
 def get_ativos():
-    st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
+    st.session_state['lista'] = requests.get(f'{API_URL}Ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
 
 # Excluir operação
 @st.dialog("Enviando Dados", on_dismiss='rerun')
@@ -142,11 +142,11 @@ def excluir_op():
 
     try:
         lista_excluir = dumps(st.session_state['sl_op_excluir'])
-        resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_ordem/', data=lista_excluir, headers={'Authorization':f'Bearer {st.session_state.token}'})
+        resp = requests.delete(f'{API_URL}ordem_input/delete_ordem/', data=lista_excluir, headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
             st.success('Dados Excluidos')
             with st.spinner("Aguardando...", show_time=True):
-                resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+                resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
                 else:
@@ -163,11 +163,11 @@ def excluir_tudo():
     st.session_state['operacao_api'] = None
 
     try:
-        resp = requests.delete(f'https://pythonapi-production-6268.up.railway.app/ordem_input/delete_all/', headers={'Authorization':f'Bearer {st.session_state.token}'})
+        resp = requests.delete(f'{API_URL}ordem_input/delete_all/', headers={'Authorization':f'Bearer {st.session_state.token}'})
         if resp.status_code == 200:
             st.success('Dados Excluidos')
             with st.spinner("Aguardando...", show_time=True):
-                resp = requests.get(f'https://pythonapi-production-6268.up.railway.app/comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+                resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if resp.status_code == 200:
                     st.success("Carteira atualizada com sucesso!")
                 else:
@@ -241,7 +241,7 @@ with tab3:
         if 'sl_ativo' not in st.session_state:
             st.session_state['sl_ativo'] = ""
         if 'lista' not in st.session_state:
-            st.session_state['lista'] = requests.get(f'https://pythonapi-production-6268.up.railway.app/Ativos/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
+            st.session_state['lista'] = requests.get(f'{API_URL}Ativos/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
     
                 
         st.subheader('Dados da Operação')
