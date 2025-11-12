@@ -37,41 +37,39 @@ def get_ativos():
 
 def envia_peso(dados: pd.DataFrame):
     """Atualiza o peso e nota dos ativos existentes na carteira."""
+    st.session_state['carteira_api'] = None
     token = st.session_state.get('token')
     lista_dados = []
     for _, linha in dados.iterrows():
         dado = {
             "fk_ativo": f'{linha["codigo_ativo"]}_{linha["categoria"]}',
-            "peso": linha['peso'],
-            "nota": linha['nota']
+            "peso": str(linha['peso']),
+            "nota": str(linha['nota'])
         }
         
         lista_dados.append(dado)
-
+    dados = dumps(lista_dados, ensure_ascii=False)
+    print(dados)
 
     try:
         resp = requests.put(
             f'{API_URL}carteira/update_peso_nota/{st.session_state.get("id", 0)}',
-            dumps(lista_dados),
+            dados,
             headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
         )
         if resp.status_code == 200:
             st.toast(f'Dados atualizado com sucesso!', icon="✅")
         else:
-            st.error(f'Erro ao atualizar, Erro: {resp.text}')
+            st.error(f'Erro ao atualizar, Erro: {resp} {resp.text}')
     except requests.exceptions.RequestException as e:
         st.error(f'Erro de conexão ao enviar peso: {e}')
     except TypeError as e:
         st.error(f'Erro de tipo ao enviar peso: {e}')
 
-    # Recarrega os dados da carteira após o loop
-    st.session_state['carteira_api'] = requests.get(f'{API_URL}pegar_carteira/{st.session_state.get("id", 0)}', 
-                                                    headers={'Authorization': f'Bearer {token}'}).json()
-
 def envia_manual(dados: dict):
     """Insere um novo ativo manualmente na carteira."""
     token = st.session_state.get('token')
-    
+    st.session_state['carteira_api'] = None
     try:
         resp = requests.post(
             f'{API_URL}carteira/inserir_ativo/{st.session_state.get("id", 0)}',
@@ -80,17 +78,48 @@ def envia_manual(dados: dict):
         )
         if resp.status_code == 201:
             st.toast('Ativo adicionado com sucesso!', icon="✨")
-            # Recarrega a carteira
-            st.session_state['carteira_api'] = requests.get(
-                f'{API_URL}carteira/pegar_carteira/{st.session_state.get("id", 0)}', 
-                headers={'Authorization': f'Bearer {token}'}
-            ).json()
         else:
             st.error(f'Erro ao inserir ativo, Erro: {resp.status_code} - {resp.text}')
     except requests.exceptions.RequestException as e:
         st.error(f'Erro de conexão ao enviar ativo: {e}')
     except TypeError as e:
         st.error(f'Erro de tipo ao enviar ativo: {e}')
+
+def get_carteira_data(token: str) -> list:
+    """Busca a carteira da API e converte strings numéricas para Decimal."""
+    
+    resp = requests.get(
+        f'{API_URL}carteira/pegar_carteira/{st.session_state.get("id", 0)}', 
+        headers={'Authorization':f'Bearer {token}'}
+    )
+    if resp.status_code == 404:
+        st.error(f'Carteira vazias: {resp.text}.')
+        return []
+    
+    if resp.status_code != 200:
+        st.error(f"Erro ao carregar carteira: Status {resp.status_code}")
+        return []
+    
+    dict_resp = resp.json()
+    
+    if not isinstance(dict_resp, list):
+         # Lida com o erro de formato de API (visto em conversas anteriores)
+         st.error(f"Formato da API inesperado. Recebido tipo: {type(dict_resp)}")
+         return []
+
+    for item in dict_resp:
+        for item_key, valor in item.items():
+            if isinstance(valor, str):
+                valor_limpo = valor.strip()
+                if not valor_limpo:
+                    continue
+                try:
+                    # A conversão de str para Decimal
+                    item[item_key] = Decimal(valor_limpo)
+                except Exception:
+                    pass # Deixa como string se não for um número
+
+    return dict_resp
 
 # ==============================================================================
 # ⚙️ 2. FUNÇÕES DE CALLBACKS E AUXILIARES
@@ -155,6 +184,8 @@ if 'token' not in st.session_state or 'id' not in st.session_state:
     # st.stop() 
 
 # Inicializa variáveis de estado
+if 'carteira_api' not in st.session_state or st.session_state['carteira_api'] is None:     
+    st.session_state['carteira_api'] = get_carteira_data(st.session_state.token)
 if 'sl_cat' not in st.session_state:
     st.session_state['sl_cat'] = 'AÇÕES'
 if 'sl_ativo' not in st.session_state:
@@ -198,7 +229,6 @@ with cont_top_bar:
                 input_nota = st.number_input( 'Nota (0 a 10):', step=1, min_value=0, max_value=10, value=None, key='input_nota_manual', on_change=check_envio_manual)
             
             dados_manual = {
-                "fk_usuario": st.session_state.id,
                 "fk_ativo": f'{input_Ativo}_{input_Cat}',
                 "peso": input_peso,
                 "nota": input_nota
