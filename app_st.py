@@ -147,6 +147,7 @@ def navegacao():
                     ]
     cateira_pages = [st.Page('Pages/Carteira/page_2.py', title='Carteira', default=True),
                     st.Page('Pages/Carteira/page_1.py', title='Operações'),
+                    st.Page('Pages/Carteira/movimentacao.py', title='Movimentações'),
                     st.Page('Pages/Carteira/page_3.py', title='Planejar'),
                     st.Page('Pages/Carteira/page_4.py', title='Aporte')
                     ]
