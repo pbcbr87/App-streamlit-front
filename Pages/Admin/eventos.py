@@ -5,8 +5,8 @@ from json import dumps, loads
 
 
 # Configuração da URL da API
-# API_URL = 'https://pythonapi-production-6268.up.railway.app/'
-API_URL = 'http://localhost:8000/'
+API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+# API_URL = 'http://localhost:8000/'
 token = st.session_state.get('token')
 
 
