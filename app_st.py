@@ -41,7 +41,7 @@ def ajustar_CSS_main():
 
 #função para pegar o token de autenticação
 def get_user(token: str):
-    usuario = requests.get(f'{API_URL}/usuarios/', headers={'Authorization':f'Bearer {token}'}).json()
+    usuario = requests.get(f'{API_URL}usuarios/', headers={'Authorization':f'Bearer {token}'}).json()
     return usuario
 
 
@@ -151,7 +151,8 @@ def navegacao():
                     st.Page('Pages/Carteira/page_3.py', title='Planejar'),
                     st.Page('Pages/Carteira/page_4.py', title='Aporte')
                     ]
-    admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:')]
+    admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:'),
+                   st.Page('Pages/Admin/eventos.py', title='Eventos')]
 
     pages = {"Sua Carteira": cateira_pages, "Conta": conta_pages}
 

@@ -9,7 +9,7 @@ from decimal import Decimal
 API_URL = 'https://pythonapi-production-6268.up.railway.app/'
 
 def get_operacoes(token):
-    resp = requests.get(f'{API_URL}/ordem_input/pegar_ordens', headers={'Authorization':f'Bearer {token}'})   
+    resp = requests.get(f'{API_URL}ordem_input/pegar_ordens', headers={'Authorization':f'Bearer {token}'})   
     
     if resp.status_code == 404:
         st.toast(f'ℹ️ Operações vazias: {resp.text}.')

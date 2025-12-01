@@ -8,7 +8,7 @@ API_URL = 'https://pythonapi-production-6268.up.railway.app/'
 
 @st.cache_data
 def get_user(tk):
-    usuario = requests.get(f'{API_URL}/usuarios/', headers={'Authorization':f'Bearer {tk}'}).json()
+    usuario = requests.get(f'{API_URL}usuarios/', headers={'Authorization':f'Bearer {tk}'}).json()
     return usuario
 
 def alterar_senha():
