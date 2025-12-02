@@ -26,7 +26,6 @@ def get_movimentacao(token):
     resp = requests.get(f'{API_URL}ordem_cal/pegar_ordens/{st.session_state.get("id", 0)}?fk_ativo={st.session_state.get("sl_ativo_pill", 0)}_{st.session_state.get("sl_cat", 0)}', headers={'Authorization':f'Bearer {token}'})   
     
     if resp.status_code == 404:
-        st.toast(f'ℹ️ Movimentação vazias: {resp.text}.')
         st.session_state['movimentacao_api'] = []
         return
 

@@ -5,13 +5,13 @@ from json import dumps, loads
 
 
 # Configuração da URL da API
-API_URL = 'https://pythonapi-production-6268.up.railway.app/'
-# API_URL = 'http://localhost:8000/'
+# API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+API_URL = 'http://localhost:8000/'
 token = st.session_state.get('token')
 
 
-def processar_evento(evento):
-    resp = requests.get(f'{API_URL}eventos/processar_evento/?ev_json={evento}', headers={'Authorization':f'Bearer {token}'})   
+def simular_evento(evento, posicao):
+    resp = requests.get(f'{API_URL}eventos/processar_evento/?ev_json={evento}&posicao={posicao}', headers={'Authorization':f'Bearer {token}'})   
     
     if resp.status_code == 404:
         st.toast(f'ℹ️ Eventos vazias: {resp.text}.')       
@@ -32,8 +32,7 @@ def processar_evento(evento):
 def get_evento(token):
     resp = requests.get(f'{API_URL}eventos/pesquisa/{st.session_state.get("sl_ativo", "")}', headers={'Authorization':f'Bearer {token}'})   
     
-    if resp.status_code == 404:
-        st.toast(f'ℹ️ Eventos vazias: {resp.text}.')       
+    if resp.status_code == 404:       
         return []
 
     if resp.status_code != 200:
@@ -57,118 +56,154 @@ def proc_ativo():
 
 @st.dialog("Criar Evento", width='large')
 def criar_evento():
-    proporcao = None
-    dinheiro = None
+    id_ativo = None
     ativo_gerado = None
+    proporcao = None
     valor = None
+    dinheiro = None
+    grupamento = None
+    desdobramento = None
+    tipo_list = ['ATUALIZAÇÃO',
+                'BONIFICAÇÃO',
+                'CISÃO',
+                'DESDOBRAMENTO',
+                'FRAÇÃO',
+                'GRUPAMENTO',
+                'GRUPAMENTO_DESDOBRAMENTO',
+                'INCORPORAÇÃO',
+                'OPA',
+                'REDUÇÃO DE CAPITAL']
 
+
+    st.header('Valor em carteira para teste')
     with st.container(horizontal=True):
-        tipo = st.selectbox('Tipo', ['BONIFICAÇÃO', 'FRAÇÃO', 'DESDOBRAMENTO', 'GRUPAMENTO'])
+        quant_acum = st.number_input("Quantidade de Cotas (qt)")
+        custo_acum = st.number_input("Valor acumulado (custo)")
+
+    st.header('Evento')
+    with st.container(horizontal=True):
+        
+        tipo = st.selectbox('Tipo', tipo_list)
         
         data_aprov = st.date_input('Data de aprovação', format='DD/MM/YYYY')
         data_com = st.date_input('Data de com direito', format='DD/MM/YYYY')
         data_pag = st.date_input('Data de pagamento', format='DD/MM/YYYY')
     
-    cadastrar = st.checkbox('Salvar no Banco')
     
-    if tipo == 'BONIFICAÇÃO':
-        with st.form("Bonificação", clear_on_submit=False):    
-            with st.container(horizontal=True):
-                id_ativo = st.text_input("id_ativo", max_chars=20)
-                ativo_gerado = id_ativo
-                valor = st.number_input("Valor por cota")
-                proporcao = st.number_input("Proporção")
-
-            submitted_detalhes = st.form_submit_button("Simular", type="primary")
-
-            if submitted_detalhes:
-                operacao = [{"id_ativo": id_ativo, "custo": f"{valor}*qt*{proporcao}", "qt": f"qt*{proporcao}"}]
+    if tipo == 'BONIFICAÇÃO':           
+        with st.container(horizontal=True):
+            id_ativo = st.text_input("id_ativo", max_chars=20)
+            ativo_gerado = id_ativo
+            valor = st.number_input("Valor por cota")
+            proporcao = st.number_input("Proporção")
     
     if tipo == 'FRAÇÃO':
-        with st.form("Bonificação", clear_on_submit=False):    
-            with st.container(horizontal=True):
-                id_ativo = st.text_input("id_ativo", max_chars=20)
-                valor = st.number_input("Valor por cota")
+        with st.container(horizontal=True):
+            id_ativo = st.text_input("id_ativo", max_chars=20)
+            valor = st.number_input("Valor por cota")
 
-            submitted_detalhes = st.form_submit_button("Simular", type="primary")
+    if tipo == 'DESDOBRAMENTO':        
+        with st.container(horizontal=True):
+            id_ativo = st.text_input("id_ativo", max_chars=20)
+            proporcao = st.number_input("Proporção")
 
-            if submitted_detalhes:
-                operacao = [{"id_ativo": id_ativo, "custo": f"{valor}*qt", "qt": "-qt"}]
+    if tipo == 'GRUPAMENTO':        
+        with st.container(horizontal=True):
+            id_ativo = st.text_input("id_ativo", max_chars=20)
+            proporcao = st.number_input("Proporção")
 
-    if tipo == 'DESDOBRAMENTO':
-        with st.form("Bonificação", clear_on_submit=False):    
-            with st.container(horizontal=True):
-                id_ativo = st.text_input("id_ativo", max_chars=20)
-                proporcao = st.number_input("Proporção")
+    if tipo == 'GRUPAMENTO_DESDOBRAMENTO':        
+        with st.container(horizontal=True):
+            id_ativo = st.text_input("id_ativo", max_chars=20)
+            grupamento = st.number_input("Proporção Grupamento")
+            desdobramento = st.number_input("Proporção Desdobramento")
 
-            submitted_detalhes = st.form_submit_button("Simular", type="primary")
+    if tipo == 'ATUALIZAÇÃO':
+        with st.container(horizontal=True):
+            id_ativo = st.text_input("id_ativo", max_chars=20)
+            ativo_gerado = st.text_input("id do novo ativo", max_chars=20)
+            proporcao = st.number_input("Proporção")
 
-            if submitted_detalhes:
-                st.text(f'De 1 para {proporcao/100 + 1}')
-                operacao = [{"id_ativo": id_ativo, "custo": "0", "qt": f"qt*{proporcao/100}"}]
+    if tipo == 'OPA':
+        with st.container(horizontal=True):
+            id_ativo = st.text_input("id_ativo", max_chars=20)
+            valor = st.number_input("Valor por cota da venda")
 
-    if tipo == 'GRUPAMENTO':
-        with st.form("Grupamento", clear_on_submit=False):    
-            with st.container(horizontal=True):
-                id_ativo = st.text_input("id_ativo", max_chars=20)
-                proporcao = st.number_input("Proporção")
+    if tipo == 'REDUÇÃO DE CAPITAL':
+        with st.container(horizontal=True):
+            id_ativo = st.text_input("id_ativo", max_chars=20)
+            valor = st.number_input("Valor em dinheiro receido por cota")
+    #----------------------------------------------
+    if quant_acum > 0 and custo_acum > 0:
+        submitted_detalhes = st.button("Simular", type="primary")
+    
+        if submitted_detalhes:
+            # Mostrar previa do calculo
+            operacao_dict = [{
+                            "id_ativo": id_ativo,
+                            "ativo_gerado": ativo_gerado,
+                            "proporcao": proporcao,
+                            "valor": valor,
+                            "grupamento": grupamento,
+                            "desdobramento": desdobramento
+                            }]
+            
+            evento_dict = {
+                    'fk_ativo':  id_ativo,
+                    'ativo_gerado': ativo_gerado,
+                    'tipo': tipo,
+                    'data_aprov': data_aprov.isoformat(),
+                    'data_com': data_com.isoformat(),
+                    'data_pag': data_pag.isoformat(),
+                    'valor_base': valor,
+                    'proporcao': proporcao,
+                    'dinheiro': dinheiro,
+                    'operacao': operacao_dict
+                    }
+            
+            st.dataframe(evento_dict)
 
-            submitted_detalhes = st.form_submit_button("Simular", type="primary")
+            posicao_dict = {
+                        'qt': f"{quant_acum}",
+                        'custo': f"{custo_acum}"
+                        }
+            
+            posicao = dumps(posicao_dict, ensure_ascii=False)
+            evento = dumps(evento_dict, ensure_ascii=False)
+            dict_resp = simular_evento(evento, posicao)
+            df_resp = pd.DataFrame(dict_resp)
+            if 'msg' in df_resp:
+                st.dataframe(df_resp)
+                st.stop()
+            
+            if df_resp.empty:
+                st.stop()
+            
+            colunas_brl = ['preco_op_brl', 'custo_acum_brl', 'lucro_brl', 'dolar_bc'] 
+            colunas_usd = ['preco_op_usd', 'custo_acum_usd', 'lucro_usd']
+            culunas_numero = ['quant_', 'quant_acum', 'quant_fracao']
+            
+            formatos = {col: 'R$ {:,.2f}' for col in colunas_brl}
+            formatos.update({col: 'US$ {:,.2f}' for col in colunas_usd})
+            formatos.update({col: '{:,.2f}' for col in culunas_numero})
+            
+            colunas_numericas = [
+                'quant_', 'quant_acum', 'preco_op_brl', 'custo_acum_brl', 'lucro_brl', 
+                'preco_op_usd', 'custo_acum_usd', 'lucro_usd', 'quant_fracao', 'dolar_bc'
+            ]
 
-            if submitted_detalhes:
-                st.text(f'De {1/proporcao} para 1')
-                operacao = [{"id_ativo": id_ativo, "custo": "0", "qt": f"qt*{proporcao}"}]
-
-    if submitted_detalhes:
-        if cadastrar:
-            #inserir rota para cadastrar no banco de dados evento.
-            st.stop()
-            pass
-
-        # Mostrar previa do calculo
-        evento_dict = {
-                'id': 0,
-                'fk_ativo':  id_ativo,
-                'ativo_gerado': ativo_gerado,
-                'tipo': tipo,
-                'data_aprov': data_aprov.isoformat(),
-                'data_com': data_com.isoformat(),
-                'data_pag': data_pag.isoformat(),
-                'valor_base': valor,
-                'proporcao': proporcao,
-                'dinheiro': dinheiro,
-                'operacao': operacao}
-        
-        evento = dumps(evento_dict, ensure_ascii=False)
-        dict_resp = processar_evento(evento)
-        
-        df_resp = pd.DataFrame(dict_resp)
-
-        colunas_brl = ['preco_op_brl', 'custo_acum_brl', 'lucro_brl', 'dolar_bc'] 
-        colunas_usd = ['preco_op_usd', 'custo_acum_usd', 'lucro_usd']
-        culunas_numero = ['quant_', 'quant_acum', 'quant_fracao']
-        
-        formatos = {col: 'R$ {:,.2f}' for col in colunas_brl}
-        formatos.update({col: 'US$ {:,.2f}' for col in colunas_usd})
-        formatos.update({col: '{:,.2f}' for col in culunas_numero})
-        
-        colunas_numericas = [
-            'quant_', 'quant_acum', 'preco_op_brl', 'custo_acum_brl', 'lucro_brl', 
-            'preco_op_usd', 'custo_acum_usd', 'lucro_usd', 'quant_fracao', 'dolar_bc'
-        ]
-
-        for col in colunas_numericas:
-            # Converte forçando para float, e transforma erros em NaN
-            df_resp[col] = pd.to_numeric(df_resp[col], errors='coerce')
+            for col in colunas_numericas:
+                # Converte forçando para float, e transforma erros em NaN
+                df_resp[col] = pd.to_numeric(df_resp[col], errors='coerce')
 
 
-        df_resp = df_resp[['tipo','seq', 'fk_ativo', 'data_op_com', 
-                                    'quant_', 'quant_acum', 
-                                    'preco_op_brl', 'custo_acum_brl', 'lucro_brl',
-                                    'preco_op_usd', 'custo_acum_usd', 'lucro_usd',
-                                    'quant_fracao', 'moeda','dolar_bc']].style.format(formatos)
-        
-        st.dataframe(df_resp)
+            df_resp = df_resp[['tipo','seq', 'fk_ativo', 'data_op_com', 
+                                        'quant_', 'quant_acum', 
+                                        'preco_op_brl', 'custo_acum_brl', 'lucro_brl',
+                                        'preco_op_usd', 'custo_acum_usd', 'lucro_usd',
+                                        'quant_fracao', 'moeda','dolar_bc']].style.format(formatos)
+            
+            st.dataframe(df_resp)     
 
 def enviar_tabela(dataframe):
     linhas = dataframe.to_json(orient='records', date_format='iso')
