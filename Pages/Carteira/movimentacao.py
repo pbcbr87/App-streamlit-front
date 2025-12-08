@@ -75,7 +75,7 @@ if not 'lista' in st.session_state:
     st.session_state['lista'] = get_ativos()
 
 if 'movimentacao_api' not in st.session_state or st.session_state['movimentacao_api'] is None:    
-    st.session_state['movimentacao_api'] = get_movimentacao(st.session_state.token)
+    st.session_state['movimentacao_api'] = []
 
 #-----------------------------------------------
 # Layout
