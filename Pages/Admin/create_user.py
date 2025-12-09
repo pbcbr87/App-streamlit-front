@@ -3,7 +3,8 @@ import requests
 
 
 # Configuração da URL da API
-API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+# API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+API_URL = 'python_api.railway.internal'
 endpoint = f"{API_URL}usuarios/"
 token = st.session_state.get('token')
 

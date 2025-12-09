@@ -3,7 +3,8 @@ import requests
 import time
 
 
-API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+# API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+API_URL = 'python_api.railway.internal'
 
 
 @st.cache_data

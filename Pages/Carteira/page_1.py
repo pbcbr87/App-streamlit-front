@@ -6,7 +6,9 @@ from datetime import datetime, date
 from decimal import Decimal
 
 
-API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+# API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+API_URL = 'python_api.railway.internal'
+
 
 def get_operacoes(token):
     resp = requests.get(f'{API_URL}ordem_input/pegar_ordens', headers={'Authorization':f'Bearer {token}'})   

@@ -8,7 +8,8 @@ from decimal import Decimal, DivisionByZero
 
 
 #------------------------------------------------
-API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+# API_URL = 'https://pythonapi-production-6268.up.railway.app/'
+API_URL = 'python_api.railway.internal'
 #------------------------------------------------
 
 def divisao_percentual_segura(row: pd.Series, coluna_numerador: str, coluna_denominador: str) -> Decimal:     

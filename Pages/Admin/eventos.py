@@ -7,7 +7,8 @@ import time
 
 # Configuração da URL da API
 # API_URL = 'https://pythonapi-production-6268.up.railway.app/'
-API_URL = 'http://localhost:8000/'
+# API_URL = 'http://localhost:8000/'
+API_URL = 'python_api.railway.internal'
 token = st.session_state.get('token')
 
 if 'lista_criada' not in st.session_state:
