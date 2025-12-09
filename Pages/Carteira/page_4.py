@@ -6,13 +6,11 @@ from plotly import graph_objects as go
 import plotly.express as px
 from json import loads, dumps
 from decimal import Decimal, DivisionByZero
-
-
-
+from settings import API_URL
 
 #------------------------------------------------
 # API_URL = 'https://pythonapi-production-6268.up.railway.app/'
-API_URL = 'python_api.railway.internal'
+# API_URL = 'python_api.railway.internal'
 #------------------------------------------------
 
 def get_carteira_data(token: str) -> list:

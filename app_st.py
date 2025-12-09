@@ -1,14 +1,14 @@
 import streamlit as st
 import requests
 from decimal import Decimal
-
+from settings import API_URL
 
 #deixar visivel as session:
 # st.write(st.session_state)
 # st.context.cookies
 #------------------------------------------------
 # API_URL = 'https://pythonapi-production-6268.up.railway.app/'
-API_URL = 'python_api.railway.internal'
+# API_URL = 'python_api.railway.internal'
 #------------------------------------------------
 #Congiguraçãoes iniciais
 #------------------------------------------------

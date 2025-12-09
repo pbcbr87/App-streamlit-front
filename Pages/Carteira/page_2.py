@@ -5,11 +5,11 @@ import numpy as np
 from plotly import graph_objects as go
 import plotly.express as px
 from decimal import Decimal, DivisionByZero
-
+from settings import API_URL
 
 #------------------------------------------------
 # API_URL = 'https://pythonapi-production-6268.up.railway.app/'
-API_URL = 'python_api.railway.internal'
+# API_URL = 'python_api.railway.internal'
 #------------------------------------------------
 
 def divisao_percentual_segura(row: pd.Series, coluna_numerador: str, coluna_denominador: str) -> Decimal:     
