@@ -40,7 +40,7 @@ def alterar_senha():
         st.error(f"❌ Erro de conexão com a API: {e}")
         return
     
-def alterar_cadastro():
+def alterar_cadastro(endpoint, payload):
     try:
         get_token = requests.post('{API_URL}auth/token', {'username': st.session_state.get('user', ''), 'password': senha_atual}).json()
         if 'access_token' not in get_token:
@@ -129,7 +129,7 @@ with col_center.form("edicao_detalhes_form", clear_on_submit=False):
         endpoint = f'{API_URL}usuarios/{user_id}' 
         
         with st.spinner("Atualizando detalhes do perfil..."):
-            alterar_cadastro()
+            alterar_cadastro(payload, endpoint)
 
 # ----------------------------------------------------
 # 3. FORMULÁRIO 2: ALTERAR SENHA

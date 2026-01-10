@@ -62,7 +62,6 @@ if "user" not in st.session_state:
     st.session_state.id = None
     st.session_state.token = None
     st.session_state.nome = None
-
 #------------------------------------------------
 # Funções para paiginas
 #------------------------------------------------
@@ -152,13 +151,19 @@ def navegacao():
                     st.Page('Pages/Carteira/page_3.py', title='Planejar'),
                     st.Page('Pages/Carteira/page_4.py', title='Aporte')
                     ]
-    admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:'),
-                   st.Page('Pages/Admin/eventos.py', title='Eventos')]
+    evento_pages = [st.Page('Pages/Evento/main.py', title='Main'),
+                    st.Page('Pages/Evento/simular.py', title='Simular Evento'),
+                    st.Page('Pages/Evento/insert_evento.py', title='Inserir Evento'),
+                    st.Page('Pages/Evento/edit_evento.py', title='Editar Evento')
+                    ]
+    admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:')
+                   ]
 
     pages = {"Sua Carteira": cateira_pages, "Conta": conta_pages}
 
     if st.session_state.admin == True:
         pages["Admin"] = admin_pages
+        pages["Evento"] = evento_pages
 
     pg = st.navigation(pages, position="sidebar")
     
