@@ -70,7 +70,7 @@ with st.container(border=True):
 
 st.divider()
 # --- BOTÕES DE AÇÃO ---
-c1, c2, c3, c4 = st.columns(4)   
+c1, c2, c3, c4, c5 = st.columns(5)   
 
 
 with col1:
@@ -93,6 +93,9 @@ if c1.button("➕ Inserir", width='stretch'):
     st.switch_page('Pages/Evento/insert_evento.py')
 if c2.button("🧪 Simular", width='stretch'):
     st.switch_page('Pages/Evento/simular.py')
+if c3.button("🧐 Eventos Pendentes", width='stretch'):
+    st.switch_page('Pages/Evento/main_pend.py')
+    
 
 if st.session_state['evento_api']:
     if st.session_state.get('pills_selecao'):
@@ -102,9 +105,9 @@ if st.session_state['evento_api']:
         if sl_row:
             if sl_row.get('selection').get('rows'):
                 st.session_state['evento_dict'] = df_eventos.replace({np.nan: None}).iloc[sl_row.get('selection').get('rows')[0]].to_dict()
-                if c3.button("📝 Editar", width='stretch'):
+                if c4.button("📝 Editar", width='stretch'):
                     st.switch_page('Pages/Evento/edit_evento.py')
-                if c4.button("🗑️ Excluir", width='stretch'):
+                if c5.button("🗑️ Excluir", width='stretch'):
                     exluir()
                 
 

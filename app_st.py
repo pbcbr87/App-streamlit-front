@@ -154,7 +154,8 @@ def navegacao():
     evento_pages = [st.Page('Pages/Evento/main.py', title='Main'),
                     st.Page('Pages/Evento/simular.py', title='Simular Evento'),
                     st.Page('Pages/Evento/insert_evento.py', title='Inserir Evento'),
-                    st.Page('Pages/Evento/edit_evento.py', title='Editar Evento')
+                    st.Page('Pages/Evento/edit_evento.py', title='Editar Evento'),
+                    st.Page('Pages/Evento/main_pend.py', title='Evento Pendentes')
                     ]
     admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:')
                    ]

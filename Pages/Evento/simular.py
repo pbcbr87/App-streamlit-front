@@ -15,6 +15,52 @@ if 'token' not in st.session_state:
 if 'lista_criada' not in st.session_state:
     st.session_state['lista_criada'] = None
 
+
+def sanitizar_evento(dict_evento):
+    """Converte valores incompatíveis (NaN, NumPy tipos) para tipos nativos Python."""
+    import numpy as np
+    novo_dict = {}
+    for k, v in dict_evento.items():
+        if pd.isna(v) or v is np.nan:
+            novo_dict[k] = None
+        elif isinstance(v, (np.float64, np.float32)):
+            novo_dict[k] = float(v)
+        elif isinstance(v, (np.int64, np.int32)):
+            novo_dict[k] = int(v)
+        else:
+            novo_dict[k] = v
+    return novo_dict
+
+def enviar_tabela(dataframe):
+    linhas = dataframe.to_json(orient='records', date_format='iso')
+    linhas = loads(linhas)
+    tabela = dumps({"dados": linhas})
+    
+    resp = requests.post(f'{API_URL}eventos/inserir_eventos_tabela', tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
+    try:
+        resposta_json = resp.json()
+    except:
+        st.error(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
+
+        # --- Tratamento de Sucesso (200 OK) ---
+    if resp.status_code == 200:
+        st.success('✅ Dados enviados com sucesso!')          
+    # --- Tratamento de Erro de Validação (422 Unprocessable Entity) ---
+    elif resp.status_code == 422:
+        st.error('❌ Existe dados inválidos no seu arquivo. Veja abaixo os detalhes:')
+                            
+        detail = resposta_json.get('detail', {})
+        linhas_rejeitadas = detail.get('linhas_rejeitadas', [])
+        
+        if linhas_rejeitadas:
+            st.warning(f"Foram encontradas {len(linhas_rejeitadas)} linha(s) com erro de validação.")
+            df_erros = pd.DataFrame(linhas_rejeitadas)
+            st.dataframe(df_erros)
+        else:
+            st.text(f"Detalhe de erro da API: {detail}")
+    else:
+        st.error(f"⚠️ Erro HTTP inesperado: Status {resp.status_code}")
+
 # --- FUNÇÕES DE LÓGICA (API) ---
 def api_request_simular(evento, operacao_param, posicao):
     headers = {'Authorization': f'Bearer {st.session_state.token}'}
@@ -124,15 +170,22 @@ def render_layout_input():
 # --- FLUXO PRINCIPAL ---
 
 # Header e Navegação
-t1, t2 = st.columns([5, 1])
+t1, t2, t3 = st.columns([5, 1, 1])
 t1.title("🛠️ Simulação de Eventos Corporativos")
-if t2.button("⬅️ Voltar", width='stretch'):
+if t2.button("⬅️ Mains Eventos", width='stretch'):
     st.switch_page('Pages/Evento/main.py')
+
+if t3.button("🧐 Eventos Pendentes", width='stretch'):
+    st.switch_page('Pages/Evento/main_pend.py')
+
+if 'evento_pedente_sel' in st.session_state and st.session_state['evento_pedente_sel'] is not None:
+   st.header("Evento Pendente Selecionado para Simulação")
+   st.dataframe([st.session_state.evento_pedente_sel])
 
 if not st.session_state['lista_criada']:
     tipo, inputs, q_acum, c_acum, d_aprov, d_com, d_pag = render_layout_input()
     
-    if st.button("🚀 Simular Evento", type="primary"):
+    if st.button("🧪 Simular Evento", type="primary"):
         if q_acum <= 0:
             st.warning("Quantidade deve ser maior que zero.")
         else:
@@ -163,6 +216,8 @@ if not st.session_state['lista_criada']:
                     st.warning("A simulação não retornou dados suficientes. Verifiar data_com e data_pag.")
 
 # Exibição dos Resultados
+c1, c2, c3, _ = st.columns([1, 1, 1, 3])
+
 if st.session_state['lista_criada']:
     st.success("✅ Simulação concluída!")
     
@@ -176,12 +231,17 @@ if st.session_state['lista_criada']:
     st.subheader("Eventos Gerados")
     st.dataframe(pd.DataFrame(st.session_state['lista_criada']))
     
-    c1, c2, _ = st.columns([1, 1, 3])
-    if c1.button('🗑️ Limpar', width="stretch"):
-        st.session_state['lista_criada'] = None
-        st.rerun()
-        
+
     if c2.button('💾 Salvar', width="stretch"):
+        evento_final = sanitizar_evento(st.session_state['lista_criada'][0])    
+        df_envio = pd.DataFrame([evento_final])
+        enviar_tabela(df_envio)
+        
+    if c3.button('📝 Modificar antes de enviar', width="stretch"):
         st.session_state['evento_dict'] = st.session_state['lista_criada'][0]
         st.switch_page('Pages/Evento/insert_evento.py')
 
+if c1.button('🗑️ Limpar', width="stretch"):
+    st.session_state['lista_criada'] = None
+    st.session_state['evento_pedente_sel'] = None
+    st.rerun()
