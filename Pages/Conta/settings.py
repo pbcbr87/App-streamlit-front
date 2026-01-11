@@ -42,7 +42,7 @@ def alterar_senha():
     
 def alterar_cadastro(endpoint, payload):
     try:
-        get_token = requests.post('{API_URL}auth/token', {'username': st.session_state.get('user', ''), 'password': senha_atual}).json()
+        get_token = requests.post(f'{API_URL}auth/token', {'username': st.session_state.get('user', ''), 'password': senha_atual}).json()
         if 'access_token' not in get_token:
             st.warning("Senha atual incorreta. Tente novamente.")
             return
