@@ -4,6 +4,7 @@ import pandas as pd
 from json import dumps, loads
 import time
 from settings import API_URL
+from datetime import date
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(layout="wide", page_title="Simulador de Eventos")
@@ -103,9 +104,9 @@ def render_layout_input():
     with col2:
         st.subheader('📅 Período do Evento')
         c1, c2, c3 = st.columns(3)
-        data_aprov = c1.date_input('Aprovação')
-        data_com = c2.date_input('Data Com')
-        data_pag = c3.date_input('Pagamento')
+        data_aprov = c1.date_input('Aprovação', min_value=date(2000, 1, 1))
+        data_com = c2.date_input('Data Com', min_value=date(2000, 1, 1))
+        data_pag = c3.date_input('Pagamento', min_value=date(2000, 1, 1))
 
     st.divider()
     
