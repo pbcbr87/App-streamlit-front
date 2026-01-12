@@ -127,8 +127,7 @@ def render_layout_input():
         cols = st.columns(3)
         
         # Campos comuns para quase todos
-        if tipo != 'CISÃO' and tipo != 'INCORPORAÇÃO':
-            inputs["id_ativo"] = cols[0].text_input("ID Ativo Original")
+        inputs["id_ativo"] = cols[0].text_input("ID Ativo Original")
             
         if tipo == 'BONIFICAÇÃO':
             inputs["ativo_gerado"] = inputs["id_ativo"]
@@ -141,9 +140,12 @@ def render_layout_input():
         elif tipo == 'GRUPAMENTO_DESDOBRAMENTO':
             inputs["grupamento"] = cols[1].number_input("Prop. Grupamento", format="%.5f")
             inputs["desdobramento"] = cols[2].number_input("Prop. Desdobramento", format="%.5f")
-            
+
+        elif tipo in ['ATUALIZAÇÃO']:
+            inputs["ativo_gerado"] = cols[1].text_input("ID Novo Ativo")
+            inputs["proporcao"] = cols[2].number_input("Proporção", format="%.5f")
+
         elif tipo in ['CISÃO', 'INCORPORAÇÃO']:
-            inputs["id_ativo"] = cols[0].text_input("ID Ativo")
             inputs["ativo_gerado"] = cols[1].text_input("ID Novo Ativo")
             
             use_formula = st.toggle('Usar fórmula complexa')
