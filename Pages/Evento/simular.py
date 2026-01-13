@@ -104,9 +104,12 @@ def render_layout_input():
     with col2:
         st.subheader('📅 Período do Evento')
         c1, c2, c3 = st.columns(3)
-        data_aprov = c1.date_input('Aprovação', min_value=date(2000, 1, 1))
-        data_com = c2.date_input('Data Com', min_value=date(2000, 1, 1))
-        data_pag = c3.date_input('Pagamento', min_value=date(2000, 1, 1))
+        
+        evento = st.session_state.get('evento_pedente_sel') or {}
+
+        data_aprov = c1.date_input('Aprovação', min_value=date(2000, 1, 1), value= evento.get('data_aprov', date.today()))
+        data_com = c2.date_input('Data Com', min_value=date(2000, 1, 1), value= evento.get('data_com', date.today()))
+        data_pag = c3.date_input('Pagamento', min_value=date(2000, 1, 1), value= evento.get('data_pag', date.today()))
 
     st.divider()
     
@@ -128,7 +131,7 @@ def render_layout_input():
         cols = st.columns(3)
         
         # Campos comuns para quase todos
-        inputs["id_ativo"] = cols[0].text_input("ID Ativo Original")
+        inputs["id_ativo"] = cols[0].text_input("ID Ativo Original", value= evento.get('fk_ativo', None))
             
         if tipo == 'BONIFICAÇÃO':
             inputs["ativo_gerado"] = inputs["id_ativo"]
@@ -239,6 +242,8 @@ if st.session_state['lista_criada']:
         evento_final = sanitizar_evento(st.session_state['lista_criada'][0])    
         df_envio = pd.DataFrame([evento_final])
         enviar_tabela(df_envio)
+        st.session_state['lista_criada'] = None
+        st.session_state['evento_pedente_sel'] = None
         
     if c3.button('📝 Modificar antes de enviar', width="stretch"):
         st.session_state['evento_dict'] = st.session_state['lista_criada'][0]
