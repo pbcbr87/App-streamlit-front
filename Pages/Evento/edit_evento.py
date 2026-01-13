@@ -101,9 +101,9 @@ with st.form("form_evento"):
     tipo = col3.selectbox("Tipo de Evento", options=tipo_lista, index=idx_tipo)
     st.subheader('📅 Período do Evento')
     d1, d2, d3 = st.columns(3)
-    data_aprov = d1.date_input("Aprovação", formatar_data_segura(ev.get('data_aprov')))
-    data_com = d2.date_input("Data Com", formatar_data_segura(ev.get('data_com')))
-    data_pag = d3.date_input("Pagamento", formatar_data_segura(ev.get('data_pag')))
+    data_aprov = d1.date_input("Aprovação", formatar_data_segura(ev.get('data_aprov')), min_value=date(2000, 1, 1))
+    data_com = d2.date_input("Data Com", formatar_data_segura(ev.get('data_com')), min_value=date(2000, 1, 1))
+    data_pag = d3.date_input("Pagamento", formatar_data_segura(ev.get('data_pag')), min_value=date(2000, 1, 1))
 
     st.divider()
     

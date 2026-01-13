@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date
 from json import dumps, loads
 import requests
 import time
@@ -121,9 +121,9 @@ with st.form("form_evento"):
     # Seção 2: Datas
     st.subheader('📅 Período do Evento')
     d1, d2, d3 = st.columns(3)
-    data_aprov = d1.date_input("Aprovação", ev.get('data_aprov'))
-    data_com = d2.date_input("Data Com", ev.get('data_com'))
-    data_pag = d3.date_input("Pagamento", ev.get('data_pag'))
+    data_aprov = d1.date_input("Aprovação", ev.get('data_aprov'), min_value=date(2000, 1, 1))
+    data_com = d2.date_input("Data Com", ev.get('data_com'), min_value=date(2000, 1, 1))
+    data_pag = d3.date_input("Pagamento", ev.get('data_pag'), min_value=date(2000, 1, 1))
 
     st.divider()
     
