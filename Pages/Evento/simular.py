@@ -179,10 +179,10 @@ def render_layout_input():
 t1, t2, t3 = st.columns([5, 1, 1])
 t1.title("🛠️ Simulação de Eventos Corporativos")
 if t2.button("⬅️ Mains Eventos", width='stretch'):
-    st.switch_page('Pages/Evento/main.py')
+    st.switch_page('Pages/Evento/eventos_cadastrados.py')
 
 if t3.button("🧐 Eventos Pendentes", width='stretch'):
-    st.switch_page('Pages/Evento/main_pend.py')
+    st.switch_page('Pages/Evento/evetnso_pendentes.py')
 
 if 'evento_pedente_sel' in st.session_state and st.session_state['evento_pedente_sel'] is not None:
    st.header("Evento Pendente Selecionado para Simulação")

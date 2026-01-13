@@ -94,7 +94,7 @@ if c1.button("➕ Inserir", width='stretch'):
 if c2.button("🧪 Simular", width='stretch'):
     st.switch_page('Pages/Evento/simular.py')
 if c3.button("🧐 Eventos Pendentes", width='stretch'):
-    st.switch_page('Pages/Evento/main_pend.py')
+    st.switch_page('Pages/Evento/evetnso_pendentes.py')
     
 
 if st.session_state['evento_api']:

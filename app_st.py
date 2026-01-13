@@ -151,12 +151,14 @@ def navegacao():
                     st.Page('Pages/Carteira/page_3.py', title='Planejar'),
                     st.Page('Pages/Carteira/page_4.py', title='Aporte')
                     ]
-    evento_pages = [st.Page('Pages/Evento/main.py', title='Main'),
+    evento_pages = [st.Page('Pages/Evento/eventos_cadastrados.py', title='Eventos Cadastrados'),
+                    st.Page('Pages/Evento/evetnso_pendentes.py', title='Evento Pendentes'),
                     st.Page('Pages/Evento/simular.py', title='Simular Evento'),
                     st.Page('Pages/Evento/insert_evento.py', title='Inserir Evento'),
-                    st.Page('Pages/Evento/edit_evento.py', title='Editar Evento'),
-                    st.Page('Pages/Evento/main_pend.py', title='Evento Pendentes')
+                    st.Page('Pages/Evento/edit_evento.py', title='Editar Evento')
                     ]
+    ativos_pages = [st.Page('Pages/Ativos/ativos_cadastrados.py', title='Ativos Cadastrados')]
+
     admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:')
                    ]
 
@@ -165,6 +167,7 @@ def navegacao():
     if st.session_state.admin == True:
         pages["Admin"] = admin_pages
         pages["Evento"] = evento_pages
+        pages["Ativos"] = ativos_pages
 
     pg = st.navigation(pages, position="sidebar")
     

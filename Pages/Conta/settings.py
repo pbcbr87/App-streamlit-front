@@ -12,7 +12,7 @@ def get_user(tk):
     usuario = requests.get(f'{API_URL}usuarios/', headers={'Authorization':f'Bearer {tk}'}).json()
     return usuario
 
-def alterar_senha():
+def alterar_senha(endpoint, payload):
     try:
         get_token = requests.post(f'{API_URL}auth/token', {'username': st.session_state.get('user', ''), 'password': senha_atual}).json()
         if 'access_token' not in get_token:
@@ -50,7 +50,7 @@ def alterar_cadastro(endpoint, payload):
         print("Erro: ", e)
         st.warning(f'Conexão com backend, Detalhes: {e}')            
         return
-    
+    st.text(payload)
     try:
         response = requests.put(endpoint, json=payload, headers={'Authorization': f'Bearer {token}'})
         
@@ -125,11 +125,11 @@ with col_center.form("edicao_detalhes_form", clear_on_submit=False):
 
     if submitted_detalhes:
 
-        payload = {"nome": novo_nome, "login": novo_login, "email": novo_email}
         endpoint = f'{API_URL}usuarios/{user_id}' 
+        payload = {"nome": novo_nome, "login": novo_login, "email": novo_email}
         
         with st.spinner("Atualizando detalhes do perfil..."):
-            alterar_cadastro(payload, endpoint)
+            alterar_cadastro(endpoint, payload)
 
 # ----------------------------------------------------
 # 3. FORMULÁRIO 2: ALTERAR SENHA
@@ -168,4 +168,4 @@ with expandir.form("edicao_senha_form", clear_on_submit=True):
         endpoint = f'{API_URL}usuarios/{user_id}' 
         
         with st.spinner("Atualizando senha..."):
-            alterar_senha()
+            alterar_senha(endpoint, payload)
