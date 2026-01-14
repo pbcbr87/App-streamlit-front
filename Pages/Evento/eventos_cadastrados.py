@@ -28,7 +28,7 @@ def get_ativos():
     termo = st.session_state.get('sl_ativo', '')
 
     try:
-        url = f'{API_URL}Ativos/lista_ativos/{categoria}?ativo={termo}'
+        url = f'{API_URL}ativos/lista_ativos/{categoria}?ativo={termo}'
         headers = {'Authorization': f'Bearer {token}'}
         resp = requests.get(url, headers=headers)
         

@@ -58,7 +58,7 @@ def get_movimentacao(token):
 
 def get_ativos():
     st.session_state['lista'] = requests.get(
-        f'{API_URL}Ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
+        f'{API_URL}ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
 
 #------------------------------------------------
 #Delcarar sessions

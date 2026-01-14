@@ -23,7 +23,7 @@ def get_ativos():
     token = st.session_state.get('token')
     
     try:
-        url = f'{API_URL}Ativos/lista_ativos/{cat}?ativo={ativo}'
+        url = f'{API_URL}ativos/lista_ativos/{cat}?ativo={ativo}'
         resp = requests.get(url, headers={'Authorization': f'Bearer {token}'})
         
         if resp.status_code == 200:

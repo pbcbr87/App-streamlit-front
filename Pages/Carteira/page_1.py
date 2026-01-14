@@ -134,7 +134,7 @@ def envia_manual(ordem_manual):
 
 # Pegar lista de ativos
 def get_ativos():
-    st.session_state['lista'] = requests.get(f'{API_URL}Ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
+    st.session_state['lista'] = requests.get(f'{API_URL}ativos/lista_ativos/{st.session_state['sl_cat']}?ativo={st.session_state['sl_ativo']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json() 
 
 # Excluir operação
 @st.dialog("Enviando Dados", on_dismiss='rerun')
@@ -243,7 +243,7 @@ with tab3:
         if 'sl_ativo' not in st.session_state:
             st.session_state['sl_ativo'] = ""
         if 'lista' not in st.session_state:
-            st.session_state['lista'] = requests.get(f'{API_URL}Ativos/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
+            st.session_state['lista'] = requests.get(f'{API_URL}ativos/lista_ativos/{st.session_state['sl_cat']}', headers={'Authorization':f'Bearer {st.session_state.token}'}).json()
     
                 
         st.subheader('Dados da Operação')
