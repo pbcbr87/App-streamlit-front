@@ -152,7 +152,7 @@ def navegacao():
                     st.Page('Pages/Carteira/page_4.py', title='Aporte')
                     ]
     evento_pages = [st.Page('Pages/Evento/eventos_cadastrados.py', title='Eventos Cadastrados'),
-                    st.Page('Pages/Evento/evetnso_pendentes.py', title='Evento Pendentes'),
+                    st.Page('Pages/Evento/eventos_pendentes.py', title='Evento Pendentes'),
                     st.Page('Pages/Evento/simular.py', title='Simular Evento'),
                     st.Page('Pages/Evento/insert_evento.py', title='Inserir Evento'),
                     st.Page('Pages/Evento/edit_evento.py', title='Editar Evento')

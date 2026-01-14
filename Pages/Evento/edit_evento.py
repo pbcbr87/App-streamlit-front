@@ -13,6 +13,8 @@ def sanitizar_evento(dict_evento):
     import numpy as np
     novo_dict = {}
     for k, v in dict_evento.items():
+        if isinstance(v, list):
+            continue
         if pd.isna(v) or v is np.nan:
             novo_dict[k] = None
         elif isinstance(v, (np.float64, np.float32)):
@@ -47,7 +49,7 @@ def enviar(dict_evento):
         if resp.status_code == 200:
             st.success('✅ Evento atualizado com sucesso!')
             time.sleep(1.5)
-            st.switch_page("Pages/Evento/main.py") # Redireciona após sucesso
+            st.switch_page("Pages/Evento/eventos_cadastrados.py") # Redireciona após sucesso
             return True
         elif resp.status_code == 422:
             st.error('❌ Erro de Validação (422). Verifique os campos.')
@@ -74,7 +76,7 @@ if col_l.button("🗑️ Limpar Campos",  width="stretch"):
     st.rerun()
 
 if col_b.button("⬅️ Voltar", width="stretch"):
-    st.switch_page("Pages/Evento/main.py")
+    st.switch_page("Pages/Evento/eventos_cadastrados.py")
 
 st.divider()
 if st.session_state['evento_dict'].get('id', 0) == 0:

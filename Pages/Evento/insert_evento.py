@@ -13,6 +13,8 @@ def sanitizar_evento(dict_evento):
     import numpy as np
     novo_dict = {}
     for k, v in dict_evento.items():
+        if isinstance(v, list):
+            continue
         if pd.isna(v) or v is np.nan:
             novo_dict[k] = None
         elif isinstance(v, (np.float64, np.float32)):
@@ -94,7 +96,7 @@ if col_l.button("🗑️ Limpar Campos", width="stretch"):
 
 # Botão Voltar
 if col_b.button("⬅️ Voltar", width="stretch"):
-    st.switch_page("Pages/Evento/main.py")
+    st.switch_page("Pages/Evento/eventos_cadastrados.py")
 
 st.divider()
 
