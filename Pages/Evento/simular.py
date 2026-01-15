@@ -149,20 +149,38 @@ def render_layout_input():
             inputs["ativo_gerado"] = cols[1].text_input("ID Novo Ativo")
             inputs["proporcao"] = cols[2].number_input("Proporção", format="%.5f")
 
-        elif tipo in ['CISÃO', 'INCORPORAÇÃO']:
+        elif tipo in ['CISÃO']:
             inputs["ativo_gerado"] = cols[1].text_input("ID Novo Ativo")
             
-            use_formula = st.toggle('Usar fórmula complexa')
+            use_formula = st.toggle('Usar fórmula')
             if use_formula:
                 default_json = '[{"id_ativo": "EXEMPLO", "custo": "custo * 0.15", "qt": "qt * 0.25"}]'
                 raw_op = st.text_area('Fórmula da Operação (JSON)', value=default_json)
                 try: inputs["operacao"] = loads(raw_op)
                 except: st.error("JSON de operação inválido")
             else:
-                inputs["proporcao"] = cols[2].number_input("Qtd novo ativo", format="%.5f")
-                c1, c2 = st.columns(2)
+                inputs["proporcao"] = cols[2].number_input("Proporção qt nova", format="%.5f")
+                c1, c2, c3 = st.columns([3, 3, 1])
                 inputs["pro_ativo"] = c1.number_input("Redução ativo original", format="%.5f")
-                inputs["valor_gerado"] = c2.number_input("Valor por cota novo", format="%.5f")
+                if c3.toggle("Valor"):
+                    inputs["valor_gerado"] =c2.number_input("Valor por cota novo", format="%.5f")
+                else:
+                    inputs["pro_gerado"] = c2.number_input("Proporção por cota novo", format="%.5f")
+
+        elif tipo in ['INCORPORAÇÃO']:
+            inputs["ativo_gerado"] = cols[1].text_input("ID Novo Ativo")
+            
+            use_formula = st.toggle('Usar fórmula')
+            if use_formula:
+                default_json = '[{"id_ativo": "EXEMPLO", "custo": "custo * 0.15", "qt": "qt * 0.25"}]'
+                raw_op = st.text_area('Fórmula da Operação (JSON)', value=default_json)
+                try: inputs["operacao"] = loads(raw_op)
+                except: st.error("JSON de operação inválido")
+            else:
+                inputs["proporcao"] = cols[2].number_input("Proporção qt nova", format="%.5f")
+                with st.container(horizontal=True):
+                    if st.toggle("Valor"):
+                        inputs["valor_gerado"] = st.number_input("Valor por cota novo", format="%.5f")
 
         elif tipo == 'REDUÇÃO DE CAPITAL' or tipo == 'OPA' or tipo == 'FRAÇÃO':
             inputs["valor"] = cols[1].number_input("Valor por cota", format="%.5f")
