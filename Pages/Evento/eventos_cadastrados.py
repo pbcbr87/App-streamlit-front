@@ -92,6 +92,8 @@ with col3:
 if c1.button("➕ Inserir", width='stretch'):    
     st.switch_page('Pages/Evento/insert_evento.py')
 if c2.button("🧪 Simular", width='stretch'):
+    if 'evento_dict' in st.session_state:
+        st.session_state.evento_pedente_sel = st.session_state['evento_dict'] 
     st.switch_page('Pages/Evento/simular.py')
 if c3.button("🧐 Eventos Pendentes", width='stretch'):
     st.switch_page('Pages/Evento/eventos_pendentes.py')
