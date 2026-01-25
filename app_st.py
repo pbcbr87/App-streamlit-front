@@ -180,9 +180,12 @@ def navegacao():
     #Adicionar componentes na sidebar
     with st.sidebar:
         if st.button('Atualizar Carteira', type='primary', key='atualizar_carteira'):
-            del st.session_state['carteira_api']
-            del st.session_state['operacao_api']
-            del st.session_state['evento_usuario_dict']
+            if 'carteira_api' in st.session_state:
+                del st.session_state['carteira_api']
+            if 'operacao_api' in st.session_state:
+                del st.session_state['operacao_api']
+            if 'evento_usuario_dict' in st.session_state:
+                del st.session_state['evento_usuario_dict']
 
             with st.spinner("Aguardando...", show_time=True):
                 resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.get("id", 0)}', headers={'Authorization':f'Bearer {st.session_state.token}'})
