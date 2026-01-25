@@ -24,7 +24,7 @@ for key, value in keys_to_init.items():
 def insert_evento(dados: dict):
     dados_json = dumps(dados, ensure_ascii=False)
 
-    resp = requests.post(f'{API_URL}eventos_pessoal/criar_evento', dados_json, headers={'Authorization':f'Bearer {st.session_state.token}'})
+    resp = requests.post(f'{API_URL}eventos_usuarios/criar_evento', dados_json, headers={'Authorization':f'Bearer {st.session_state.token}'})
     try:
         resposta_json = resp.json()
     except:
@@ -76,7 +76,7 @@ def render_layout_input():
     quant_acum = c2.number_input("💰 Carteira para Teste: Qtd Cotas (qt)", value=100.00, format="%.5f", min_value=0.0)
     custo_acum = c3.number_input("💰 Carteira para Teste: Custo Acumulado", value=5000.00, format="%.5f", min_value=0.0)
     if c4.button("⬅️ Voltar", width="stretch"):
-        st.switch_page("Pages/Evento_pessoal/evento_cadastrados.py") 
+        st.switch_page("Pages/Evento_usuario/evento_cadastrados.py") 
     # Lista de tipos e seleção
     tipo_list = ['ATUALIZAÇÃO', 'BONIFICAÇÃO', 'CISÃO', 'DESDOBRAMENTO', 
                  'GRUPAMENTO', 'GRUPAMENTO_DESDOBRAMENTO', 'INCORPORAÇÃO', 'OPA', 'REDUÇÃO DE CAPITAL']
@@ -265,4 +265,4 @@ evento_dict = render_layout_input()
 if evento_dict['fk_ativo']:
     if st.button('💾 Inserir Evento Coorporativo'):
         insert_evento(evento_dict)
-        st.session_state.evento_pessoal_dict = []
+        st.session_state.evento_usuario_dict = []

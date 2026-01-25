@@ -153,8 +153,8 @@ def navegacao():
                     st.Page('Pages/Carteira/page_4.py', title='Aporte')
                     ]
     
-    evento_pessoal_pages = [st.Page('Pages/Evento_pessoal/evento_cadastrados.py', title='Gerenciar Eventos'),
-                            st.Page('Pages/Evento_pessoal/insert_evento_coorp.py', title='Inserir Evento Coorporativos')
+    evento_usuario_pages = [st.Page('Pages/Evento_usuario/evento_cadastrados.py', title='Gerenciar Eventos'),
+                            st.Page('Pages/Evento_usuario/insert_evento_coorp.py', title='Inserir Evento Coorporativos')
                             ]
 
     evento_pages = [st.Page('Pages/Evento/eventos_cadastrados.py', title='Eventos Cadastrados'),
@@ -168,7 +168,7 @@ def navegacao():
     admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:')
                    ]
 
-    pages = {"Sua Carteira": cateira_pages, "Eventos Coorporativos": evento_pessoal_pages, "Conta": conta_pages}
+    pages = {"Sua Carteira": cateira_pages, "Eventos Coorporativos": evento_usuario_pages, "Conta": conta_pages}
 
     if st.session_state.admin == True:
         pages["Admin"] = admin_pages
@@ -180,9 +180,9 @@ def navegacao():
     #Adicionar componentes na sidebar
     with st.sidebar:
         if st.button('Atualizar Carteira', type='primary', key='atualizar_carteira'):
-            st.session_state['carteira_api'] = None
-            st.session_state['operacao_api'] = None
-            st.session_state['evento_pessoal_dict'] = None
+            del st.session_state['carteira_api']
+            del st.session_state['operacao_api']
+            del st.session_state['evento_usuario_dict']
 
             with st.spinner("Aguardando...", show_time=True):
                 resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.get("id", 0)}', headers={'Authorization':f'Bearer {st.session_state.token}'})

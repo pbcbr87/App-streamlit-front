@@ -10,22 +10,22 @@ from decimal import Decimal
 
 # Funções
 def get_eventos():
-    resp = requests.get(f'{API_URL}eventos_pessoal/pegar_eventos/{st.session_state.get("id", 0)}', headers={'Authorization':f'Bearer {st.session_state.token}'})   
+    resp = requests.get(f'{API_URL}eventos_usuarios/pegar_eventos/{st.session_state.get("id", 0)}', headers={'Authorization':f'Bearer {st.session_state.token}'})   
     
     if resp.status_code == 404:
-        st.session_state['evento_pessoal_dict'] = []
+        st.session_state['evento_usuario_dict'] = []
         return
 
     if resp.status_code != 200:
         st.toast(f"🚨 Erro ao carregar movimentação: Status {resp.status_code}")
-        st.session_state['evento_pessoal_dict'] = []
+        st.session_state['evento_usuario_dict'] = []
         return
     
     dict_resp = resp.json()
     if not isinstance(dict_resp, list):
         # Lida com o erro de formato de API (visto em conversas anteriores)
         st.toast(f"🚨 Formato da API inesperado. Recebido tipo: {type(dict_resp)}")
-        st.session_state['evento_pessoal_dict'] = []
+        st.session_state['evento_usuario_dict'] = []
         return
 
     for item in dict_resp:
@@ -39,7 +39,7 @@ def get_eventos():
                     item[item_key] = Decimal(valor_limpo)
                 except Exception:
                     pass # Deixa como string se não for um número
-    st.session_state['evento_pessoal_dict'] = dict_resp
+    st.session_state['evento_usuario_dict'] = dict_resp
     return
 
 def set_aceito(status, id):
@@ -48,7 +48,7 @@ def set_aceito(status, id):
     }
     dados_json = dumps(dados, ensure_ascii=False)
 
-    resp = requests.put(f'{API_URL}eventos_pessoal/evento/{id}', dados_json, headers={'Authorization':f'Bearer {st.session_state.token}'})
+    resp = requests.put(f'{API_URL}eventos_usuarios/evento/{id}', dados_json, headers={'Authorization':f'Bearer {st.session_state.token}'})
     try:
         resposta_json = resp.json()
     except:
@@ -59,7 +59,7 @@ def set_aceito(status, id):
         st.toast(f"⚠️ Erro na API. Status {resp.status_code}: {resp.text}")
 
 def excluir(id):
-    resp = requests.delete(f'{API_URL}eventos_pessoal/evento/{id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+    resp = requests.delete(f'{API_URL}eventos_usuarios/evento/{id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
     
     try:
         resposta_json = resp.json()
@@ -81,7 +81,7 @@ def formatar_data(valor):
         return None
 #-------------------------------------------------------------------------------------------
 # --- Inicialização ---       
-if 'evento_pessoal_dict' not in st.session_state:
+if 'evento_usuario_dict' not in st.session_state:
     get_eventos()
 #-------------------------------------------------------------------------------------------
 tipo_lista = ['BONIFICAÇÃO', 'DESDOBRAMENTO', 'GRUPAMENTO', 'CISÃO', 'INCORPORAÇÃO', 
@@ -109,9 +109,9 @@ with layout_inferior:
 # Gerar Data frame
 #----------------------------------------------------------------------------------
 if c1.button("➕ Inserir Evento", width="stretch"):
-    st.switch_page('Pages/Evento_pessoal/insert_evento_coorp.py')
+    st.switch_page('Pages/Evento_usuario/insert_evento_coorp.py')
 
-if 'evento_pessoal_dict' not in st.session_state or not st.session_state.evento_pessoal_dict:
+if 'evento_usuario_dict' not in st.session_state or not st.session_state.evento_usuario_dict:
     st.info("💡 Não tem Eventos Coorporativos cadastrados.")
 else:
     #------------------------------------------------------------------
@@ -119,7 +119,7 @@ else:
     #------------------------------------------------------------------
     colunas = ['id','fk_evento','aceito','foi_aplicado','modo_insert','tipo','fk_ativo', 'ativo_gerado','data_aprov', 'data_com','data_pag', 'proporcao', 'valor', 'data_insert']
     colunas_view = ['aceito','foi_aplicado','modo_insert','tipo','fk_ativo', 'ativo_gerado','data_aprov', 'data_com','data_pag', 'proporcao', 'valor', 'data_insert']
-    df = pd.DataFrame(st.session_state['evento_pessoal_dict'], columns=colunas)
+    df = pd.DataFrame(st.session_state['evento_usuario_dict'], columns=colunas)
         
 
     if sl_tipo:
