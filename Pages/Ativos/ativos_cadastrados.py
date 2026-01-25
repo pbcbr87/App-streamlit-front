@@ -114,11 +114,11 @@ def form_ativo(ativo_dict):
     data_off = form_11.date_input("data_off", key="data_off", min_value=date(2000, 1, 1), value=None)
     st.session_state['ativo_dict']['data_off'] = data_off.isoformat() if data_off else None
 
+#--------------------------------------------------------
 if 'ativo_dict' not in st.session_state:
    st.session_state['ativo_dict'] = {}
 
-st.set_page_config(layout="wide", page_title="Consulta de Ativos")
-
+#--------------------------------------------------------
 st.title("🧐 Ativos Cadastrados")
 
 layout_form_ativo = st.container(border=True)

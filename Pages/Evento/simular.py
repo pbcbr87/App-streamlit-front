@@ -139,9 +139,11 @@ def render_layout_input():
             inputs["proporcao"] = cols[2].number_input("Proporção", format="%.5f")
             
         elif tipo == 'DESDOBRAMENTO' or tipo == 'GRUPAMENTO':
+            inputs["ativo_gerado"] = inputs["id_ativo"]
             inputs["proporcao"] = cols[1].number_input("Proporção", format="%.5f")
             
         elif tipo == 'GRUPAMENTO_DESDOBRAMENTO':
+            inputs["ativo_gerado"] = inputs["id_ativo"]
             inputs["grupamento"] = cols[1].number_input("Prop. Grupamento", format="%.5f")
             inputs["desdobramento"] = cols[2].number_input("Prop. Desdobramento", format="%.5f")
 
@@ -182,7 +184,11 @@ def render_layout_input():
                     if st.toggle("Valor"):
                         inputs["valor_gerado"] = st.number_input("Valor por cota novo", format="%.5f")
 
-        elif tipo == 'REDUÇÃO DE CAPITAL' or tipo == 'OPA' or tipo == 'FRAÇÃO':
+        elif tipo == 'REDUÇÃO DE CAPITAL':
+            inputs["ativo_gerado"] = inputs["id_ativo"]
+            inputs["valor"] = cols[1].number_input("Valor por cota", format="%.5f")
+
+        elif tipo == 'OPA' or tipo == 'FRAÇÃO':
             inputs["valor"] = cols[1].number_input("Valor por cota", format="%.5f")
 
     # Opção de Dinheiro Global

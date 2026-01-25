@@ -145,12 +145,18 @@ def navegacao():
                     st.Page("Pages/Conta/settings.py", title="Meus cadastro", icon=":material/settings:"),
                     st.Page(logout, title='Sair', icon= ':material/logout:')    
                     ]
+    
     cateira_pages = [st.Page('Pages/Carteira/page_2.py', title='Carteira', default=True),
                     st.Page('Pages/Carteira/page_1.py', title='Operações'),
                     st.Page('Pages/Carteira/movimentacao.py', title='Movimentações'),
                     st.Page('Pages/Carteira/page_3.py', title='Planejar'),
                     st.Page('Pages/Carteira/page_4.py', title='Aporte')
                     ]
+    
+    evento_pessoal_pages = [st.Page('Pages/Evento_pessoal/evento_cadastrados.py', title='Gerenciar Eventos'),
+                            st.Page('Pages/Evento_pessoal/insert_evento_coorp.py', title='Inserir Evento Coorporativos')
+                            ]
+
     evento_pages = [st.Page('Pages/Evento/eventos_cadastrados.py', title='Eventos Cadastrados'),
                     st.Page('Pages/Evento/eventos_pendentes.py', title='Evento Pendentes'),
                     st.Page('Pages/Evento/simular.py', title='Simular Evento'),
@@ -162,7 +168,7 @@ def navegacao():
     admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:')
                    ]
 
-    pages = {"Sua Carteira": cateira_pages, "Conta": conta_pages}
+    pages = {"Sua Carteira": cateira_pages, "Eventos Coorporativos": evento_pessoal_pages, "Conta": conta_pages}
 
     if st.session_state.admin == True:
         pages["Admin"] = admin_pages
@@ -176,6 +182,8 @@ def navegacao():
         if st.button('Atualizar Carteira', type='primary', key='atualizar_carteira'):
             st.session_state['carteira_api'] = None
             st.session_state['operacao_api'] = None
+            st.session_state['evento_pessoal_dict'] = None
+
             with st.spinner("Aguardando...", show_time=True):
                 resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.get("id", 0)}', headers={'Authorization':f'Bearer {st.session_state.token}'})
                 if resp.status_code == 200:

@@ -13,8 +13,10 @@ def sanitizar_evento(dict_evento):
     import numpy as np
     novo_dict = {}
     for k, v in dict_evento.items():
-        if isinstance(v, list):
-            continue
+        # if isinstance(v, list):
+        #     continue
+        # if isinstance(v, str):
+        #     continue
         if pd.isna(v) or v is np.nan:
             novo_dict[k] = None
         elif isinstance(v, (np.float64, np.float32)):
@@ -29,7 +31,6 @@ def enviar_tabela(dataframe):
     linhas = dataframe.to_json(orient='records', date_format='iso')
     linhas = loads(linhas)
     tabela = dumps({"dados": linhas})
-    
     resp = requests.post(f'{API_URL}eventos/inserir_eventos_tabela', tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
     try:
         resposta_json = resp.json()
@@ -162,7 +163,6 @@ if submitted:
         'dinheiro': dinheiro if dinheiro else None,
         'operacao': op_json
     }
-    
     # Sanitização final para evitar erros de tipos do JS/Streamlit
     evento_final = sanitizar_evento(novo_evento)
     
