@@ -16,6 +16,23 @@ if 'token' not in st.session_state:
 if 'lista_criada' not in st.session_state:
     st.session_state['lista_criada'] = None
 
+def parse_date_native(val):
+    if not val:
+        return date.today()
+    
+    # Se já for um objeto date, apenas retorna ele
+    if isinstance(val, date):
+        return val
+    
+    # Se for uma string (comum ao vir do banco/JSON), converte
+    if isinstance(val, str):
+        try:
+            # Tenta converter formato "YYYY-MM-DD" ou "YYYY-MM-DD HH:MM:SS"
+            return date.fromisoformat(val[:10])
+        except ValueError:
+            return date.today()
+            
+    return date.today()
 
 def sanitizar_evento(dict_evento):
     """Converte valores incompatíveis (NaN, NumPy tipos) para tipos nativos Python."""
@@ -107,9 +124,9 @@ def render_layout_input():
         
         evento = st.session_state.get('evento_pedente_sel') or {}
 
-        val_aprov = evento.get('data_aprov') or date.today()
-        val_com = evento.get('data_com') or date.today()
-        val_pag = evento.get('data_pag') or date.today()
+        val_aprov = parse_date_native(evento.get('data_aprov'))
+        val_com = parse_date_native(evento.get('data_com'))
+        val_pag = parse_date_native(evento.get('data_pag'))
 
         data_aprov = c1.date_input('Aprovação', min_value=date(2000, 1, 1), value=val_aprov if val_aprov >= date(2000, 1, 1) else date(2000, 1, 1))
         data_com = c2.date_input('Data Com', min_value=date(2000, 1, 1), value=val_com if val_com >= date(2000, 1, 1) else date(2000, 1, 1))
