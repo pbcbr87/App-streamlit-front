@@ -46,15 +46,18 @@ def get_operacoes(token):
 
 # Enviar dados para o banco de dados
 @st.dialog("Enviando Dados", on_dismiss='rerun')
-def enviar_tabela(dataframe):
+def enviar_tabela(dataframe, b3):
     st.session_state['carteira_api'] = None
     st.session_state['operacao_api'] = None
 
     linhas = dataframe.to_json(orient='records', date_format='iso')
     linhas = loads(linhas)
     ordens_tabela = dumps({"dados": linhas})
+    if b3:
+        resp = requests.post(f'{API_URL}ordem_input/inserir_ordens_b3_table', ordens_tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
+    else:
+        resp = requests.post(f'{API_URL}ordem_input/inserir_ordens_table', ordens_tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
     
-    resp = requests.post(f'{API_URL}ordem_input/inserir_ordens_table', ordens_tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
     try:
         resposta_json = resp.json()
     except:
@@ -212,18 +215,32 @@ with tab1:
 #-------------------------------------------------------------------------------------------------------------    
 with tab2:
     st.header("Inserir via tabela")
-    with open("Operacao.xlsx", "rb") as file:
-        st.download_button( label="Download .xlsx tabelas padrão",
-                            data=file,
-                            file_name="Operacao.xlsx",
-                            icon=":material/download:",
-                            )
+    with st.container(horizontal=True):
+        with open("Operacao.xlsx", "rb") as file:
+            st.download_button( label="Download .xlsx tabelas Padrão App",
+                                data=file,
+                                file_name="Operacao.xlsx",
+                                icon=":material/download:",
+                                )
+        with open("Operacao_b3.xlsx", "rb") as file:
+            st.download_button( label="Download .xlsx tabelas Padrão B3",
+                                data=file,
+                                file_name="Operacao_b3.xlsx",
+                                icon=":material/download:",
+                                )
+    st.info('Baixe o modelo de tabela padrão, preencha com os dados das suas operações e faça o upload do arquivo preenchido.')
+    st.divider()
     uploaded_file  = st.file_uploader('Excolha o arquico com as operações')
     if uploaded_file  is not None:        
         dataframe = pd.read_excel(uploaded_file)
         
-        titulo_padrao = ['data_operacao', 'categoria', 'codigo_ativo', 'c_v', 'quant', 'custo_operacao', 'corretora', 'taxas']
         titulo = dataframe.columns.tolist()
+        if 'Data do Negócio' in titulo:
+            titulo_padrao = ['Data do Negócio', 'Tipo de Movimentação', 'Mercado', 'Prazo/Vencimento', 'Instituição', 'Código de Negociação', 'Quantidade', 'Preço', 'Valor']
+            b3 = True
+        else:
+            titulo_padrao = ['data_operacao', 'categoria', 'codigo_ativo', 'c_v', 'quant', 'custo_operacao', 'corretora', 'taxas']
+            b3 = False
 
         if not titulo_padrao == titulo:
             st.warning('Colunas fora do padrão')
@@ -231,7 +248,8 @@ with tab2:
             with st.expander('Exibir Dados input'):
                 st.dataframe(dataframe, width='content')
 
-            st.button('Enviar', key='bt_1', kwargs={'dataframe': dataframe}, on_click=enviar_tabela)            
+            st.button('Enviar', key='bt_1', kwargs={'dataframe': dataframe, 'b3': b3}, on_click=enviar_tabela)            
+    st.info('Certifique-se de que as colunas do arquivo correspondam exatamente ao modelo fornecido. Colunas fora do padrão serão rejeitadas.')
 #-------------------------------------------------------------------------------------------------------------
 #     Inserir dados manual
 #-------------------------------------------------------------------------------------------------------------
