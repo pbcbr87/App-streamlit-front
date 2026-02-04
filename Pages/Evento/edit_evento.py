@@ -13,8 +13,10 @@ def sanitizar_evento(dict_evento):
     import numpy as np
     novo_dict = {}
     for k, v in dict_evento.items():
-        if isinstance(v, list):
-            continue
+        # if isinstance(v, list):
+        #     continue
+        # if isinstance(v, str):
+        #     continue
         if pd.isna(v) or v is np.nan:
             novo_dict[k] = None
         elif isinstance(v, (np.float64, np.float32)):
