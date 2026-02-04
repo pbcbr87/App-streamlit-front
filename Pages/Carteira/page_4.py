@@ -150,11 +150,11 @@ if not df_carteira.empty:
             df_carteira['dif'] =  df_carteira['valor_plan_usd'] - df_carteira['valor_mercado_usd']
             df_carteira['dif_perc'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='dif', coluna_denominador='valor_mercado_usd'), axis=1)
 
-        # df_carteira = df_carteira[df_carteira['dif'] > 0]
-        soma_dif = df_carteira[df_carteira['dif'] > 0]['dif'].sum()
         # quantidade de ativos
         qt_ativo_aporte = sl_cat_container.number_input('Quantos ativos', value=len(df_carteira[df_carteira['dif'] > 0]), format='%i', min_value=0, max_value=len(df_carteira))
         df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False]).head(qt_ativo_aporte)
+        # df_carteira = df_carteira[df_carteira['dif'] > 0]
+        soma_dif = df_carteira[df_carteira['dif'] > 0]['dif'].sum()
         if soma_dif != 0:
             df_carteira['aporte'] = np.where(df_carteira['dif']>0, df_carteira['dif'] * valor_aporte/soma_dif, 0)
         else:
