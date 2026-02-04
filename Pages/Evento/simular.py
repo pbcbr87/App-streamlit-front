@@ -107,9 +107,13 @@ def render_layout_input():
         
         evento = st.session_state.get('evento_pedente_sel') or {}
 
-        data_aprov = c1.date_input('Aprovação', min_value=date(2000, 1, 1), value= evento.get('data_aprov', date.today()))
-        data_com = c2.date_input('Data Com', min_value=date(2000, 1, 1), value= evento.get('data_com', date.today()))
-        data_pag = c3.date_input('Pagamento', min_value=date(2000, 1, 1), value= evento.get('data_pag', date.today()))
+        val_aprov = evento.get('data_aprov') or date.today()
+        val_com = evento.get('data_com') or date.today()
+        val_pag = evento.get('data_pag') or date.today()
+
+        data_aprov = c1.date_input('Aprovação', min_value=date(2000, 1, 1), value=val_aprov if val_aprov >= date(2000, 1, 1) else date(2000, 1, 1))
+        data_com = c2.date_input('Data Com', min_value=date(2000, 1, 1), value=val_com if val_com >= date(2000, 1, 1) else date(2000, 1, 1))
+        data_pag = c3.date_input('Pagamento', min_value=date(2000, 1, 1), value=val_pag if val_pag >= date(2000, 1, 1) else date(2000, 1, 1))
 
     st.divider()
     
