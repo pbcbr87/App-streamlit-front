@@ -217,7 +217,7 @@ def navegacao():
                    ]
 
     pages = {"Sua Carteira": cateira_pages, "Eventos Coorporativos": evento_usuario_pages, "Conta": conta_pages}
-    pages = {"Manutençao": [st.Page(maintenance_page_gif, title='Manutenção')]}
+    # pages = {"Manutençao": [st.Page(maintenance_page_gif, title='Manutenção')]}
     if st.session_state.admin == True:
         pages["Admin"] = admin_pages
         pages["Evento"] = evento_pages

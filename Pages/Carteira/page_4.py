@@ -141,32 +141,32 @@ if not df_carteira.empty:
         else:
             df_carteira['valor_plan_usd'] = df_carteira['peso']*valor_total/peso_total
 
-    if moeda_aporte == "BRL":
-        df_carteira['%_lucro'] =  df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='lucro_brl', coluna_denominador='custo_brl'), axis=1)
-        df_carteira['dif'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
-        df_carteira['dif_perc'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='dif', coluna_denominador='valor_mercado_brl'), axis=1)
-    else:
-        df_carteira['%_lucro'] =  df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='lucro_usd', coluna_denominador='custo_usd'), axis=1)
-        df_carteira['dif'] =  df_carteira['valor_plan_usd'] - df_carteira['valor_mercado_usd']
-        df_carteira['dif_perc'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='dif', coluna_denominador='valor_mercado_usd'), axis=1)
+        if moeda_aporte == "BRL":
+            df_carteira['%_lucro'] =  df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='lucro_brl', coluna_denominador='custo_brl'), axis=1)
+            df_carteira['dif'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
+            df_carteira['dif_perc'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='dif', coluna_denominador='valor_mercado_brl'), axis=1)
+        else:
+            df_carteira['%_lucro'] =  df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='lucro_usd', coluna_denominador='custo_usd'), axis=1)
+            df_carteira['dif'] =  df_carteira['valor_plan_usd'] - df_carteira['valor_mercado_usd']
+            df_carteira['dif_perc'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='dif', coluna_denominador='valor_mercado_usd'), axis=1)
 
-    # df_carteira = df_carteira[df_carteira['dif'] > 0]
-    soma_dif = df_carteira[df_carteira['dif'] > 0]['dif'].sum()
-    # quantidade de ativos
-    qt_ativo_aporte = sl_cat_container.number_input('Quantos ativos', value=len(df_carteira[df_carteira['dif'] > 0]), format='%i', min_value=0, max_value=len(df_carteira))
-    df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False]).head(qt_ativo_aporte)
-    if soma_dif != 0:
-        df_carteira['aporte'] = np.where(df_carteira['dif']>0, df_carteira['dif'] * valor_aporte/soma_dif, 0)
-    else:
-        df_carteira['aporte'] = Decimal("0")
+        # df_carteira = df_carteira[df_carteira['dif'] > 0]
+        soma_dif = df_carteira[df_carteira['dif'] > 0]['dif'].sum()
+        # quantidade de ativos
+        qt_ativo_aporte = sl_cat_container.number_input('Quantos ativos', value=len(df_carteira[df_carteira['dif'] > 0]), format='%i', min_value=0, max_value=len(df_carteira))
+        df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False]).head(qt_ativo_aporte)
+        if soma_dif != 0:
+            df_carteira['aporte'] = np.where(df_carteira['dif']>0, df_carteira['dif'] * valor_aporte/soma_dif, 0)
+        else:
+            df_carteira['aporte'] = Decimal("0")
 
-    if moeda_aporte == "BRL":
-        df_carteira['aporte_per'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='aporte', coluna_denominador='valor_mercado_brl'), axis=1)
-    else:
-        df_carteira['aporte_per'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='aporte', coluna_denominador='valor_mercado_usd'), axis=1)
-    # df_carteira = df_carteira[df_carteira['aporte'] > 0]
+        if moeda_aporte == "BRL":
+            df_carteira['aporte_per'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='aporte', coluna_denominador='valor_mercado_brl'), axis=1)
+        else:
+            df_carteira['aporte_per'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='aporte', coluna_denominador='valor_mercado_usd'), axis=1)
+        # df_carteira = df_carteira[df_carteira['aporte'] > 0]
 
-if not df_carteira.empty:
+if not df_carteira.empty and peso_total != 0:
     if moeda_aporte == "BRL":
         colunas = ['codigo_ativo', 'aporte', 'aporte_per','soma_aporte_brl_12m', 'preco_brl', 'preco_12m_min_brl', 'preco_12m_max_brl', 'PM_brl', 'min_aporte_preco_unit_brl_12m', 'max_aporte_preco_unit_brl_12m', '%_lucro', 'dif_perc', 'dy']
     else:
