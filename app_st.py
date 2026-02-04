@@ -65,6 +65,54 @@ if "user" not in st.session_state:
 #------------------------------------------------
 # Funções para paiginas
 #------------------------------------------------
+#Pagina Em manutenção
+def maintenance_page_gif():    
+# CSS para centralizar até os componentes nativos
+    st.markdown(
+        """
+        <style>
+            .stMain {
+                text-align: center;
+            }
+            /* Centraliza o box do st.info */
+            .stAlert {
+                text-align: left; /* Mantém o texto do box legível, mas o box centralizado */
+                display: inline-block;
+                width: auto;
+            }
+            div[data-testid="stMarkdownContainer"] > p {
+                text-align: center;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Layout centralizado
+    col1, col2, col3 = st.columns([1, 4, 1])
+    
+    with col2:
+        st.markdown("## 🚧 Manutenção em Andamento")
+        
+        # GIF com largura total da coluna
+        st.image(
+            "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGNucTV2c294ZHRjbm42bGNzeTdrYWVidHJ5M2hlb2Nlc3NzaGh4aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Qu0jn2SFM8m193ghie/giphy.gif", 
+            width='stretch'
+        )
+
+        st.markdown("#### Estamos realizando melhorias importantes para você.")
+        st.markdown("Agradeço imensamente a sua compreensão e paciência!")
+
+        # Espaçamento
+        st.write("") 
+
+        # O toque especial sobre o Thomas centralizado
+        st.info(
+            "👶 **Nota do Papai:** Pode demorar um pouquinho mais que o planejado... "
+            "O **Thomas** está na fase que exige total atenção do pai, e por aqui, "
+            "ele é sempre a prioridade número um! 💙"
+        )
+
 #Pagina de login
 def login():
     with st.container(horizontal_alignment="center").form("login", width="content", enter_to_submit=True, clear_on_submit=True):
@@ -169,7 +217,7 @@ def navegacao():
                    ]
 
     pages = {"Sua Carteira": cateira_pages, "Eventos Coorporativos": evento_usuario_pages, "Conta": conta_pages}
-
+    pages = {"Manutençao": [st.Page(maintenance_page_gif, title='Manutenção')]}
     if st.session_state.admin == True:
         pages["Admin"] = admin_pages
         pages["Evento"] = evento_pages
@@ -182,6 +230,8 @@ def navegacao():
         if st.button('Atualizar Carteira', type='primary', key='atualizar_carteira'):
             if 'carteira_api' in st.session_state:
                 del st.session_state['carteira_api']
+            if 'carteira_api_aporte' in st.session_state:
+                del st.session_state['carteira_api_aporte']
             if 'operacao_api' in st.session_state:
                 del st.session_state['operacao_api']
             if 'evento_usuario_dict' in st.session_state:

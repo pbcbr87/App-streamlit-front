@@ -17,7 +17,7 @@ def get_carteira_data(token: str) -> list:
     """Busca a carteira da API e converte strings numéricas para Decimal."""
     
     resp = requests.get(
-        f'{API_URL}carteira/pegar_carteira/{st.session_state.get("id", 0)}', 
+        f'{API_URL}carteira/aporte_carteira/{st.session_state.get("id", 0)}', 
         headers={'Authorization':f'Bearer {token}'}
     )
     if resp.status_code == 404:
@@ -75,20 +75,17 @@ def divisao_percentual_segura(row: pd.Series, coluna_numerador: str, coluna_deno
         return Decimal('0')
 
 
-if 'carteira_api' not in st.session_state or st.session_state['carteira_api'] is None:     
-    st.session_state['carteira_api'] = get_carteira_data(st.session_state.token)
+if 'carteira_api_aporte' not in st.session_state or st.session_state['carteira_api_aporte'] is None:     
+    st.session_state['carteira_api_aporte'] = get_carteira_data(st.session_state.token)
 
 
 st.header("Aportes")
 
-if not st.session_state['carteira_api']:
+if not st.session_state['carteira_api_aporte']:
    st.info('Carteira vazia ou não calculada. Adicione um ativo para começar.')
    st.stop()
 
-df_carteira = pd.DataFrame(st.session_state['carteira_api'])
-df_carteira['pais'] = np.where((df_carteira['categoria'] == "AÇÕES") | (df_carteira['categoria'] == "FII"), 'BRL', 'USD')
-df_carteira['%_lucro'] =  df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='lucro_brl', coluna_denominador='custo_brl'), axis=1)
-
+df_carteira = pd.DataFrame(st.session_state['carteira_api_aporte'])
 #-----------------------------------------------------------
 #Containers layout
 #-----------------------------------------------------------
@@ -113,8 +110,8 @@ with sl_cat_container:
     st.button("",icon=':material/checklist_rtl:', type='tertiary', help='Selecionar tudo', key='Key_BT_2', on_click=sl_tudo_ex)
 
     op_ordem = {
-                'Valor': 'dif',
-                'Percentual sobre valor atual': 'dif_perc'
+                'Valor Aporte': 'dif',
+                '% Dif Plan/Atual': 'dif_perc'
                 }
     option = st.selectbox("Ordendar por", list(op_ordem.keys()))
     
@@ -124,40 +121,110 @@ df_carteira = df_carteira[mask]
 # Aporte
 #---------------------------------------------------------------------
 # Valor a ser aportado
-valor_aporte = sl_cat_container.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.00)
-if not valor_aporte:
-    valor_aporte = Decimal('0')
-else:
-    valor_aporte = Decimal(str(valor_aporte))
- 
-# Calculo
-valor_total = df_carteira['valor_mercado_brl'].sum() + valor_aporte
-peso_total =  df_carteira['peso'].sum()
-if peso_total != 0:
-    df_carteira['valor_plan_brl'] = df_carteira['peso']*valor_total/peso_total
+if not df_carteira.empty:
+    valor_aporte = sl_cat_container.number_input('Valor de aporte:',value=None, format="%.2f", min_value=0.00)
+    if not valor_aporte:
+        valor_aporte = Decimal('0')
+    else:
+        valor_aporte = Decimal(str(valor_aporte))
+    moeda_aporte = sl_cat_container.radio('Moeda:',['BRL', 'USD'])
+    # Calculo
+    if moeda_aporte == "BRL":
+        valor_total = df_carteira['valor_mercado_brl'].sum() + valor_aporte
+    else:
+        valor_total = df_carteira['valor_mercado_usd'].sum() + valor_aporte
 
-df_carteira['dif'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
-df_carteira['dif_perc'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='dif', coluna_denominador='valor_mercado_brl'), axis=1)
+    peso_total =  df_carteira['peso'].sum()
+    if peso_total != 0:
+        if moeda_aporte == "BRL":
+            df_carteira['valor_plan_brl'] = df_carteira['peso']*valor_total/peso_total
+        else:
+            df_carteira['valor_plan_usd'] = df_carteira['peso']*valor_total/peso_total
 
-df_carteira = df_carteira[df_carteira['dif'] > 0]
+    if moeda_aporte == "BRL":
+        df_carteira['%_lucro'] =  df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='lucro_brl', coluna_denominador='custo_brl'), axis=1)
+        df_carteira['dif'] =  df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
+        df_carteira['dif_perc'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='dif', coluna_denominador='valor_mercado_brl'), axis=1)
+    else:
+        df_carteira['%_lucro'] =  df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='lucro_usd', coluna_denominador='custo_usd'), axis=1)
+        df_carteira['dif'] =  df_carteira['valor_plan_usd'] - df_carteira['valor_mercado_usd']
+        df_carteira['dif_perc'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='dif', coluna_denominador='valor_mercado_usd'), axis=1)
 
-# quantidade de ativos
-qt_ativo_aporte = sl_cat_container.number_input('Quantos ativos', value=len(df_carteira), format='%i', min_value=0, max_value=len(df_carteira))
-df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False]).head(qt_ativo_aporte)
-if df_carteira['dif'].sum() != 0:
-    df_carteira['aporte'] = df_carteira['dif'] * valor_aporte/df_carteira['dif'].sum()
-else:
-    df_carteira['aporte'] = Decimal("0")
-# df_carteira['aporte_per'] = np.where(df_carteira['valor_mercado_brl'] == 0, 100, df_carteira['aporte'] / df_carteira['valor_mercado_brl'])
-df_carteira['aporte_per'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='aporte', coluna_denominador='valor_mercado_brl'), axis=1)
-df_carteira = df_carteira[df_carteira['aporte'] > 0]
+    # df_carteira = df_carteira[df_carteira['dif'] > 0]
+    soma_dif = df_carteira[df_carteira['dif'] > 0]['dif'].sum()
+    # quantidade de ativos
+    qt_ativo_aporte = sl_cat_container.number_input('Quantos ativos', value=len(df_carteira[df_carteira['dif'] > 0]), format='%i', min_value=0, max_value=len(df_carteira))
+    df_carteira = df_carteira.sort_values(op_ordem[option], ascending=[False]).head(qt_ativo_aporte)
+    if soma_dif != 0:
+        df_carteira['aporte'] = np.where(df_carteira['dif']>0, df_carteira['dif'] * valor_aporte/soma_dif, 0)
+    else:
+        df_carteira['aporte'] = Decimal("0")
+
+    if moeda_aporte == "BRL":
+        df_carteira['aporte_per'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='aporte', coluna_denominador='valor_mercado_brl'), axis=1)
+    else:
+        df_carteira['aporte_per'] = df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='aporte', coluna_denominador='valor_mercado_usd'), axis=1)
+    # df_carteira = df_carteira[df_carteira['aporte'] > 0]
 
 if not df_carteira.empty:
-    df_carteira = df_carteira[['codigo_ativo', 'categoria','valor_mercado_brl', 'aporte', 'aporte_per']].style.format({
-        'aporte_per': '{:,.2%}',    
-        'valor_mercado_brl': 'R$ {:,.2f}',
-        'aporte': 'R$ {:,.2f}'
-    })
-    st.dataframe(df_carteira, hide_index=True, width='content')
+    if moeda_aporte == "BRL":
+        colunas = ['codigo_ativo', 'aporte', 'aporte_per','soma_aporte_brl_12m', 'preco_brl', 'preco_12m_min_brl', 'preco_12m_max_brl', 'PM_brl', 'min_aporte_preco_unit_brl_12m', 'max_aporte_preco_unit_brl_12m', '%_lucro', 'dif_perc', 'dy']
+    else:
+        colunas = ['codigo_ativo', 'aporte', 'aporte_per','soma_aporte_usd_12m', 'preco_usd', 'preco_12m_min_usd', 'preco_12m_max_usd','PM_usd', 'min_aporte_preco_unit_usd_12m', 'max_aporte_preco_unit_usd_12m', '%_lucro', 'dif_perc', 'dy']
+    
+    if moeda_aporte == "BRL":
+        df_carteira = df_carteira[colunas].style.format({
+            'aporte': 'R$ {:,.2f}',
+            'aporte_per': '{:,.2%}',
+            '%_lucro':'{:,.2%}',
+            'dif_perc': '{:,.2%}',
+            'dy': '{:,.2%}',
+            'soma_aporte_brl_12m': 'R$ {:,.2f}',
+            'PM_brl': 'R$ {:,.2f}',
+            'min_aporte_preco_unit_brl_12m': 'R$ {:,.2f}',
+            'max_aporte_preco_unit_brl_12m': 'R$ {:,.2f}',
+            'preco_brl': 'R$ {:,.2f}',
+            'preco_12m_min_brl': 'R$ {:,.2f}',
+            'preco_12m_max_brl': 'R$ {:,.2f}'
+        })
+    else:
+        df_carteira = df_carteira[colunas].style.format({
+            'aporte': '$ {:,.2f}',
+            'aporte_per': '{:,.2%}',
+            '%_lucro':'{:,.2%}',
+            'dif_perc': '{:,.2%}',
+            'dy': '{:,.2%}',
+            'soma_aporte_usd_12m': '$ {:,.2f}',
+            'PM_usd': '$ {:,.2f}',
+            'min_aporte_preco_unit_usd_12m': '$ {:,.2f}',
+            'max_aporte_preco_unit_usd_12m': '$ {:,.2f}',
+            'preco_usd': '$ {:,.2f}',
+            'preco_12m_min_usd': '$ {:,.2f}',
+            'preco_12m_max_usd': '$ {:,.2f}'
+        })
+
+    st.dataframe(df_carteira, hide_index=True, width='content',
+                column_config={
+                                'codigo_ativo': 'Ativo',
+                                "aporte": "Aporte",
+                                'aporte_per': '% Aporte/Atual',
+                                'soma_aporte_brl_12m': 'Aportes 12m',
+                                'soma_aporte_usd_12m': 'Aportes 12m',
+                                'preco_brl': 'Preço Atual',
+                                'preco_usd': 'Preço Atual',
+                                'preco_12m_max_brl': 'Max Preço 12m',
+                                'preco_12m_max_usd': 'Max Preço 12m',
+                                'preco_12m_min_brl': 'Min Preço 12m',
+                                'preco_12m_min_usd': 'Min Preço 12m',
+                                'PM_brl': 'PM',
+                                'PM_usd': 'PM',
+                                'min_aporte_preco_unit_brl_12m': 'Min Aporte 12m',
+                                'min_aporte_preco_unit_usd_12m': 'Min Aporte 12m',
+                                'max_aporte_preco_unit_brl_12m': 'Max Aporte 12m',
+                                'max_aporte_preco_unit_usd_12m': 'Max Aporte 12m',
+                                '%_lucro': '% Lucro',
+                                'dif_perc': '% Dif Plan/Atual',
+                                'dy': 'DY'
+                })
 else:
     st.info("Insira o valor de porte e selecione a categoria")
