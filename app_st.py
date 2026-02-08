@@ -211,6 +211,7 @@ def navegacao():
                     st.Page('Pages/Evento/insert_evento.py', title='Inserir Evento'),
                     st.Page('Pages/Evento/edit_evento.py', title='Editar Evento')
                     ]
+    dividendos_pages = [st.Page('Pages/Dividendos/dividendos_cadastrados.py', title='Dividendos Cadastrados')]
     ativos_pages = [st.Page('Pages/Ativos/ativos_cadastrados.py', title='Ativos Cadastrados')]
 
     admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:')
@@ -222,6 +223,7 @@ def navegacao():
         pages["Admin"] = admin_pages
         pages["Evento"] = evento_pages
         pages["Ativos"] = ativos_pages
+        pages["Dividendos"] = dividendos_pages
 
     pg = st.navigation(pages, position="sidebar")
     

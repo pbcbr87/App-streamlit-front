@@ -96,7 +96,6 @@ def form_ativo(ativo_dict):
     for key in ativo_dict:
         ativo_dict[key] = ativo_dict.get(key) if ativo_dict.get(key) else ""
         
-    st.text(ativo_dict.get('setor', "") if ativo_dict.get('setor', "") else "")
     form_1, form_2, form_3, form_4, form_5, form_6, form_7, form_8, form_9, form_10, form_11 = st.columns(11)
     st.session_state['ativo_dict']['ativo_cat'] = form_1.text_input("Ativo Categoria", value=ativo_dict.get('ativo_cat', "")).upper()
     st.session_state['ativo_dict']['categoria'] = form_2.text_input("Categoria", value=ativo_dict.get('categoria', "")).upper()

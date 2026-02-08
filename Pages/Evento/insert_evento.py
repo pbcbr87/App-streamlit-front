@@ -118,7 +118,7 @@ with st.form("form_evento"):
     try:
         idx_tipo = tipo_lista.index(ev.get('tipo'))
     except:
-        idx_tipo = 1 # Fallback para DESDOBRAMENTO
+        idx_tipo = 0 # Fallback para DESDOBRAMENTO
         
     tipo = col3.selectbox("Tipo de Evento", options=tipo_lista, index=idx_tipo)
 
