@@ -320,24 +320,26 @@ else:
     else:
         st.info("💡 Clique em uma linha da tabela acima para habilitar as ações.")
 
+
+
+    with layout_form_dividendo:
+        if 'data_aprov' in st.session_state:
+            st.session_state.data_aprov = formatar_data(linha_selecionada.get('data_aprov', None))
+        if 'data_com' in st.session_state:
+            st.session_state.data_com = formatar_data(linha_selecionada.get('data_com', None))
+        if 'data_pag' in st.session_state:
+            st.session_state.data_pag = formatar_data(linha_selecionada.get('data_pag', None))
+        if valor_bruto_col in linha_selecionada:
+            linha_selecionada[valor_bruto_col] = "{:,.2f}".format(float(linha_selecionada.get(valor_bruto_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
+        if imposto_col in linha_selecionada:
+            linha_selecionada[imposto_col] = "{:,.2f}".format(float(linha_selecionada.get(imposto_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
+        # if valor_liq_col in linha_selecionada:
+        #     linha_selecionada[valor_liq_col] =  "{:,.2f}".format(float(linha_selecionada.get(valor_liq_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
+
+        form_dividendo(linha_selecionada)
+
 if c1.button("➕ Inserir Dividendo", width="stretch"):
     inserir_dividendo()
 
 if c5.button("📥 Inserir tabela", width="stretch"):
     carregar_tabela()
-
-with layout_form_dividendo:
-    if 'data_aprov' in st.session_state:
-        st.session_state.data_aprov = formatar_data(linha_selecionada.get('data_aprov', None))
-    if 'data_com' in st.session_state:
-        st.session_state.data_com = formatar_data(linha_selecionada.get('data_com', None))
-    if 'data_pag' in st.session_state:
-        st.session_state.data_pag = formatar_data(linha_selecionada.get('data_pag', None))
-    if valor_bruto_col in linha_selecionada:
-        linha_selecionada[valor_bruto_col] = "{:,.2f}".format(float(linha_selecionada.get(valor_bruto_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
-    if imposto_col in linha_selecionada:
-        linha_selecionada[imposto_col] = "{:,.2f}".format(float(linha_selecionada.get(imposto_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
-    # if valor_liq_col in linha_selecionada:
-    #     linha_selecionada[valor_liq_col] =  "{:,.2f}".format(float(linha_selecionada.get(valor_liq_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
-
-    form_dividendo(linha_selecionada)

@@ -233,6 +233,7 @@ def navegacao():
         pages = {"Manutençao": [st.Page(maintenance_page_gif, title='Manutenção')]}
         pg = st.navigation(pages, position="sidebar")
         return pg
+    
     pg = st.navigation(pages, position="sidebar")
     
     #Adicionar componentes na sidebar
@@ -246,6 +247,8 @@ def navegacao():
                 del st.session_state['operacao_api']
             if 'evento_usuario_dict' in st.session_state:
                 del st.session_state['evento_usuario_dict']
+            if 'dividendos_usuarios_api' in st.session_state:
+                del st.session_state['dividendos_usuarios_api']
 
             with st.spinner("Aguardando...", show_time=True):
                 resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.get("id", 0)}', headers={'Authorization':f'Bearer {st.session_state.token}'})
