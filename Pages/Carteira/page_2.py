@@ -29,7 +29,7 @@ def divisao_percentual_segura(row: pd.Series, coluna_numerador: str, coluna_deno
         return Decimal('0')
     # 3. Tenta a divisão real
     try:
-        return numerador / denominador
+        return round(numerador / denominador, 4)
     except DivisionByZero:
         # Linha de defesa contra o erro Decimal.
         return Decimal('0')
@@ -131,7 +131,26 @@ if 'carteira_api' not in st.session_state or st.session_state['carteira_api'] is
 # Layout
 #-----------------------------------------------
 
-st.title('Carteira')
+c1_t, _, c2_t = st.columns([6,4,2])
+c1_t.title('💼 Carteira')
+
+moeda = c2_t.radio('Moeda dos valores', ['BRL', 'USD'], key='moeda_valores', horizontal=True)
+if moeda == 'BRL':
+    moeda_simbolo = 'R$'
+    lucro_col = 'lucro_brl'
+    custo_col = 'custo_brl'
+    lucro_div_col = 'lucro_div_brl'
+    div_liq_col = 'div_liq_brl'
+    valor_mercado_col = 'valor_mercado_brl'
+    valor_plan_col = 'valor_plan_brl'
+else:
+    moeda_simbolo = 'US$'
+    lucro_col = 'lucro_usd'
+    custo_col = 'custo_usd'
+    lucro_div_col = 'lucro_div_usd'
+    div_liq_col = 'div_liq_usd'
+    valor_mercado_col = 'valor_mercado_usd'
+    valor_plan_col = 'valor_plan_usd'
 
 # Trantando dados recebidos
 if not st.session_state['carteira_api']:
@@ -141,9 +160,8 @@ if not st.session_state['carteira_api']:
 df_carteira = pd.DataFrame(st.session_state['carteira_api'])
 # for i in df_carteira['valor_plan_brl']:
 #     print(type(i))
-df_carteira['pais'] = np.where((df_carteira['categoria'] == "AÇÕES") | (df_carteira['categoria'] == "FII"), 'BRL', 'USD')
-df_carteira['%_lucro'] =  df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='lucro_brl', coluna_denominador='custo_brl'), axis=1)
-
+df_carteira['%_lucro'] =  df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador=lucro_col, coluna_denominador=custo_col), axis=1)
+df_carteira['%_lucro_div'] =  df_carteira.apply(lambda row: divisao_percentual_segura(row, coluna_numerador=lucro_div_col, coluna_denominador=custo_col), axis=1)
 #-----------------------------------------------------------
 #Containers layout
 #-----------------------------------------------------------
@@ -181,10 +199,10 @@ with sl_cat_container:
                 'Percentual do lucro': "Lucro %",
                 'Valor Planejado': 'Valor Planejado',
                 'Aporte': 'Aporte',
-                'Percentual do aporte': 'Aporte %'
+                'Percentual do aporte / Valor Atual': 'Aporte %'
                 }
     option = st.selectbox("Ordendar por", list(op_ordem.keys()))
-
+    
 mask = df_carteira['categoria'].isin(mult_sl_cat)
 df_carteira = df_carteira[mask]
 
@@ -195,20 +213,23 @@ df_carteira = df_carteira[mask]
 df_carteira_front = pd.DataFrame()
 df_carteira_front['Código ativo'] = df_carteira['codigo_ativo']
 df_carteira_front['Categoria'] = df_carteira['categoria']
-df_carteira_front['País'] = df_carteira['pais']
+df_carteira_front['País'] = df_carteira['moeda']
 df_carteira_front['Nome'] = df_carteira['nome']
 df_carteira_front['Setor'] = df_carteira['setor']
 df_carteira_front['Qt'] = df_carteira['quant']
-df_carteira_front['Custo'] = df_carteira['custo_brl']
-df_carteira_front['Valor de mercado'] = df_carteira['valor_mercado_brl']
-df_carteira_front['Lucro'] = df_carteira['lucro_brl']
+df_carteira_front['Custo'] = df_carteira[custo_col]
+df_carteira_front['Valor de mercado'] = df_carteira[valor_mercado_col]
+df_carteira_front['Lucro'] = df_carteira[lucro_col]
 df_carteira_front['Lucro %'] = df_carteira['%_lucro']
 df_carteira_front['Peso'] = df_carteira['peso']
 df_carteira_front['Nota'] = df_carteira['nota']
-df_carteira_front['Valor Planejado'] = df_carteira['valor_plan_brl']
-df_carteira_front['Aporte'] = df_carteira['valor_plan_brl'] - df_carteira['valor_mercado_brl']
+df_carteira_front['Valor Planejado'] = df_carteira[valor_plan_col]
+df_carteira_front['Aporte'] = df_carteira[valor_plan_col] - df_carteira[valor_mercado_col]
 df_carteira_front['Aporte %'] = df_carteira_front.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='Aporte', coluna_denominador='Valor Planejado'), axis=1)
 
+df_carteira_front['Divid'] = df_carteira[div_liq_col]
+df_carteira_front['Lucro + Div'] = df_carteira[lucro_div_col]
+df_carteira_front['Lucro + Div %'] = df_carteira['%_lucro_div']
 
 # ordenação
 df_carteira_front = df_carteira_front.sort_values(op_ordem[option], ascending=[False])
@@ -247,10 +268,12 @@ with tab1:
         st.dataframe(df_carteira_st, hide_index=True, width='content',
                     column_config={
                         "Lucro %": st.column_config.NumberColumn("Lucro %", format="percent"),
-                        "Aporte %": st.column_config.NumberColumn("Aporte %", format="percent")
+                        "Aporte %": st.column_config.NumberColumn("Aporte %", format="percent"),
+                        "Lucro + Div %": st.column_config.NumberColumn("L+D%", format="percent")
                         })
 
 with tab2:
+    lucro_gra = st.selectbox('Lucro:', ['Lucro %',"Lucro + Div %"])
     df = df_carteira_front
     if not df.empty:
         fig = go.Figure()
@@ -271,11 +294,11 @@ with tab2:
                             marker=dict(color='green', line=dict(color='black'))
                             ))
 
-        y = df['Lucro %']
+        y = df[lucro_gra]
         fig.add_trace(go.Bar(x=x.values, 
                             y=y.values, 
                             yaxis="y2", 
-                            name='Lucro %', 
+                            name=lucro_gra, 
                             textposition='auto',
                             texttemplate = "%{value:.2%}",
                             textfont = dict(color='black'),

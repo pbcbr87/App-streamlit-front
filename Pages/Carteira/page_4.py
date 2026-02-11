@@ -167,11 +167,16 @@ if not df_carteira.empty:
         # df_carteira = df_carteira[df_carteira['aporte'] > 0]
 
 if not df_carteira.empty and peso_total != 0:
-    if moeda_aporte == "BRL":
-        colunas = ['codigo_ativo', 'aporte', 'aporte_per','soma_aporte_brl_12m', 'preco_brl', 'preco_12m_min_brl', 'preco_12m_max_brl', 'PM_brl', 'min_aporte_preco_unit_brl_12m', 'max_aporte_preco_unit_brl_12m', '%_lucro', 'dif_perc', 'dy']
-    else:
-        colunas = ['codigo_ativo', 'aporte', 'aporte_per','soma_aporte_usd_12m', 'preco_usd', 'preco_12m_min_usd', 'preco_12m_max_usd','PM_usd', 'min_aporte_preco_unit_usd_12m', 'max_aporte_preco_unit_usd_12m', '%_lucro', 'dif_perc', 'dy']
     
+    if moeda_aporte == "BRL":
+        colunas = ['codigo_ativo', 'aporte', 'aporte_per','soma_aporte_brl_12m', 'preco_brl', 'posicao_preco','preco_12m_min_brl', 'preco_12m_max_brl', 'PM_brl', 'min_aporte_preco_unit_brl_12m', 'max_aporte_preco_unit_brl_12m', '%_lucro', 'dif_perc', 'dy']
+        df_carteira['posicao_preco'] = (df_carteira['preco_brl'] - df_carteira['preco_12m_min_brl']) / (df_carteira['preco_12m_max_brl'] - df_carteira['preco_12m_min_brl'])
+        df_carteira['posicao_preco'] = df_carteira['posicao_preco'].clip(0, 1)
+    else:
+        colunas = ['codigo_ativo', 'aporte', 'aporte_per','soma_aporte_usd_12m', 'preco_usd', 'posicao_preco', 'preco_12m_min_usd', 'preco_12m_max_usd','PM_usd', 'min_aporte_preco_unit_usd_12m', 'max_aporte_preco_unit_usd_12m', '%_lucro', 'dif_perc', 'dy']
+        df_carteira['posicao_preco'] = (df_carteira['preco_usd'] - df_carteira['preco_12m_min_usd']) / (df_carteira['preco_12m_max_usd'] - df_carteira['preco_12m_min_usd'])
+        df_carteira['posicao_preco'] = df_carteira['posicao_preco'].clip(0, 1)
+
     if moeda_aporte == "BRL":
         df_carteira = df_carteira[colunas].style.format({
             'aporte': 'R$ {:,.2f}',
@@ -189,19 +194,21 @@ if not df_carteira.empty and peso_total != 0:
         })
     else:
         df_carteira = df_carteira[colunas].style.format({
-            'aporte': '$ {:,.2f}',
+            'aporte': 'US$ {:,.2f}',
             'aporte_per': '{:,.2%}',
             '%_lucro':'{:,.2%}',
             'dif_perc': '{:,.2%}',
             'dy': '{:,.2%}',
-            'soma_aporte_usd_12m': '$ {:,.2f}',
-            'PM_usd': '$ {:,.2f}',
-            'min_aporte_preco_unit_usd_12m': '$ {:,.2f}',
-            'max_aporte_preco_unit_usd_12m': '$ {:,.2f}',
-            'preco_usd': '$ {:,.2f}',
-            'preco_12m_min_usd': '$ {:,.2f}',
-            'preco_12m_max_usd': '$ {:,.2f}'
+            'soma_aporte_usd_12m': 'US$ {:,.2f}',
+            'PM_usd': 'US$ {:,.2f}',
+            'min_aporte_preco_unit_usd_12m': 'US$ {:,.2f}',
+            'max_aporte_preco_unit_usd_12m': 'US$ {:,.2f}',
+            'preco_usd': 'US$ {:,.2f}',
+            'preco_12m_min_usd': 'US$ {:,.2f}',
+            'preco_12m_max_usd': 'US$ {:,.2f}'
         })
+
+    
 
     st.dataframe(df_carteira, hide_index=True, width='content',
                 column_config={
@@ -212,6 +219,13 @@ if not df_carteira.empty and peso_total != 0:
                                 'soma_aporte_usd_12m': 'Aportes 12m',
                                 'preco_brl': 'Preço Atual',
                                 'preco_usd': 'Preço Atual',
+                                'posicao_preco': st.column_config.ProgressColumn(
+                                                                                'Posição Preço (Min/Max)',
+                                                                                help='Onde o preço atual está em relação à mínima e máxima de 12 meses',
+                                                                                format='percent',
+                                                                                min_value=0,
+                                                                                max_value=1
+                                                                                ),
                                 'preco_12m_max_brl': 'Max Preço 12m',
                                 'preco_12m_max_usd': 'Max Preço 12m',
                                 'preco_12m_min_brl': 'Min Preço 12m',
@@ -225,6 +239,6 @@ if not df_carteira.empty and peso_total != 0:
                                 '%_lucro': '% Lucro',
                                 'dif_perc': '% Dif Plan/Atual',
                                 'dy': 'DY'
-                })
+                    })
 else:
     st.info("Insira o valor de porte e selecione a categoria")

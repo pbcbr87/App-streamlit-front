@@ -6,5 +6,7 @@ class Settings(BaseSettings):
     )
 
     BACKEND_URL: str
+    MANUTENCAO: bool
 
 API_URL = Settings().BACKEND_URL
+MANUTENCAO = Settings().MANUTENCAO

@@ -5,15 +5,7 @@ import numpy as np
 from settings import API_URL
 from json import dumps, loads
 
-# --- ESTADOS DA SESSÃO ---
-if 'lista_ativos_sugeridos' not in st.session_state:
-    st.session_state['lista_ativos_sugeridos'] = []
-if 'evento_api' not in st.session_state:
-    st.session_state['evento_api'] = []
-if 'sl_ativo' not in st.session_state:
-    st.session_state['sl_ativo'] = ""
-if 'sl_row' not in st.session_state:
-    st.session_state['sl_row'] = None
+
 # --- FUNÇÕES DE LÓGICA ---
 
 def get_ativos():
@@ -39,6 +31,14 @@ def get_ativos():
     except Exception as e:
         st.error(f"Erro ao buscar ativos: {e}")
 
+def carregar_eventos_all():
+    headers = {'Authorization': f"Bearer {st.session_state.get('token')}"}
+    resp = requests.get(f'{API_URL}eventos/get_eventos', headers=headers)
+    if resp.status_code == 200:
+        st.session_state['evento_api'] = resp.json()
+    else:
+        st.session_state['evento_api'] = []
+
 def carregar_eventos(ativo_selecionado):
     """Busca os eventos detalhados do ativo escolhido no Pills"""
     if ativo_selecionado:
@@ -60,6 +60,16 @@ def exluir():
         st.rerun()
     else:
         st.error(f"Erro ao excluir evento: Status {resp.status_code}")
+
+# --- ESTADOS DA SESSÃO ---
+if 'lista_ativos_sugeridos' not in st.session_state:
+    st.session_state['lista_ativos_sugeridos'] = []
+if 'evento_api' not in st.session_state or st.session_state['evento_api'] == None:
+    carregar_eventos_all()
+if 'sl_ativo' not in st.session_state:
+    st.session_state['sl_ativo'] = ""
+if 'sl_row' not in st.session_state:
+    st.session_state['sl_row'] = None
 
 # --- LAYOUT INTERFACE ---
 st.header("🔍 Pesquisa de Eventos por Ativo")
@@ -87,6 +97,8 @@ with col3:
         # Se mudar a seleção no Pills, carrega os eventos
         if ativo_escolhido:
             carregar_eventos(ativo_escolhido)
+        else:
+            carregar_eventos_all()
 
 # --- TABELA DE EVENTOS ---
 if c1.button("➕ Inserir", width='stretch'):    
@@ -102,16 +114,14 @@ if c3.button("🧐 Eventos Pendentes", width='stretch'):
 if st.session_state['evento_api']:
     if st.session_state.get('pills_selecao'):
         st.subheader(f"Eventos de {st.session_state.get('pills_selecao')}")
-        df_eventos = pd.DataFrame(st.session_state['evento_api'])
-        sl_row = st.dataframe(df_eventos, hide_index=True, on_select="rerun", selection_mode='single-row')
-        if sl_row:
-            if sl_row.get('selection').get('rows'):
-                st.session_state['evento_dict'] = df_eventos.replace({np.nan: None}).iloc[sl_row.get('selection').get('rows')[0]].to_dict()
-                if c4.button("📝 Editar", width='stretch'):
-                    st.switch_page('Pages/Evento/edit_evento.py')
-                if c5.button("🗑️ Excluir", width='stretch'):
-                    exluir()
-                
-
-elif st.session_state.get('pills_selecao'):
-    st.info(f"Nenhum evento cadastrado para {st.session_state.get('pills_selecao')}.")
+    df_eventos = pd.DataFrame(st.session_state['evento_api'])
+    sl_row = st.dataframe(df_eventos, hide_index=True, on_select="rerun", selection_mode='single-row')
+    if sl_row:
+        if sl_row.get('selection').get('rows'):
+            st.session_state['evento_dict'] = df_eventos.replace({np.nan: None}).iloc[sl_row.get('selection').get('rows')[0]].to_dict()
+            if c4.button("📝 Editar", width='stretch'):
+                st.switch_page('Pages/Evento/edit_evento.py')
+            if c5.button("🗑️ Excluir", width='stretch'):
+                exluir()
+else:
+    st.info("Nenhum evento encontrado para o ativo selecionado.")                

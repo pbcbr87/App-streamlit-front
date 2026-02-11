@@ -117,8 +117,8 @@ else:
     #------------------------------------------------------------------
     # Tabela de Ativos Cadastrados
     #------------------------------------------------------------------
-    colunas = ['id','fk_evento','aceito','foi_aplicado','modo_insert','tipo','fk_ativo', 'ativo_gerado','data_aprov', 'data_com','data_pag', 'proporcao', 'valor', 'data_insert']
-    colunas_view = ['aceito','foi_aplicado','modo_insert','tipo','fk_ativo', 'ativo_gerado','data_aprov', 'data_com','data_pag', 'proporcao', 'valor', 'data_insert']
+    colunas = ['id','fk_evento','aceito','foi_aplicado','modo_insert','tipo','fk_ativo', 'ativo_gerado','data_aprov', 'data_com','data_pag', 'proporcao', 'valor_base', 'data_insert']
+    colunas_view = ['aceito','foi_aplicado','modo_insert','tipo','fk_ativo', 'ativo_gerado','data_aprov', 'data_com','data_pag', 'proporcao', 'valor_base', 'data_insert']
     df = pd.DataFrame(st.session_state['evento_usuario_dict'], columns=colunas)
         
 
@@ -152,7 +152,7 @@ else:
                 width="small"
             ),
             'proporcao': st.column_config.NumberColumn("Proporção", format="%.4f"),
-            'valor': st.column_config.NumberColumn("Valor", format="R$ %.2f"),
+            'valor_base': st.column_config.NumberColumn("valor_base", format="%.2f"),
         }
     )
     #------------------------------------------------------------------

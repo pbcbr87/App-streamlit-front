@@ -134,9 +134,9 @@ def carregar_tabela():
 
 def filtro(df):
     with st.container(border=True, horizontal=True):
-        sl_fk_ativo = st.text_input("Filtrar por Ativo Original", width='stretch')
+        sl_fk_ativo = st.text_input("Filtrar por Ativo Original", width=200)
         
-        sl = st.pills('Slecione',options=['DIVIDENDO', 'JCP', 'REND. TRIBUTADO', 'RENDIMENTO', 'RENDIMENTO EXT', 'AGENCY PROC. FEE'],  selection_mode="multi", width='stretch')
+        sl = st.pills('Slecione',options=['DIVIDENDO', 'JCP', 'REND. TRIBUTADO', 'RENDIMENTO', 'RENDIMENTO EXT', 'AMORTIZAÇÃO','AGENCY PROC. FEE'],  selection_mode="multi", width='stretch')
         df_filtrado = df[df['tipo'].isin(sl)] if sl else df
 
         if sl_fk_ativo:       
@@ -152,7 +152,7 @@ def form_dividendo(dividendo_dict):
     form_1, form_2, form_3, form_4, form_5, form_6, form_7 = st.columns(7)
     st.session_state['dividendo_dict']['fk_ativo'] = form_1.text_input("Ativo Categoria", value=dividendo_dict.get('fk_ativo', "")).upper()
     # Validação do index do selectbox
-    tipo_list = ['DIVIDENDO', 'JCP', 'REND. TRIBUTADO', 'RENDIMENTO', 'RENDIMENTO EXT', 'AGENCY PROC. FEE']
+    tipo_list = ['DIVIDENDO', 'JCP', 'REND. TRIBUTADO', 'RENDIMENTO', 'RENDIMENTO EXT', 'AMORTIZAÇÃO','AGENCY PROC. FEE']
     try:
         idx_tipo = tipo_list.index(dividendo_dict.get('tipo'))
     except:

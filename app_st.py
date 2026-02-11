@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 from decimal import Decimal
-from settings import API_URL
+from settings import API_URL, MANUTENCAO
 
 #deixar visivel as session:
 # st.write(st.session_state)
@@ -211,19 +211,26 @@ def navegacao():
                     st.Page('Pages/Evento/insert_evento.py', title='Inserir Evento'),
                     st.Page('Pages/Evento/edit_evento.py', title='Editar Evento')
                     ]
+    dividendos_usuarios_pages = [   
+                                 st.Page('Pages/Dividendos_usuarios/dividendos_grafico.py', title='Gráfico de Dividendos'),
+                                 st.Page('Pages/Dividendos_usuarios/dividendos_usuarios.py', title='Gerenciar Dividendos')
+                                 ]
+
     dividendos_pages = [st.Page('Pages/Dividendos/dividendos_cadastrados.py', title='Dividendos Cadastrados')]
     ativos_pages = [st.Page('Pages/Ativos/ativos_cadastrados.py', title='Ativos Cadastrados')]
 
-    admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:')
-                   ]
+    admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:')]
 
-    pages = {"Sua Carteira": cateira_pages, "Eventos Coorporativos": evento_usuario_pages, "Conta": conta_pages}
+    pages = {"Sua Carteira": cateira_pages, "Remunerações Coorporativas": dividendos_usuarios_pages, "Eventos Coorporativos": evento_usuario_pages, "Conta": conta_pages}
     # pages = {"Manutençao": [st.Page(maintenance_page_gif, title='Manutenção')]}
     if st.session_state.admin == True:
         pages["Admin"] = admin_pages
         pages["Evento"] = evento_pages
         pages["Ativos"] = ativos_pages
         pages["Dividendos"] = dividendos_pages
+
+    if MANUTENCAO and st.session_state.admin == False:
+        pages = {"Manutençao": [st.Page(maintenance_page_gif, title='Manutenção')]}
 
     pg = st.navigation(pages, position="sidebar")
     

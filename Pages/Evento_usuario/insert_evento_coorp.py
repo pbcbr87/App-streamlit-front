@@ -243,7 +243,7 @@ def render_layout_input():
                 operacao_dict = [{"id_ativo": f"{id_ativo}", "custo": f"{valor}*qt", "qt": "0"}]
 
         # Opção de Dinheiro Global
-        if st.toggle('Configurar fórmula de recebimento em dinheiro'):
+        if st.toggle('Recebimento em dinheiro'):
             dinheiro = st.number_input('Valor Dinheiro', value=1000.00, format="%.2f")
 
     evento_dict = {

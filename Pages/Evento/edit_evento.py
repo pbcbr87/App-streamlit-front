@@ -53,6 +53,7 @@ def enviar(dict_evento):
         if resp.status_code == 200:
             st.success('✅ Evento atualizado com sucesso!')
             time.sleep(1.5)
+            st.session_state['evento_api'] = None
             st.switch_page("Pages/Evento/eventos_cadastrados.py") # Redireciona após sucesso
             return True
         elif resp.status_code == 422:
