@@ -231,7 +231,8 @@ def navegacao():
 
     if MANUTENCAO and st.session_state.admin == False:
         pages = {"Manutençao": [st.Page(maintenance_page_gif, title='Manutenção')]}
-
+        pg = st.navigation(pages, position="sidebar")
+        return pg
     pg = st.navigation(pages, position="sidebar")
     
     #Adicionar componentes na sidebar
