@@ -243,9 +243,9 @@ with metrica_total_container:
     lucro_total_perc = 100*(valor_total - custo_total) / custo_total if custo_total != 0 else Decimal('0')
 
     ajustar_tamanho_metricas(0.7, "0.5rem")
-    st.metric(label="Custo", value=f'{numero_padrao(custo_total)} R$', width ='stretch')
-    st.metric(label="Valor de mercado", value=f'{numero_padrao(valor_total)} R$', width ='stretch')
-    st.metric(label="Lucro", value=f"{numero_padrao(lucro_total)} R$", delta=f'{numero_padrao(lucro_total_perc)} %', width ='stretch')
+    st.metric(label="Custo", value=f'{numero_padrao(custo_total)} {moeda_simbolo}', width ='stretch')
+    st.metric(label="Valor de mercado", value=f'{numero_padrao(valor_total)} {moeda_simbolo}', width ='stretch')
+    st.metric(label="Lucro", value=f"{numero_padrao(lucro_total)} {moeda_simbolo}", delta=f'{numero_padrao(lucro_total_perc)} %', width ='stretch')
 #-----------------------------------------------------------
 # Criar abas
 #-----------------------------------------------------------
