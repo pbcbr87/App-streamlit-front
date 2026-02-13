@@ -52,8 +52,8 @@ def set_aceito(status, id):
         st.error(f"⚠️ Erro na API. Status {resp.status_code}: {resp.text}")
 
 @st.dialog("Edit Dividendos", width='medium', on_dismiss=carregar_dividendos)
-def edit_dividendo(): 
-    dados = st.session_state['dividendos_usuarios_dict']
+def edit_dividendo(dados): 
+    # dados = st.session_state['dividendos_usuarios_dict']
     id_div = dados.get('id', None)
 
     st.dataframe([dados], width='content' )
@@ -113,9 +113,9 @@ def formatar_data(valor):
         return None
 
 @st.dialog("Inserir Dividendos", width='medium',on_dismiss=carregar_dividendos)
-def inserir_dividendo():
+def inserir_dividendo(dados_dict):
     st.header("Novo Dividendo")
-    dados_dict = st.session_state['dividendos_usuarios_dict']
+    # dados_dict = st.session_state['dividendos_usuarios_dict']
     if 'id' in dados_dict.keys():
         dados_dict.pop("id")
     dados = pd.DataFrame([dados_dict])
@@ -303,7 +303,7 @@ else:
         linha_selecionada = df.iloc[idx].to_dict()    
         
         if c2.button("✏️ Editar Dividendo", width="stretch"):
-            edit_dividendo()
+            edit_dividendo(st.session_state['dividendos_usuarios_dict'])
 
         if c3.button("🗑️ Excluir Dividendo", width="stretch"):
             excluir(linha_selecionada)
@@ -319,8 +319,6 @@ else:
 
     else:
         st.info("💡 Clique em uma linha da tabela acima para habilitar as ações.")
-
-
 
     with layout_form_dividendo:
         if 'data_aprov' in st.session_state:
@@ -339,7 +337,7 @@ else:
         form_dividendo(linha_selecionada)
 
 if c1.button("➕ Inserir Dividendo", width="stretch"):
-    inserir_dividendo()
+    inserir_dividendo(st.session_state['dividendos_usuarios_dict'])
 
 if c5.button("📥 Inserir tabela", width="stretch"):
     carregar_tabela()

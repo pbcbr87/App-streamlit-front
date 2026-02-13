@@ -58,7 +58,7 @@ else:
         moeda_simbolo = 'US$'
 
     df_base = pd.DataFrame(st.session_state.dividendos_usuarios_api, columns=colunas).sort_values(by=ref_date, ascending=False)
-    df_base = df_base[df_base['aceito'] == True].copy() # Considera apenas os dividendos aceitos para o gráfico
+    df_base = df_base[(df_base['aceito'] == True) & (df_base['data_pag'].notnull())].copy() # Considera apenas os dividendos aceitos para o gráfico
 
     df_base['data_pag'] = pd.to_datetime(df_base['data_pag'])
     df_base['data_com'] = pd.to_datetime(df_base['data_com'])

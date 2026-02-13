@@ -17,20 +17,21 @@ def carregar_dividendos():
         st.session_state['dividendos_api'] = []
 
 @st.dialog("Edit Dividendos", width='medium', on_dismiss=carregar_dividendos)
-def edit_dividendo(): 
-    dados = st.session_state['dividendo_dict']
+def edit_dividendo(dados): 
+    # dados = st.session_state['dividendo_dict']
     id_div = dados.get('id', None)
 
     st.dataframe([dados], width='content' )
     dados_json = dumps(dados, ensure_ascii=False)
-    if st.button('Enviar Edição'):
 
+    if st.button('Enviar Edição'):
+        
         resp = requests.put(f'{API_URL}dividendos/edit_dividendo/{id_div}', dados_json, headers={'Authorization':f'Bearer {st.session_state.token}'})
         try:
             resposta_json = resp.json()
         except:
             st.toast(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
-    
+
             # --- Tratamento de Sucesso (200 OK) ---
         if resp.status_code == 200:
             st.success('✅ Dados enviados com sucesso!')          
@@ -39,16 +40,35 @@ def edit_dividendo():
             st.error('❌ Existe dados inválidos no seu arquivo. Veja abaixo os detalhes:')
                             
             detail = resposta_json.get('detail', {})
-            linhas_rejeitadas = detail.get('linhas_rejeitadas', [])
-            
-            if linhas_rejeitadas:
-                st.warning(f"Foram encontradas {len(linhas_rejeitadas)} linha(s) com erro de validação.")
-                df_erros = pd.DataFrame(linhas_rejeitadas)
-                st.dataframe(df_erros)
+            if type(detail) is list:
+                st.warning(f"Validação de dados schemas: {resposta_json}")
             else:
-                st.text(f"Detalhe de erro da API: {detail}")
+                linhas_rejeitadas = detail.get('linhas_rejeitadas', [])
+                
+                if linhas_rejeitadas:
+                    st.warning(f"Foram encontradas {len(linhas_rejeitadas)} linha(s) com erro de validação.")
+                    df_erros = pd.DataFrame(linhas_rejeitadas)
+                    st.dataframe(df_erros)
+                else:
+                    st.text(f"Detalhe de erro da API: {detail}")
         else:
             st.error(f"⚠️ Erro HTTP inesperado: Status {resp.status_code}")
+
+def excluir_all():
+    resp = requests.delete(f'{API_URL}dividendos/delete_all', headers={'Authorization':f'Bearer {st.session_state.token}'})
+    
+    try:
+        resposta_json = resp.json()
+    except:
+        st.toast(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
+  
+        # --- Tratamento de Sucesso (200 OK) ---    
+    if resp.status_code == 200:
+        st.toast('OK - Excluir')
+        pass
+
+    if resp.status_code != 200:
+        st.toast(f"⚠️ Erro na API. Status {resp.status_code}: {resp.text}")
 
 def excluir(selecao):
     dados = selecao
@@ -76,9 +96,12 @@ def formatar_data(valor):
         return None
 
 @st.dialog("Inserir Dividendos", width='medium',on_dismiss=carregar_dividendos)
-def inserir_dividendo():
+def inserir_dividendo(dados_dict):
     st.header("Novo Dividendo")
-    dados = pd.DataFrame([st.session_state['dividendo_dict']])
+    # dados_dict = st.session_state['dividendo_dict']
+    if 'id' in dados_dict.keys():
+        dados_dict.pop("id")
+    dados = pd.DataFrame([dados_dict])
     st.dataframe(dados[['fk_ativo', 'tipo', 'valor_bruto', 'valor_liq', 'data_aprov', 'data_com', 'data_pag']], width='content')
     if st.button('Enviar'):
         with st.spinner(text="In progress..."):
@@ -144,10 +167,11 @@ def filtro(df):
     return df_filtrado
 
 @st.fragment
-def form_dividendo(dividendo_dict):
+def form_dividendo(dividendo_dict):    
     for key in dividendo_dict:
         dividendo_dict[key] = dividendo_dict.get(key) if dividendo_dict.get(key) else ""
 
+    st.session_state['dividendo_dict'] = {}
     st.session_state['dividendo_dict']['id'] = dividendo_dict.get('id', None)
     form_1, form_2, form_3, form_4, form_5, form_6, form_7 = st.columns(7)
     st.session_state['dividendo_dict']['fk_ativo'] = form_1.text_input("Ativo Categoria", value=dividendo_dict.get('fk_ativo', "")).upper()
@@ -203,6 +227,8 @@ else:
     #------------------------------------------------------------------
     # Capturar a seleção
     #------------------------------------------------------------------
+
+    
     selecao = dividendo_sl.selection.get("rows", [])
 
     if selecao:
@@ -210,7 +236,7 @@ else:
         linha_selecionada = df.iloc[idx].to_dict()    
         
         if c2.button("✏️ Editar Dividendo", width="stretch"):
-            edit_dividendo()
+            edit_dividendo(st.session_state['dividendo_dict'])
 
         if c3.button("🗑️ Excluir Dividendo", width="stretch"):
             excluir(linha_selecionada)
@@ -220,24 +246,27 @@ else:
     else:
         st.info("💡 Clique em uma linha da tabela acima para habilitar as ações.")
 
-if c1.button("➕ Inserir Dividendo", width="stretch"):
-    inserir_dividendo()
-    
+    with layout_form_dividendo:
+        if 'data_aprov' in st.session_state:
+            st.session_state.data_aprov = formatar_data(linha_selecionada.get('data_aprov', None))
+        if 'data_com' in st.session_state:
+            st.session_state.data_com = formatar_data(linha_selecionada.get('data_com', None))
+        if 'data_pag' in st.session_state:
+            st.session_state.data_pag = formatar_data(linha_selecionada.get('data_pag', None))
+        if 'valor_bruto' in linha_selecionada:
+            linha_selecionada['valor_bruto'] = float(linha_selecionada.get('valor_bruto'))
+        if 'valor_liq' in linha_selecionada:
+            linha_selecionada['valor_liq'] = float(linha_selecionada.get('valor_liq'))
 
+        form_dividendo(linha_selecionada)
+
+if c1.button("➕ Inserir Dividendo", width="stretch"):
+    inserir_dividendo(st.session_state['dividendo_dict'])
+
+if c4.button("🗑️ Excluir Tudo", width="stretch"):
+    excluir_all()
+    st.session_state.dividendos_api = None
+    st.rerun()
 
 if c5.button("📥 Inserir tabela", width="stretch"):
     carregar_tabela()
-
-with layout_form_dividendo:
-    if 'data_aprov' in st.session_state:
-        st.session_state.data_aprov = formatar_data(linha_selecionada.get('data_aprov', None))
-    if 'data_com' in st.session_state:
-        st.session_state.data_com = formatar_data(linha_selecionada.get('data_com', None))
-    if 'data_pag' in st.session_state:
-        st.session_state.data_pag = formatar_data(linha_selecionada.get('data_pag', None))
-    if 'valor_bruto' in linha_selecionada:
-        linha_selecionada['valor_bruto'] = float(linha_selecionada.get('valor_bruto'))
-    if 'valor_liq' in linha_selecionada:
-        linha_selecionada['valor_liq'] = float(linha_selecionada.get('valor_liq'))
-
-    form_dividendo(linha_selecionada)
