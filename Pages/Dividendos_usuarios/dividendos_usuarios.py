@@ -247,6 +247,13 @@ moeda = c2_t.radio('Moeda dos valores', ['BRL', 'USD'], key='moeda_valores', hor
 layout_form_dividendo = st.container(border=True)
 c1, c2, c3, c4, c5 = layout_form_dividendo.columns(5)  
 
+if c1.button("➕ Inserir Dividendo", width="stretch"):
+    inserir_dividendo(st.session_state['dividendos_usuarios_dict'])
+
+if c5.button("📥 Inserir tabela", width="stretch"):
+    carregar_tabela()
+
+
 linha_selecionada = {}
 if 'dividendos_usuarios_api' not in st.session_state or not st.session_state.dividendos_usuarios_api:
     st.info("💡 Nenhum Dividendos Encontrado no Banco de dados.")
@@ -336,8 +343,3 @@ else:
 
         form_dividendo(linha_selecionada)
 
-if c1.button("➕ Inserir Dividendo", width="stretch"):
-    inserir_dividendo(st.session_state['dividendos_usuarios_dict'])
-
-if c5.button("📥 Inserir tabela", width="stretch"):
-    carregar_tabela()

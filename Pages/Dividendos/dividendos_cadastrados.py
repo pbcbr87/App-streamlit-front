@@ -209,6 +209,17 @@ st.title("💰 Dividendos Cadastrados")
 layout_form_dividendo = st.container(border=True)
 c1, c2, c3, c4, c5 = layout_form_dividendo.columns(5)  
 
+if c1.button("➕ Inserir Dividendo", width="stretch"):
+    inserir_dividendo(st.session_state['dividendo_dict'])
+
+if c4.button("🗑️ Excluir Tudo", width="stretch"):
+    excluir_all()
+    st.session_state.dividendos_api = None
+    st.rerun()
+
+if c5.button("📥 Inserir tabela", width="stretch"):
+    carregar_tabela()
+
 linha_selecionada = {}
 if 'dividendos_api' not in st.session_state or not st.session_state.dividendos_api:
     st.info("💡 Nenhum Dividendos Encontrado no Banco de dados.")
@@ -260,13 +271,3 @@ else:
 
         form_dividendo(linha_selecionada)
 
-if c1.button("➕ Inserir Dividendo", width="stretch"):
-    inserir_dividendo(st.session_state['dividendo_dict'])
-
-if c4.button("🗑️ Excluir Tudo", width="stretch"):
-    excluir_all()
-    st.session_state.dividendos_api = None
-    st.rerun()
-
-if c5.button("📥 Inserir tabela", width="stretch"):
-    carregar_tabela()
