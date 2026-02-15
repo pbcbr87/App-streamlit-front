@@ -238,8 +238,6 @@ else:
     #------------------------------------------------------------------
     # Capturar a seleção
     #------------------------------------------------------------------
-
-    
     selecao = dividendo_sl.selection.get("rows", [])
 
     if selecao:
@@ -257,17 +255,17 @@ else:
     else:
         st.info("💡 Clique em uma linha da tabela acima para habilitar as ações.")
 
-    with layout_form_dividendo:
-        if 'data_aprov' in st.session_state:
-            st.session_state.data_aprov = formatar_data(linha_selecionada.get('data_aprov', None))
-        if 'data_com' in st.session_state:
-            st.session_state.data_com = formatar_data(linha_selecionada.get('data_com', None))
-        if 'data_pag' in st.session_state:
-            st.session_state.data_pag = formatar_data(linha_selecionada.get('data_pag', None))
-        if 'valor_bruto' in linha_selecionada:
-            linha_selecionada['valor_bruto'] = float(linha_selecionada.get('valor_bruto'))
-        if 'valor_liq' in linha_selecionada:
-            linha_selecionada['valor_liq'] = float(linha_selecionada.get('valor_liq'))
+with layout_form_dividendo:
+    if 'data_aprov' in st.session_state:
+        st.session_state.data_aprov = formatar_data(linha_selecionada.get('data_aprov', None))
+    if 'data_com' in st.session_state:
+        st.session_state.data_com = formatar_data(linha_selecionada.get('data_com', None))
+    if 'data_pag' in st.session_state:
+        st.session_state.data_pag = formatar_data(linha_selecionada.get('data_pag', None))
+    if 'valor_bruto' in linha_selecionada:
+        linha_selecionada['valor_bruto'] = float(linha_selecionada.get('valor_bruto'))
+    if 'valor_liq' in linha_selecionada:
+        linha_selecionada['valor_liq'] = float(linha_selecionada.get('valor_liq'))
 
-        form_dividendo(linha_selecionada)
+    form_dividendo(linha_selecionada)
 

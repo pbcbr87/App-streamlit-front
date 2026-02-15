@@ -244,6 +244,23 @@ if 'dividendos_usuarios_dict' not in st.session_state:
 c1_t, _, c2_t = st.columns([6,4,2])
 c1_t.title("💰 Dividendos Cadastrados")
 moeda = c2_t.radio('Moeda dos valores', ['BRL', 'USD'], key='moeda_valores', horizontal=True, on_change=lambda: st.session_state['dividendos_usuarios_dict'].update({}))
+
+colunas = ['id', 'fk_usuario', 'fk_dividendo', 'fk_evento_usuario', 'fk_ativo', 'tipo', 
+            'valor_bruto_brl','imposto_brl', 'valor_liq_usd', 'valor_bruto_usd','imposto_usd', 'valor_liq_brl',
+            'data_aprov', 'data_com', 'data_pag', 'data_insert', 'modo_insert', 'aceito']
+if moeda == 'BRL':
+    colunas_view = ['aceito', 'fk_ativo', 'tipo', 'valor_bruto_brl','imposto_brl', 'valor_liq_brl', 'data_aprov', 'data_com', 'data_pag', 'data_insert', 'modo_insert']
+    valor_bruto_col = 'valor_bruto_brl'
+    valor_liq_col = 'valor_liq_brl'
+    imposto_col = 'imposto_brl'
+    moeda_simbolo = 'R$'
+else:
+    colunas_view = ['aceito', 'fk_ativo', 'tipo', 'valor_bruto_usd','imposto_usd', 'valor_liq_usd', 'data_aprov', 'data_com', 'data_pag', 'data_insert', 'modo_insert']
+    valor_bruto_col = 'valor_bruto_usd'
+    valor_liq_col = 'valor_liq_usd'
+    imposto_col = 'imposto_usd'
+    moeda_simbolo = 'US$'
+
 layout_form_dividendo = st.container(border=True)
 c1, c2, c3, c4, c5 = layout_form_dividendo.columns(5)  
 
@@ -253,7 +270,6 @@ if c1.button("➕ Inserir Dividendo", width="stretch"):
 if c5.button("📥 Inserir tabela", width="stretch"):
     carregar_tabela()
 
-
 linha_selecionada = {}
 if 'dividendos_usuarios_api' not in st.session_state or not st.session_state.dividendos_usuarios_api:
     st.info("💡 Nenhum Dividendos Encontrado no Banco de dados.")
@@ -261,22 +277,6 @@ else:
     #------------------------------------------------------------------
     # Tabela de Dividendos Cadastrados
     #------------------------------------------------------------------
-    colunas = ['id', 'fk_usuario', 'fk_dividendo', 'fk_evento_usuario', 'fk_ativo', 'tipo', 
-               'valor_bruto_brl','imposto_brl', 'valor_liq_usd', 'valor_bruto_usd','imposto_usd', 'valor_liq_brl',
-               'data_aprov', 'data_com', 'data_pag', 'data_insert', 'modo_insert', 'aceito']
-    if moeda == 'BRL':
-        colunas_view = ['aceito', 'fk_ativo', 'tipo', 'valor_bruto_brl','imposto_brl', 'valor_liq_brl', 'data_aprov', 'data_com', 'data_pag', 'data_insert', 'modo_insert']
-        valor_bruto_col = 'valor_bruto_brl'
-        valor_liq_col = 'valor_liq_brl'
-        imposto_col = 'imposto_brl'
-        moeda_simbolo = 'R$'
-    else:
-        colunas_view = ['aceito', 'fk_ativo', 'tipo', 'valor_bruto_usd','imposto_usd', 'valor_liq_usd', 'data_aprov', 'data_com', 'data_pag', 'data_insert', 'modo_insert']
-        valor_bruto_col = 'valor_bruto_usd'
-        valor_liq_col = 'valor_liq_usd'
-        imposto_col = 'imposto_usd'
-        moeda_simbolo = 'US$'
-
     df = pd.DataFrame(st.session_state.dividendos_usuarios_api).sort_values(by='data_aprov', ascending=False)
     df = filtro(df)
     st.write("Selecione uma linha para editar ou visualizar detalhes:")
@@ -327,19 +327,19 @@ else:
     else:
         st.info("💡 Clique em uma linha da tabela acima para habilitar as ações.")
 
-    with layout_form_dividendo:
-        if 'data_aprov' in st.session_state:
-            st.session_state.data_aprov = formatar_data(linha_selecionada.get('data_aprov', None))
-        if 'data_com' in st.session_state:
-            st.session_state.data_com = formatar_data(linha_selecionada.get('data_com', None))
-        if 'data_pag' in st.session_state:
-            st.session_state.data_pag = formatar_data(linha_selecionada.get('data_pag', None))
-        if valor_bruto_col in linha_selecionada:
-            linha_selecionada[valor_bruto_col] = "{:,.2f}".format(float(linha_selecionada.get(valor_bruto_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
-        if imposto_col in linha_selecionada:
-            linha_selecionada[imposto_col] = "{:,.2f}".format(float(linha_selecionada.get(imposto_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
-        # if valor_liq_col in linha_selecionada:
-        #     linha_selecionada[valor_liq_col] =  "{:,.2f}".format(float(linha_selecionada.get(valor_liq_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
+with layout_form_dividendo:
+    if 'data_aprov' in st.session_state:
+        st.session_state.data_aprov = formatar_data(linha_selecionada.get('data_aprov', None))
+    if 'data_com' in st.session_state:
+        st.session_state.data_com = formatar_data(linha_selecionada.get('data_com', None))
+    if 'data_pag' in st.session_state:
+        st.session_state.data_pag = formatar_data(linha_selecionada.get('data_pag', None))
+    if valor_bruto_col in linha_selecionada:
+        linha_selecionada[valor_bruto_col] = "{:,.2f}".format(float(linha_selecionada.get(valor_bruto_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
+    if imposto_col in linha_selecionada:
+        linha_selecionada[imposto_col] = "{:,.2f}".format(float(linha_selecionada.get(imposto_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
+    # if valor_liq_col in linha_selecionada:
+    #     linha_selecionada[valor_liq_col] =  "{:,.2f}".format(float(linha_selecionada.get(valor_liq_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
 
-        form_dividendo(linha_selecionada)
+    form_dividendo(linha_selecionada)
 
