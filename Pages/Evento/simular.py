@@ -89,7 +89,7 @@ def api_request_simular(evento, operacao_param, posicao):
     }
     
     try:
-        resp = requests.get(f'{API_URL}eventos/simular_evento/', params=params, headers=headers)
+        resp = requests.get(f'{API_URL}eventos/simular_evento', params=params, headers=headers)
         
         if resp.status_code == 200:
             return resp.json()

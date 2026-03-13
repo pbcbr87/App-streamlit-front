@@ -42,7 +42,7 @@ else:
     visao = col1_2.selectbox("Agrupamento:", ("Mensal", "Anual")) 
 
 
-    colunas = ['id', 'fk_usuario', 'fk_dividendo', 'fk_evento_usuario', 'fk_ativo', 'tipo',
+    colunas = ['id', 'fk_usuario', 'fk_dividendo', 'fk_evento_usuario', 'fk_ativo', 'tipo', 'categoria',
                'valor_bruto_brl','imposto_brl', 'valor_liq_usd', 'valor_bruto_usd','imposto_usd', 'valor_liq_brl',
                'data_aprov', 'data_com', 'data_pag', 'data_insert', 'modo_insert', 'aceito']
     if moeda == 'BRL':        
@@ -77,7 +77,7 @@ else:
         st.warning("Selecione ao menos um ativo para visualizar o gráfico.")
         st.stop()
         
-    df_filtered = df_base[colunas_view][df_base['fk_ativo'].isin(tickers)].copy()
+    df_filtered = df_base[df_base['fk_ativo'].isin(tickers)].copy()
     
     if visao == "Anual":
         df_filtered['periodo'] = df_filtered[ref_date].dt.year
@@ -85,14 +85,16 @@ else:
         # Cria formato '2024-03' para ordenação correta
         df_filtered['periodo'] = df_filtered[ref_date].dt.to_period('M').astype(str)
 
-    df_grouped = df_filtered.groupby('periodo')[valor_liq_col].sum().reset_index()
     # --- EXIBIÇÃO ---
-    periodos = sorted(df_grouped['periodo'].tolist())
+    periodos = sorted(df_filtered['periodo'].tolist())
     periodo_sl_start , periodo_sl_end = st.select_slider('Periodo de Referência', options=periodos, value=(periodos[0], periodos[-1]))
     df_periodo = df_filtered[(df_filtered['periodo'] >= periodo_sl_start) & (df_filtered['periodo'] <= periodo_sl_end)]
     
-    df_grouped = df_grouped[(df_grouped['periodo'] >= periodo_sl_start) & (df_grouped['periodo'] <= periodo_sl_end)]
-
+    df_grouped = df_periodo.groupby(['periodo', 'categoria'])[valor_liq_col].sum().reset_index()
+    if visao == "Anual":
+        df_grouped['Mensal'] = (df_grouped[valor_liq_col] / 12).map('{:,.2f}'.format)
+    else:
+        df_grouped['Mensal'] = (df_grouped[valor_liq_col]).map('{:,.2f}'.format)
     resumo_ativo = df_periodo.groupby('fk_ativo')[valor_liq_col].sum()
     resumo_ativo = resumo_ativo.reset_index()
 
@@ -104,13 +106,25 @@ else:
             df_grouped, 
             x='periodo', 
             y=valor_liq_col,
+            color='categoria', 
+            barmode='stack',
+            text='Mensal',
             title=f"Dividendos Líquidos por Período ({ref_date_veiw})",
             labels={'periodo': 'Período', valor_liq_col: f'Valor Líquido ({moeda_simbolo})'},
             text_auto='.2f',
-            color_discrete_sequence=['#00CC96'],
             height=550
         )
-        fig.update_layout(separators=',.',  yaxis_tickformat=',.2f', xaxis_type='category') # Garante que anos/meses sejam tratados como nomes
+        fig.update_layout(separators=',.', 
+                          yaxis_tickformat=',.2f', 
+                          xaxis_type='category',
+                          # Move a legenda para baixo
+                          legend=dict(
+                                        orientation="h",
+                                        yanchor="bottom",
+                                        y=-0.3, 
+                                        xanchor="center",
+                                        x=0.5
+                                    ))
         
         st.plotly_chart(fig, width="stretch")
 
@@ -127,7 +141,7 @@ else:
 
     st.divider()
     st.subheader("Dados brutos selecionados")
-    st.dataframe(df_periodo.style.format({
+    st.dataframe(df_periodo[colunas_view].style.format({
                                           valor_bruto_col: f"{moeda_simbolo} "+"{:,.2f}",
                                           imposto_col: f"{moeda_simbolo} "+"{:,.2f}",
                                           valor_liq_col: f"{moeda_simbolo} "+"{:,.2f}",
