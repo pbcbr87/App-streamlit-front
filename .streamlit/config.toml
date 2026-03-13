@@ -1,0 +1,13 @@
+[server]
+# Desabilita o encadeamento de pacotes que pode causar erro em redes instáveis
+enableCORS = false
+enableXsrfProtection = false
+websocketCompression = false
+
+
+[browser]
+# Tenta manter a conexão mais estável
+gatherUsageStats = false
+
+[runner]
+fastReruns = false
