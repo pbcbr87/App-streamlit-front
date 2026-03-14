@@ -46,7 +46,7 @@ def get_carteira_data(token: str) -> list:
                     item[item_key] = Decimal(valor_limpo)
                 except Exception:
                     pass # Deixa como string se não for um número
-
+            
     return dict_resp
 
 def divisao_percentual_segura(row: pd.Series, coluna_numerador: str, coluna_denominador: str) -> Decimal:     
@@ -86,6 +86,11 @@ if not st.session_state['carteira_api_aporte']:
    st.stop()
 
 df_carteira = pd.DataFrame(st.session_state['carteira_api_aporte'])
+#Trocar None por valores validos.
+cols_numericas = df_carteira.select_dtypes(include=[np.number]).columns
+df_carteira[cols_numericas] = df_carteira[cols_numericas].fillna(0)
+cols_texto = df_carteira.select_dtypes(include=['object']).columns
+df_carteira[cols_texto] = df_carteira[cols_texto].fillna('')
 #-----------------------------------------------------------
 #Containers layout
 #-----------------------------------------------------------
