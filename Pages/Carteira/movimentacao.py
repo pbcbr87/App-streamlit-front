@@ -93,6 +93,7 @@ if not st.session_state['movimentacao_api']:
 
 df_movimentacao = pd.DataFrame(st.session_state['movimentacao_api'])
 df_movimentacao['tipo'] = np.where(df_movimentacao['tipo'].isna(), 'Ordem', df_movimentacao['tipo'])
+df_movimentacao['p_unit_brl'] = np.where(df_movimentacao['quant_'] != 0, df_movimentacao['preco_op_brl'] / df_movimentacao['quant_'], 0)
 colunas_brl = ['preco_op_brl', 'custo_acum_brl', 'lucro_brl', 'dolar_bc'] 
 colunas_usd = ['preco_op_usd', 'custo_acum_usd', 'lucro_usd']
 culunas_numero = ['quant_', 'quant_acum', 'quant_fracao']
@@ -102,7 +103,7 @@ formatos.update({col: '{:,.2f}' for col in culunas_numero})
 
 df_movimentacao = df_movimentacao[['tipo','seq', 'fk_ativo', 'data_op_com', 
                                     'quant_', 'quant_acum', 
-                                    'preco_op_brl', 'custo_acum_brl', 'lucro_brl',
+                                    'preco_op_brl', 'custo_acum_brl', 'lucro_brl', 'p_unit_brl'
                                     'preco_op_usd', 'custo_acum_usd', 'lucro_usd',
                                     'quant_fracao', 'moeda','dolar_bc']].style.format(formatos)
 st.dataframe(df_movimentacao, hide_index=True, width='content', height=700)
