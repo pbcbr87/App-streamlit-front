@@ -142,7 +142,7 @@ def carregar_tabela():
     if uploaded_file  is not None:        
         dataframe = pd.read_excel(uploaded_file)
         
-        titulo_padrao = ['fk_ativo', 'tipo', 'valor_bruto', 'valor_liq', 'data_aprov', 'data_com', 'data_pag']
+        titulo_padrao = ['fk_ativo', 'tipo', 'valor_bruto', 'valor_liq', 'data_aprov', 'data_com', 'data_pag', 'ano_calendario_ir']
         titulo = dataframe.columns.tolist()
 
         if not titulo_padrao == titulo:
