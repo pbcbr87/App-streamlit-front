@@ -146,7 +146,7 @@ def carregar_tabela():
         titulo = dataframe.columns.tolist()
 
         if not titulo_padrao == titulo:
-            st.warning('Colunas fora do padrão')
+            st.warning(f'Colunas fora do padrão {titulo_padrao}, suas colunas: {titulo}')
         else:
             with st.expander('Exibir Dados input'):
                 st.dataframe(dataframe, width='content')

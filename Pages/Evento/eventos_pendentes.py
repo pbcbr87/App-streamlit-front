@@ -89,6 +89,17 @@ def formulario_edit(linha_selecionada):
         # Operação geralmente é um JSON, exibimos como texto para edição
         operacao = st.text_area("Operação JSON", value=str(dados_evento["operacao"] or "[]"))
 
+def excluir(id):
+    resp = requests.delete(f'{API_URL}eventos_pendentes/delete/{id}', headers={'Authorization':f'Bearer {st.session_state.token}'})
+    try:
+        resposta_json = resp.json()
+    except:
+        st.toast(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
+        # --- Tratamento de Sucesso (200 OK) ---
+
+    if resp.status_code != 200:
+        st.toast(f"⚠️ Erro na API. Status {resp.status_code}: {resp.text}")
+
 def set_status(status, id):
     dados = {
         'status': status
@@ -167,6 +178,12 @@ if selecao:
             set_status("PENDENTE", linha_selecionada['id'])
             st.session_state.lista_eventos = None
             st.rerun()
+
+        if st.button("🗑️ Excluír", width="stretch"):
+            excluir(linha_selecionada['id'])
+            st.session_state.lista_eventos = None
+            st.rerun()
+
     st.header("Evento existente")    
     carregar_eventos(linha_selecionada['fk_ativo'])
     if st.session_state['evento_api']:
