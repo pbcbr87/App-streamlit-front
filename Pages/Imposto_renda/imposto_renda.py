@@ -67,8 +67,8 @@ if btn_carregar:
     with st.spinner("Buscando dados na API..."):
         user_id = st.session_state.get("id", 0)
         
-        bens_raw = safe_get_list(f"{API_URL}bens_direito/{user_id}", {"ano": ano_calendario})
-        divs_raw = safe_get_list(f"{API_URL}ir_dividendos/{user_id}", {"ano": ano_calendario})
+        bens_raw = safe_get_list(f"{API_URL}ir/bens_direito/{user_id}", {"ano": ano_calendario})
+        divs_raw = safe_get_list(f"{API_URL}ir/ir_dividendos/{user_id}", {"ano": ano_calendario})
         
         st.session_state.df_bens = pd.DataFrame(bens_raw)
         st.session_state.df_divs = pd.DataFrame(divs_raw)
