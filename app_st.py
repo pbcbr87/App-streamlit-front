@@ -201,6 +201,8 @@ def navegacao():
                     st.Page('Pages/Carteira/page_4.py', title='Aporte')
                     ]
     
+    imposto_renda_pages = [st.Page('Pages/Imposto_renda/imposto_renda.py', title='Imposto de Renda')]
+
     evento_usuario_pages = [st.Page('Pages/Evento_usuario/evento_cadastrados.py', title='Gerenciar Eventos'),
                             st.Page('Pages/Evento_usuario/insert_evento_coorp.py', title='Inserir Evento Coorporativos')
                             ]
@@ -221,7 +223,7 @@ def navegacao():
 
     admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:')]
 
-    pages = {"Sua Carteira": cateira_pages, "Remunerações Coorporativas": dividendos_usuarios_pages, "Eventos Coorporativos": evento_usuario_pages, "Conta": conta_pages}
+    pages = {"Sua Carteira": cateira_pages, "Remunerações Coorporativas": dividendos_usuarios_pages, "Imposto de Renda": imposto_renda_pages, "Eventos Coorporativos": evento_usuario_pages, "Conta": conta_pages}
     # pages = {"Manutençao": [st.Page(maintenance_page_gif, title='Manutenção')]}
     if st.session_state.admin == True:
         pages["Admin"] = admin_pages
