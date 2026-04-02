@@ -159,8 +159,15 @@ def carregar_tabela():
     if uploaded_file  is not None:        
         dataframe = pd.read_excel(uploaded_file)
         
-        titulo_padrao = ['fk_ativo', 'tipo', 'valor_bruto', 'valor_liq', 'data_aprov', 'data_com', 'data_pag']
         titulo = dataframe.columns.tolist()
+        if 'valor_bruto_brl' in titulo:
+            titulo_padrao = ['fk_ativo', 'tipo', 
+                    'valor_bruto_brl', 'imposto_brl',
+                    'data_aprov', 'data_com', 'data_pag', 'ano_calendario_ir']
+        else:
+            titulo_padrao = ['fk_ativo', 'tipo', 
+                    'valor_bruto_usd', 'imposto_usd',
+                    'data_aprov', 'data_com', 'data_pag', 'ano_calendario_ir']
 
         if not titulo_padrao == titulo:
             st.warning('Colunas fora do padrão')
@@ -191,7 +198,7 @@ def form_dividendo(dividendo_dict):
     st.session_state['dividendos_usuarios_dict'] = {}
     st.session_state['dividendos_usuarios_dict']['id'] = dividendo_dict.get('id', None)
 
-    form_1, form_2, form_3, form_4, form_5, form_6, form_7 = st.columns(7)
+    form_1, form_2, form_3, form_4, form_5, form_6, form_7, form_8 = st.columns(8)
     st.session_state['dividendos_usuarios_dict']['fk_ativo'] = form_1.text_input("Ativo Categoria", value=dividendo_dict.get('fk_ativo', "")).upper()
     # Validação do index do selectbox
     tipo_list = ['DIVIDENDO', 'JCP', 'REND. TRIBUTADO', 'RENDIMENTO', 'RENDIMENTO EXT', 'AMORTIZAÇÃO','AGENCY PROC. FEE']
@@ -233,6 +240,10 @@ def form_dividendo(dividendo_dict):
     data_pag = form_7.date_input("data_pag", key="data_pag", min_value=date(2000, 1, 1), value=None)
     st.session_state['dividendos_usuarios_dict']['data_pag'] = data_pag.isoformat() if data_pag else None
 
+    with form_8:
+        st.session_state['dividendos_usuarios_dict']['ano_calendario_ir'] = st_number_input_custom(f"Ano Calendário IR", 
+                                                                                               value=dividendo_dict.get('ano_calendario_ir', None), placeholder="0")  
+
 #--------------------------------------------------------
 if 'dividendos_usuarios_api' not in st.session_state or st.session_state['dividendos_usuarios_api'] is None:
    carregar_dividendos()
@@ -247,15 +258,15 @@ moeda = c2_t.radio('Moeda dos valores', ['BRL', 'USD'], key='moeda_valores', hor
 
 colunas = ['id', 'fk_usuario', 'fk_dividendo', 'fk_evento_usuario', 'fk_ativo', 'tipo', 
             'valor_bruto_brl','imposto_brl', 'valor_liq_usd', 'valor_bruto_usd','imposto_usd', 'valor_liq_brl',
-            'data_aprov', 'data_com', 'data_pag', 'data_insert', 'modo_insert', 'aceito']
+            'data_aprov', 'data_com', 'data_pag','ano_calendario_ir', 'data_insert', 'modo_insert', 'aceito']
 if moeda == 'BRL':
-    colunas_view = ['aceito', 'fk_ativo', 'tipo', 'valor_bruto_brl','imposto_brl', 'valor_liq_brl', 'data_aprov', 'data_com', 'data_pag', 'data_insert', 'modo_insert']
+    colunas_view = ['aceito', 'fk_ativo', 'tipo', 'valor_bruto_brl','imposto_brl', 'valor_liq_brl', 'data_aprov', 'data_com', 'data_pag', 'ano_calendario_ir', 'data_insert', 'modo_insert']
     valor_bruto_col = 'valor_bruto_brl'
     valor_liq_col = 'valor_liq_brl'
     imposto_col = 'imposto_brl'
     moeda_simbolo = 'R$'
 else:
-    colunas_view = ['aceito', 'fk_ativo', 'tipo', 'valor_bruto_usd','imposto_usd', 'valor_liq_usd', 'data_aprov', 'data_com', 'data_pag', 'data_insert', 'modo_insert']
+    colunas_view = ['aceito', 'fk_ativo', 'tipo', 'valor_bruto_usd','imposto_usd', 'valor_liq_usd', 'data_aprov', 'data_com', 'data_pag', 'ano_calendario_ir', 'data_insert', 'modo_insert']
     valor_bruto_col = 'valor_bruto_usd'
     valor_liq_col = 'valor_liq_usd'
     imposto_col = 'imposto_usd'
@@ -296,7 +307,8 @@ else:
                                     valor_liq_col: st.column_config.NumberColumn(f"Valor Liquido {moeda_simbolo}", help='Moeda do ativo', format="%.2f"),
                                     'data_aprov': st.column_config.DateColumn("Data de Aprovação"),
                                     'data_com': st.column_config.DateColumn("Data Com"),
-                                    'data_pag': st.column_config.DateColumn("Data Pagamento")
+                                    'data_pag': st.column_config.DateColumn("Data Pagamento"),
+                                    'ano_calendario_ir': st.column_config.NumberColumn("Ano Calendário IR", help='Ano calendário para cálculo de imposto', format="%.0f")
                                     }
                                 )
 
