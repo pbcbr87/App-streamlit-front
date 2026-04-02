@@ -13,6 +13,31 @@ from settings import API_URL
 # API_URL = 'python_api.railway.internal'
 #------------------------------------------------
 
+def divisao_percentual_segura(row: pd.Series, coluna_numerador: str, coluna_denominador: str) -> Decimal:     
+    # 1. Tenta extrair os valores (eles devem ser objetos Decimal)
+    numerador = row.get(coluna_numerador)
+    denominador = row.get(coluna_denominador)
+    
+    # Se algum valor estiver faltando ou for None, retorna 0
+    if numerador is None or denominador is None:
+        return Decimal('0')
+    # 2. Verifica e trata a divisão por zero
+    try:
+        if denominador == Decimal('0'):
+            return Decimal('0')
+    except Exception:
+        # Se o denominador não for um Decimal válido (ex: 'abc'), tratamos como 0
+        return Decimal('0')
+    # 3. Tenta a divisão real
+    try:
+        return numerador / denominador
+    except DivisionByZero:
+        # Linha de defesa contra o erro Decimal.
+        return Decimal('0')
+    except Exception:
+        # Captura qualquer outro erro de operação, como tipos misturados
+        return Decimal('0')
+
 @st.dialog("Escolha qual ativo")
 def proc_ativo():
     st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
@@ -93,7 +118,8 @@ if not st.session_state['movimentacao_api']:
 
 df_movimentacao = pd.DataFrame(st.session_state['movimentacao_api'])
 df_movimentacao['tipo'] = np.where(df_movimentacao['tipo'].isna(), 'Ordem', df_movimentacao['tipo'])
-df_movimentacao['p_unit_brl'] = np.where(df_movimentacao['quant_'] != 0, df_movimentacao['preco_op_brl'] / df_movimentacao['quant_'], 0)
+df_movimentacao['p_unit_brl'] = df_movimentacao.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='preco_op_brl', coluna_denominador='quant_'), axis=1)
+
 colunas_brl = ['preco_op_brl', 'custo_acum_brl', 'lucro_brl', 'dolar_bc', 'p_unit_brl'] 
 colunas_usd = ['preco_op_usd', 'custo_acum_usd', 'lucro_usd']
 culunas_numero = ['quant_', 'quant_acum', 'quant_fracao']
