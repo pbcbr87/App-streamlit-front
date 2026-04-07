@@ -128,7 +128,7 @@ with st.form("form_evento"):
         
     operacao_raw = st.text_area("Estrutura da Operação", value=default_op, height=100)
 
-    submitted = st.form_submit_button("💾 Salvar Alterações", type="primary", use_container_width=True)
+    submitted = st.form_submit_button("💾 Salvar Alterações", type="primary", width="stretch")
 
 # --- LOGICA DE ENVIO ---
 if submitted:

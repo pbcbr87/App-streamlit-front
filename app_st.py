@@ -2,6 +2,9 @@ import streamlit as st
 import requests
 from decimal import Decimal
 from settings import API_URL, MANUTENCAO
+from streamlit_extras.cookie_manager import cookie_manager
+
+
 
 #deixar visivel as session:
 # st.write(st.session_state)
@@ -9,11 +12,37 @@ from settings import API_URL, MANUTENCAO
 #------------------------------------------------
 # API_URL = 'https://pythonapi-production-6268.up.railway.app/'
 # API_URL = 'python_api.railway.internal'
+# ------------------------------------------------
+# 1. FUNÇÃO CENTRALIZADA DE REQUESTS (BOA PRÁTICA)
+# ------------------------------------------------
+def api_request(method, endpoint, data=None, params=None, timeout=10):
+    headers = {}
+    if 'token' in st.session_state and st.session_state.token:
+        headers['Authorization'] = f"Bearer {st.session_state.token}"
+    
+    url = f"{API_URL}{endpoint}"
+    
+    try:
+        if method == 'GET':
+            return requests.get(url, headers=headers, params=params, timeout=timeout)
+        return requests.post(url, headers=headers, data=data, timeout=timeout)
+    except Exception as e:
+        # Retorna o erro para ser identificado no st.error
+        return e
+    
+# ------------------------------------------------
+# 2. CACHE PARA DADOS DO USUÁRIO (PERFORMANCE)
+# ------------------------------------------------
+@st.cache_data(ttl=600)  # Mantém os dados por 10 min, evita requests repetidos ao navegar
+def get_user_cached(token: str):
+    resp = api_request('GET', 'usuarios/')
+    return resp.json() if resp and resp.status_code == 200 else None
+
 #------------------------------------------------
 #Congiguraçãoes iniciais
 #------------------------------------------------
 st.set_page_config(
-    page_title="Cartiera",
+    page_title="LegacYnsvest - Gerenciamento de Investimentos",
     page_icon=":material/finance_mode:",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -40,22 +69,46 @@ def ajustar_CSS_main():
         unsafe_allow_html=True,
     )
 
-#função para pegar o token de autenticação
-def get_user(token: str):
-    usuario = requests.get(f'{API_URL}usuarios/', headers={'Authorization':f'Bearer {token}'}).json()
-    return usuario
-
-
 ajustar_CSS_main()
 #------------------------------------------------
 #Delcarar sessions
 #------------------------------------------------
-if 'logado' not in st.session_state or st.session_state.logado == False:    
-    st.session_state.logado = False
-    st.session_state.user = None
-    st.session_state.id = None
-    st.session_state.token = None
-    st.session_state.nome = None
+manager = cookie_manager(key="LY_CM_v1")
+
+if not manager.ready():
+    st.info("Aguarde um instante enquanto recuperamos suas preferências.")
+    st.stop()
+
+
+if 'logado' not in st.session_state or st.session_state.logado == False:
+    # Não travamos a tela se a API demorar a subir
+    res_ping = api_request('GET', '', timeout=0.1)
+    if isinstance(res_ping, requests.exceptions.Timeout):
+        st.toast("⏳ O servidor está acordando... O login pode demorar.", icon="😴")
+    
+    # Busca o token no cookie
+    token_do_cookie = manager.get("LY_SID")
+
+    if token_do_cookie:
+        user_data = get_user_cached(token_do_cookie)
+        if user_data:
+            st.session_state.logado = True
+            st.session_state.token = token_do_cookie
+            st.session_state.nome = user_data['nome'].upper()
+            st.session_state.user = user_data['login'].upper()
+            st.session_state.email = user_data['email'].upper()
+            st.session_state.admin = user_data['admin']
+            st.session_state.id = user_data['id']
+        else:
+            # Se o token existir mas a API não retornar o user (token expirado)
+            st.session_state.logado = False
+            manager.delete("LY_SID") # Limpa o cookie inválido
+    else:
+        st.session_state.logado = False
+        st.session_state.user = None
+        st.session_state.id = None
+        st.session_state.token = None
+        st.session_state.nome = None
 
 if "user" not in st.session_state:    
     st.session_state.user = None
@@ -125,51 +178,54 @@ def login():
                 st.warning('Usuário ou senha vazio')
                 return
             
-            try:
-                resp = requests.post(f'{API_URL}auth/token', {'username': user_input, 'password': senha_input})
-            except Exception as e:
-                print("Erro: ", e)
-                st.warning(f'Conexão com backend, Detalhes: {e}')            
-                st.session_state.logado = False
-                return
-
-            if resp.status_code == 200:         
-                resp_token = resp.json()
-                token = resp_token.get('access_token', None)
-                if not token:
-                    st.error("API não enviou o Token de acesso.")
+            with st.status("Autenticando...", expanded=False) as status:
+                resp = api_request('POST', 'auth/token', data={'username': user_input, 'password': senha_input})
+                # print(f"DEBUG RESP TYPE: {type(resp)}")
+                # print(f"DEBUG RESP CONTENT: {resp}")
+                if isinstance(resp, Exception):
+                    status.update(label="Falha na conexão", state="error")
+                    st.error(f"❌ Erro de Conexão: Não foi possível alcançar o servidor. (Detalhe: {type(resp).__name__})")
+                    st.session_state.logado = False
                     return
-                
-                st.session_state.logado = True
-                st.session_state.token = token
-                
-                user_data =  get_user(st.session_state.token)
-                
-                st.session_state.nome = user_data['nome'].upper()
-                st.session_state.user = user_data['login'].upper()
-                st.session_state.email = user_data['email'].upper()
-                st.session_state.admin = user_data['admin']
-                st.session_state.id = user_data['id']
-                
-                st.rerun()
-                return
-            elif resp.status_code in [400, 401]:
-                try:
+
+                # --- TRATATIVA DE RESPOSTA DA API ---
+                if resp.status_code == 200:  
                     resp_token = resp.json()
-                    detail = resp_token.get('detail', 'Erro de autenticação desconhecido.')
-                    if isinstance(detail, str):
-                        st.error(f"Falha ao logar: {detail}")
-                    else:
-                        st.error("Falha ao logar. Verifique suas credenciais.")
-                except Exception:
-                    st.error("Resposta da API inválida ou credenciais incorretas.")                    
-            else:
-                # OUTROS ERROS DA API (5xx)
-                st.error(f"Erro inesperado da API: Status {resp.status_code}")
+                    token = resp_token.get('access_token', None)
+                    if not token:
+                        st.error("API não enviou o Token de acesso.")
+                        return
+                    manager.set(
+                                "LY_SID", 
+                                token, 
+                                max_age=864000,  # 10 dias
+                                samesite="lax"
+                            )
+                    status.update(label="Sucesso!", state="complete")
+                    
+                    st.session_state.logado = True
+                    st.session_state.token = token
+                    user_data = get_user_cached(st.session_state.token)
+                    st.session_state.nome = user_data['nome'].upper()
+                    st.session_state.user = user_data['login'].upper()
+                    st.session_state.email = user_data['email'].upper()
+                    st.session_state.admin = user_data['admin']
+                    st.session_state.id = user_data['id']
+                    
+                    st.rerun()
+                    return
+                elif resp.status_code in [400, 401]:
+                    status.update(label="Credenciais inválidas", state="error")
+                    st.error("🚫 Usuário ou senha incorretos.")                  
+                else:
+                    status.update(label="Erro no servidor", state="error")
+                    st.error(f"⚠️ Erro inesperado no servidor (Status: {resp.status_code})")
 
 #Pagina de logut 
 def logout():
+    manager.delete("LY_SID")
     st.session_state.clear()
+    st.cache_data.clear()
     st.rerun()
 #------------------------------------------------
 #Extrutura de navegação sem login
@@ -201,7 +257,9 @@ def navegacao():
                     st.Page('Pages/Carteira/page_4.py', title='Aporte')
                     ]
     
-    imposto_renda_pages = [st.Page('Pages/Imposto_renda/imposto_renda.py', title='Imposto de Renda')]
+    imposto_renda_pages = [st.Page('Pages/Imposto_renda/imposto_renda.py', title='Imposto de Renda'),
+                            st.Page('Pages/Imposto_renda/resumo_vendas_mensal.py', title='Resumo Vendas Mensal')
+                            ]
 
     evento_usuario_pages = [st.Page('Pages/Evento_usuario/evento_cadastrados.py', title='Gerenciar Eventos'),
                             st.Page('Pages/Evento_usuario/insert_evento_coorp.py', title='Inserir Evento Coorporativos')
@@ -252,12 +310,19 @@ def navegacao():
             if 'dividendos_usuarios_api' in st.session_state:
                 del st.session_state['dividendos_usuarios_api']
 
-            with st.spinner("Aguardando...", show_time=True):
-                resp = requests.get(f'{API_URL}comandos_api/calcular/{st.session_state.get("id", 0)}', headers={'Authorization':f'Bearer {st.session_state.token}'})
-                if resp.status_code == 200:
-                    st.success("Carteira atualizada com sucesso!")
+            with st.spinner("Calculando...", show_time=True):
+                resp = api_request('GET', f'comandos_api/calcular/{st.session_state.id}', timeout=1000)
+                
+                # Verificação de erro de    REDE ou TIMEOUT
+                if isinstance(resp, Exception):
+                    st.error(f"Erro de conexão: {resp}") # Aqui você vê o erro real!
+                
+                # Verificação de erro da API (ex: 500 ou 404)
+                elif resp.status_code != 200:
+                    st.error(f"Erro na API ({resp.status_code}): {resp.text}")
+                
                 else:
-                    st.error(f"Erro ao atualizar carteira: Status {resp.status_code}")
+                    st.success("Carteira atualizada!")
     return pg
 
 #------------------------------------------------
