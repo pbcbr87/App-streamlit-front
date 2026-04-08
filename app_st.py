@@ -3,7 +3,7 @@ import requests
 from decimal import Decimal
 from settings import API_URL, MANUTENCAO
 from streamlit_extras.cookie_manager import cookie_manager
-
+import time
 
 
 #deixar visivel as session:
@@ -33,9 +33,12 @@ def api_request(method, endpoint, data=None, params=None, timeout=10):
 # ------------------------------------------------
 # 2. CACHE PARA DADOS DO USUÁRIO (PERFORMANCE)
 # ------------------------------------------------
-@st.cache_data(ttl=600)  # Mantém os dados por 10 min, evita requests repetidos ao navegar
+@st.cache_data(ttl=600, show_spinner="Logging in...")   # Mantém os dados por 10 min, evita requests repetidos ao navegar
 def get_user_cached(token: str):
     resp = api_request('GET', 'usuarios/')
+    if isinstance(resp, Exception):        
+        st.error(f"❌ Erro de Conexão: {resp}")
+        return None
     return resp.json() if resp and resp.status_code == 200 else None
 
 #------------------------------------------------
@@ -47,7 +50,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'About': "# Aplicativo para gerenciamento de investimando \ncriado por Patrick Cangussu"
+        'About': "# Aplicativo para gerenciamento de investimentos \ncriado por Patrick Cangussu"
     }
 )
 
@@ -73,42 +76,39 @@ ajustar_CSS_main()
 #------------------------------------------------
 #Delcarar sessions
 #------------------------------------------------
-manager = cookie_manager(key="LY_CM_v1")
-
+manager = cookie_manager(key="LY_CM")
 if not manager.ready():
-    st.info("Aguarde um instante enquanto recuperamos suas preferências.")
+    st.info("Preparando ambiente de acesso...")
     st.stop()
-
 
 if 'logado' not in st.session_state or st.session_state.logado == False:
     # Não travamos a tela se a API demorar a subir
-    res_ping = api_request('GET', '', timeout=0.1)
-    if isinstance(res_ping, requests.exceptions.Timeout):
-        st.toast("⏳ O servidor está acordando... O login pode demorar.", icon="😴")
+    res_ping = api_request('GET', '', timeout=3) 
     
     # Busca o token no cookie
     token_do_cookie = manager.get("LY_SID")
-
     if token_do_cookie:
-        user_data = get_user_cached(token_do_cookie)
+        print('Dentro do se deslogado __Passoui aqui')
+        st.session_state.token = token_do_cookie
+        user_data = get_user_cached(st.session_state.token)
         if user_data:
             st.session_state.logado = True
-            st.session_state.token = token_do_cookie
             st.session_state.nome = user_data['nome'].upper()
             st.session_state.user = user_data['login'].upper()
             st.session_state.email = user_data['email'].upper()
             st.session_state.admin = user_data['admin']
             st.session_state.id = user_data['id']
         else:
-            # Se o token existir mas a API não retornar o user (token expirado)
             st.session_state.logado = False
-            manager.delete("LY_SID") # Limpa o cookie inválido
+            # manager.delete("LY_SID") # Limpa o cookie inválido
     else:
+        print('reste todu mundo')
         st.session_state.logado = False
         st.session_state.user = None
         st.session_state.id = None
         st.session_state.token = None
         st.session_state.nome = None
+        st.session_state.email = None
 
 if "user" not in st.session_state:    
     st.session_state.user = None
@@ -195,6 +195,7 @@ def login():
                     if not token:
                         st.error("API não enviou o Token de acesso.")
                         return
+                    # Se valido armazena o token no cookie por 10 dias (864000 segundos)
                     manager.set(
                                 "LY_SID", 
                                 token, 
@@ -224,9 +225,19 @@ def login():
 #Pagina de logut 
 def logout():
     manager.delete("LY_SID")
-    st.session_state.clear()
     st.cache_data.clear()
+    st.session_state.token = None
+    st.session_state.logado = False
+    st.session_state.user = None
+    st.session_state.id = None
+    st.session_state.token = None
+    st.session_state.nome = None
+    st.session_state.email = None
+    with st.spinner("Logging out"):
+        time.sleep(3)
+    st.title('Até breve')
     st.rerun()
+
 #------------------------------------------------
 #Extrutura de navegação sem login
 #------------------------------------------------

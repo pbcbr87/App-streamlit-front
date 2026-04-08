@@ -1,9 +1,6 @@
 import streamlit as st
 
 
-def logout():
-    st.session_state.clear()
-
 st.title(f"👋 Bem-vindo(a), {st.session_state.nome}!")
 st.markdown("---") # Linha divisória para separar o cabeçalho
 
@@ -32,7 +29,4 @@ with btn_col1:
     # Assumindo que 'Pages/page_2.py' é a página principal da carteira
     if st.button('Ver Carteira', type="primary"): 
         st.switch_page("Pages/Carteira/page_2.py")
-        
-with btn_col2:
-    st.button('Sair', help="Sair do aplicativo", type="secondary", on_click=logout)
 

@@ -93,6 +93,7 @@ def enviar_tabela(dataframe, b3):
 
     else:
         st.error(f"⚠️ Erro HTTP inesperado: Status {resp.status_code}")
+    st.stop()
 
 # Enviar dados para o banco de dados
 @st.dialog("Enviando Dados", on_dismiss='rerun')
@@ -134,6 +135,7 @@ def envia_manual(ordem_manual):
                                             "data_operacao": st.column_config.DateColumn(format="DD.MM.YYYY")})
             else:
                 st.text(f"Detalhe de erro da API: {detail}")
+    st.stop()
 
 # Pegar lista de ativos
 def get_ativos():
@@ -160,7 +162,7 @@ def excluir_op():
             st.error(f'Erro ao enviar, Erro: {resp.jons()}')
     except:
             st.error(f'Erro ao excluir, operção : {lista_excluir}')
-
+    
 #Excluir todas as operações
 @st.dialog("Enviando Dados", on_dismiss='rerun')
 def excluir_tudo():
@@ -201,6 +203,7 @@ tab1, tab2, tab3, tab4 = st.tabs(["Operações", "Inserir via tabela", "Inserir 
 #     Lista de operações
 #-------------------------------------------------------------------------------------------------------------
 with tab1:
+    pass
     #Declarar Variáveis
     ordens = st.session_state.get('operacao_api', [])
     if not ordens:
@@ -254,6 +257,7 @@ with tab2:
 #     Inserir dados manual
 #-------------------------------------------------------------------------------------------------------------
 with tab3:
+    pass
     with st.container():
         
         if 'sl_cat' not in st.session_state:
@@ -301,6 +305,7 @@ with tab3:
 #     Excluir operações
 #-------------------------------------------------------------------------------------------------------------
 with tab4:
+    pass
     if ordens:  
         st.header("Selecione as operações a ser excluida")
         if 'sl_op_excluir' not in st.session_state:
