@@ -40,7 +40,7 @@ def divisao_percentual_segura(row: pd.Series, coluna_numerador: str, coluna_deno
 
 @st.dialog("Escolha qual ativo")
 def proc_ativo():
-    st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)
+    st.selectbox('Tipo:',['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR', 'SUBS'], key='sl_cat', on_change=get_ativos)
     st.text_input("Pesquisa ativo", placeholder="Pesquisa ativo", key='sl_ativo', on_change=get_ativos)
     ativo = st.pills('Ativo:', options=st.session_state['lista'], label_visibility='collapsed', selection_mode="single", on_change=get_ativos)
     if ativo:

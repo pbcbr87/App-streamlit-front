@@ -51,6 +51,22 @@ def safe_get_list(url, params):
         st.error(f"Erro ao conectar na API: {e}")
         return []
 
+# --- Funções de Formatação ---
+def fmt_brl(valor):
+    if valor is None: return "R$ 0,00"
+    return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+def fmt_usd(valor):
+    if valor is None: return "US$ 0,00"
+    return f"US$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+def fmt_qtd(valor):
+    if valor is None or valor == 0: return "0"
+    s = "{:,.10f}".format(valor).replace(",", "X").replace(".", ",").replace("X", ".")
+    if "," in s:
+        s = s.rstrip('0').rstrip(',')
+    return s
+
 if "input_irrf" not in st.session_state:
     st.session_state.input_irrf = "0,00"
 
@@ -199,12 +215,12 @@ if not df.empty:
         prej_fii = item.get('prejuizo_acumulado_fii', 0)
 
         dados_conciliacao = [
-            {"Descrição": "💰 Vendas Totais (RV)", "RV (15%)": f"R$ {vendas:,.2f}", "FII (20%)": "_"},
-            {"Descrição": "🟢 Lucro Isento (RV)", "RV (15%)": f"R$ {isento:,.2f}", "FII (20%)": "_"},
-            {"Descrição": "📈 Lucro Tributável", "RV (15%)": f"R$ {lucro_rv:,.2f}", "FII (20%)": f"R$ {lucro_fii:,.2f}"},
-            {"Descrição": "📉 Prejuízo Acumulado", "RV (15%)": f"R$ {prej_rv:,.2f}", "FII (20%)": f"R$ {prej_fii:,.2f}"},
-            {"Descrição": "⚖️ Base de Cálculo", "RV (15%)": f"R$ {(item.get('imposto_rv', 0)/0.15):,.2f}", "FII (20%)": f"R$ {(item.get('imposto_fii', 0)/0.2):,.2f}"},
-            {"Descrição": "🏛️ Imposto Devido", "RV (15%)": f"R$ {item.get('imposto_rv', 0):,.2f}", "FII (20%)": f"R$ {item.get('imposto_fii', 0):,.2f}"}
+            {"Descrição": "💰 Vendas Totais (RV)", "RV (15%)": fmt_brl(vendas), "FII (20%)": "_"},
+            {"Descrição": "🟢 Lucro Isento (RV)", "RV (15%)": fmt_brl(isento), "FII (20%)": "_"},
+            {"Descrição": "📈 Lucro Tributável", "RV (15%)": fmt_brl(lucro_rv), "FII (20%)": fmt_brl(lucro_fii)},
+            {"Descrição": "📉 Prejuízo Acumulado", "RV (15%)": fmt_brl(prej_rv), "FII (20%)": fmt_brl(prej_fii)},
+            {"Descrição": "⚖️ Base de Cálculo", "RV (15%)": fmt_brl(item.get('imposto_rv', 0)), "FII (20%)": fmt_brl((item.get('imposto_fii', 0)/0.2))},
+            {"Descrição": "🏛️ Imposto Devido", "RV (15%)": fmt_brl(item.get('imposto_rv', 0)), "FII (20%)": fmt_brl(item.get('imposto_fii', 0))}
         ]
         
         st.table(pd.DataFrame(dados_conciliacao).set_index("Descrição"))
@@ -281,7 +297,7 @@ if not df.empty:
         # Métrica Principal
         metirca.metric(
             "Prev. DARF", 
-            f"R$ {darf_exibicao:,.2f}", 
+            fmt_brl(darf_exibicao), 
             delta=None if darf_exibicao >= 10 else "Abaixo do Mín.",
             delta_color="off",
             help="Cálculo simulado para conferência antes do salvamento."
