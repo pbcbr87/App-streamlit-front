@@ -4,14 +4,12 @@ from decimal import Decimal
 from settings import API_URL, MANUTENCAO
 from streamlit_extras.cookie_manager import cookie_manager
 import time
+from datetime import datetime
 
 
-#deixar visivel as session:
-# st.write(st.session_state)
-# st.context.cookies
-#------------------------------------------------
-# API_URL = 'https://pythonapi-production-6268.up.railway.app/'
-# API_URL = 'python_api.railway.internal'
+# print("---------Inicio--------------")
+# print(f'st.state: Logado: {st.session_state.logado if "logado" in st.session_state else None}, cmd Delete cookie: {st.session_state.deleteCookie if "deleteCookie" in st.session_state else None}, Ativar cookie: {st.session_state.ative_cookie if "ative_cookie" in st.session_state else None} ')
+
 # ------------------------------------------------
 # 1. FUNÇÃO CENTRALIZADA DE REQUESTS (BOA PRÁTICA)
 # ------------------------------------------------
@@ -29,17 +27,26 @@ def api_request(method, endpoint, data=None, params=None, timeout=10):
     except Exception as e:
         # Retorna o erro para ser identificado no st.error
         return e
-    
-# ------------------------------------------------
-# 2. CACHE PARA DADOS DO USUÁRIO (PERFORMANCE)
-# ------------------------------------------------
-@st.cache_data(ttl=600, show_spinner="Logging in...")   # Mantém os dados por 10 min, evita requests repetidos ao navegar
-def get_user_cached(token: str):
+
+def get_user_cached():
     resp = api_request('GET', 'usuarios/')
     if isinstance(resp, Exception):        
         st.error(f"❌ Erro de Conexão: {resp}")
         return None
-    return resp.json() if resp and resp.status_code == 200 else None
+    return resp.json() if resp and resp.status_code == 200 else None 
+
+def reset_usuario():
+    """
+    Limpa todos os dados de sessão relacionados ao usuário,
+    garantindo que não sobrem vestígios de acessos anteriores.
+    """
+    st.session_state.logado = False    
+    keys_usuario = ['user', 'id', 'token', 'nome', 'email', 'admin']
+    
+    for key in keys_usuario:
+        st.session_state[key] = None
+    
+    st.cache_data.clear()
 
 #------------------------------------------------
 #Congiguraçãoes iniciais
@@ -72,25 +79,38 @@ def ajustar_CSS_main():
         unsafe_allow_html=True,
     )
 
-ajustar_CSS_main()
+try:
+    # O retorno não precisa ser armazenado se é só para "acordar"
+    api_request('GET', '', timeout=2) 
+except:
+    pass # Ignoramos erros aqui, o foco é apenas o estímulo inicial
+
 #------------------------------------------------
 #Delcarar sessions
 #------------------------------------------------
-manager = cookie_manager(key="LY_CM")
-if not manager.ready():
-    st.info("Preparando ambiente de acesso...")
-    st.stop()
+defaults = { "ative_cookie": True, "deleteCookie": False }
+for key, value in defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
 
-if 'logado' not in st.session_state or st.session_state.logado == False:
-    # Não travamos a tela se a API demorar a subir
-    res_ping = api_request('GET', '', timeout=3) 
-    
-    # Busca o token no cookie
+if st.session_state.ative_cookie == True:
+    manager = cookie_manager(key="LY_CM")
+    if not manager.ready():
+        st.info("Preparando ambiente de acesso...")
+        if st.session_state.deleteCookie != True:
+            st.stop()
+
+if st.session_state.deleteCookie == True:
+    manager.delete("LY_SID")
+    if manager.get("LY_SID"):
+        st.session_state.deleteCookie = False
+        st.rerun()
+
+if 'logado' not in st.session_state:
     token_do_cookie = manager.get("LY_SID")
     if token_do_cookie:
-        print('Dentro do se deslogado __Passoui aqui')
         st.session_state.token = token_do_cookie
-        user_data = get_user_cached(st.session_state.token)
+        user_data = get_user_cached()
         if user_data:
             st.session_state.logado = True
             st.session_state.nome = user_data['nome'].upper()
@@ -99,22 +119,16 @@ if 'logado' not in st.session_state or st.session_state.logado == False:
             st.session_state.admin = user_data['admin']
             st.session_state.id = user_data['id']
         else:
-            st.session_state.logado = False
-            # manager.delete("LY_SID") # Limpa o cookie inválido
+            reset_usuario()
     else:
-        print('reste todu mundo')
-        st.session_state.logado = False
-        st.session_state.user = None
-        st.session_state.id = None
-        st.session_state.token = None
-        st.session_state.nome = None
-        st.session_state.email = None
+        reset_usuario()
 
-if "user" not in st.session_state:    
-    st.session_state.user = None
-    st.session_state.id = None
-    st.session_state.token = None
-    st.session_state.nome = None
+if st.session_state.logado == False:
+    reset_usuario()
+
+if st.session_state.logado == True:
+    st.session_state.ative_cookie = False
+
 #------------------------------------------------
 # Funções para paiginas
 #------------------------------------------------
@@ -169,73 +183,77 @@ def maintenance_page_gif():
 #Pagina de login
 def login():
     with st.container(horizontal_alignment="center").form("login", width="content", enter_to_submit=True, clear_on_submit=True):
-        st.header("Log in")
-        user_input = st.text_input('User')
+        a, b = st.columns(2, vertical_alignment="center")
+        a.header("Log in")
+        b.image('imagens/login.jpg', width=200)
+        user_input = st.text_input('Usuário')
         senha_input = st.text_input('Senha', type='password')
 
-        if st.form_submit_button("Log in"):
+        if st.form_submit_button("Acessar Sistema", use_container_width=True):
             if not user_input or not senha_input:
-                st.warning('Usuário ou senha vazio')
+                st.warning('⚠️ Preencha usuário e senha.')
                 return
             
             with st.status("Autenticando...", expanded=False) as status:
                 resp = api_request('POST', 'auth/token', data={'username': user_input, 'password': senha_input})
-                # print(f"DEBUG RESP TYPE: {type(resp)}")
-                # print(f"DEBUG RESP CONTENT: {resp}")
+                
+                # 1. Tratamento de Erro de Conexão (Exception)
                 if isinstance(resp, Exception):
                     status.update(label="Falha na conexão", state="error")
-                    st.error(f"❌ Erro de Conexão: Não foi possível alcançar o servidor. (Detalhe: {type(resp).__name__})")
-                    st.session_state.logado = False
+                    st.error(f"❌ Servidor offline. (Detalhe: {type(resp).__name__})")
+                    reset_usuario()
                     return
 
-                # --- TRATATIVA DE RESPOSTA DA API ---
-                if resp.status_code == 200:  
-                    resp_token = resp.json()
-                    token = resp_token.get('access_token', None)
+                # 2. Sucesso (Status 200)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    token = data.get('access_token')
                     if not token:
-                        st.error("API não enviou o Token de acesso.")
+                        status.update(label="Erro na resposta", state="error")
+                        st.error("API não retornou um token válido.")
                         return
                     # Se valido armazena o token no cookie por 10 dias (864000 segundos)
-                    manager.set(
-                                "LY_SID", 
-                                token, 
-                                max_age=864000,  # 10 dias
-                                samesite="lax"
-                            )
+                    manager.set("LY_SID", token, max_age=864000, samesite="lax")
                     status.update(label="Sucesso!", state="complete")
                     
-                    st.session_state.logado = True
+                    # Carrega dados do usuário
                     st.session_state.token = token
-                    user_data = get_user_cached(st.session_state.token)
-                    st.session_state.nome = user_data['nome'].upper()
-                    st.session_state.user = user_data['login'].upper()
-                    st.session_state.email = user_data['email'].upper()
-                    st.session_state.admin = user_data['admin']
-                    st.session_state.id = user_data['id']
-                    
-                    st.rerun()
-                    return
+                    user_info = get_user_cached()
+                    if user_info:
+                        st.session_state.logado = True
+                        st.session_state.token = token
+                        st.session_state.nome = user_info['nome'].upper()
+                        st.session_state.user = user_info['login'].upper()
+                        st.session_state.email = user_info['email'].upper()
+                        st.session_state.admin = user_info['admin']
+                        st.session_state.id = user_info['id']
+                        
+                        status.update(label="Bem-vindo!", state="complete")
+                        st.rerun()
+                        return
+                    else:
+                        status.update(label="Erro de Perfil", state="error")
+                        st.error("❌ Erro ao carregar perfil do usuário.")
+
+                # 3. Erros de Credenciais (400, 401)
                 elif resp.status_code in [400, 401]:
-                    status.update(label="Credenciais inválidas", state="error")
-                    st.error("🚫 Usuário ou senha incorretos.")                  
+                    status.update(label="Acesso Negado", state="error")
+                    st.error("🚫 Usuário ou senha incorretos.")
+                
+                # 4. Outros Erros
                 else:
-                    status.update(label="Erro no servidor", state="error")
-                    st.error(f"⚠️ Erro inesperado no servidor (Status: {resp.status_code})")
+                    status.update(label="Erro Inesperado", state="error")
+                    st.error(f"⚠️ Servidor retornou erro {resp.status_code}")
 
 #Pagina de logut 
-def logout():
-    manager.delete("LY_SID")
-    st.cache_data.clear()
-    st.session_state.token = None
-    st.session_state.logado = False
-    st.session_state.user = None
-    st.session_state.id = None
-    st.session_state.token = None
-    st.session_state.nome = None
-    st.session_state.email = None
+def logout():       
+    st.session_state.deleteCookie = True
+    st.session_state.ative_cookie = True    
+    reset_usuario()
+
+    st.title('Até breve')
     with st.spinner("Logging out"):
         time.sleep(3)
-    st.title('Até breve')
     st.rerun()
 
 #------------------------------------------------
@@ -305,21 +323,22 @@ def navegacao():
         pg = st.navigation(pages, position="sidebar")
         return pg
     
-    pg = st.navigation(pages, position="sidebar")
+    pg = st.navigation(pages, position="top")
     
     #Adicionar componentes na sidebar
     with st.sidebar:
-        if st.button('Atualizar Carteira', type='primary', key='atualizar_carteira'):
-            if 'carteira_api' in st.session_state:
-                del st.session_state['carteira_api']
-            if 'carteira_api_aporte' in st.session_state:
-                del st.session_state['carteira_api_aporte']
-            if 'operacao_api' in st.session_state:
-                del st.session_state['operacao_api']
-            if 'evento_usuario_dict' in st.session_state:
-                del st.session_state['evento_usuario_dict']
-            if 'dividendos_usuarios_api' in st.session_state:
-                del st.session_state['dividendos_usuarios_api']
+        st.image('imagens/login.png', width="stretch" )
+        if st.button('🔄 Atualizar Carteira', type='primary', key='atualizar_carteira', width="stretch"):
+            keys_para_limpar = [
+                                    'carteira_api', 
+                                    'carteira_api_aporte', 
+                                    'operacao_api', 
+                                    'evento_usuario_dict', 
+                                    'dividendos_usuarios_api'
+                                ]                                
+            for key in keys_para_limpar:
+                if key in st.session_state:
+                    del st.session_state[key]
 
             with st.spinner("Calculando...", show_time=True):
                 resp = api_request('GET', f'comandos_api/calcular/{st.session_state.id}', timeout=1000)
@@ -338,14 +357,7 @@ def navegacao():
 
 #------------------------------------------------
 #Executar navegação
+ajustar_CSS_main()
 pg = navegacao()
 pg.run()
-
-
-
-
-
-
-
-
 

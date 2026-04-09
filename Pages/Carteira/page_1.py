@@ -93,7 +93,7 @@ def enviar_tabela(dataframe, b3):
 
     else:
         st.error(f"⚠️ Erro HTTP inesperado: Status {resp.status_code}")
-    st.stop()
+    # st.stop()
 
 # Enviar dados para o banco de dados
 @st.dialog("Enviando Dados", on_dismiss='rerun')
