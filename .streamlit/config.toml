@@ -2,9 +2,6 @@
 # Desabilita o encadeamento de pacotes que pode causar erro em redes instáveis
 enableCORS = false
 enableXsrfProtection = false
-websocketCompression = false
-scriptRunOnSave = false
-
 
 [browser]
 # Tenta manter a conexão mais estável

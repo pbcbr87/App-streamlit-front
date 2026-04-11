@@ -52,10 +52,10 @@ def reset_usuario():
 #Congiguraçãoes iniciais
 #------------------------------------------------
 st.set_page_config(
-    page_title="LegacYnsvest - Gerenciamento de Investimentos",
-    page_icon=":material/finance_mode:",
+    page_title="Legacy Seed - Gerenciamento de Investimentos",
+    page_icon="imagens/icon.png",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
     menu_items={
         'About': "# Aplicativo para gerenciamento de investimentos \ncriado por Patrick Cangussu"
     }
@@ -183,9 +183,9 @@ def maintenance_page_gif():
 #Pagina de login
 def login():
     with st.container(horizontal_alignment="center").form("login", width="content", enter_to_submit=True, clear_on_submit=True):
-        a, b = st.columns(2, vertical_alignment="center")
-        a.header("Log in")
-        b.image('imagens/login.jpg', width=200)
+        a, b, c = st.columns([1,5,1], vertical_alignment="center")
+        b.image('imagens/login.png', width="stretch")
+
         user_input = st.text_input('Usuário')
         senha_input = st.text_input('Senha', type='password')
 
@@ -320,12 +320,12 @@ def navegacao():
 
     if MANUTENCAO and st.session_state.admin == False:
         pages = {"Manutençao": [st.Page(maintenance_page_gif, title='Manutenção')]}
-        pg = st.navigation(pages, position="sidebar")
+        pg = st.navigation(pages, position="top")
         return pg
     
-    pg = st.navigation(pages, position="top")
-    
+    pg = st.navigation(pages, position="top")    
     #Adicionar componentes na sidebar
+    st.logo(image='imagens/icon_grande.png', size="large")
     with st.sidebar:
         st.image('imagens/login.png', width="stretch" )
         if st.button('🔄 Atualizar Carteira', type='primary', key='atualizar_carteira', width="stretch"):
@@ -358,6 +358,7 @@ def navegacao():
 #------------------------------------------------
 #Executar navegação
 ajustar_CSS_main()
+
 pg = navegacao()
 pg.run()
 
