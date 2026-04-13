@@ -65,7 +65,7 @@ def exluir():
 if 'lista_ativos_sugeridos' not in st.session_state:
     st.session_state['lista_ativos_sugeridos'] = []
 if 'evento_api' not in st.session_state or st.session_state['evento_api'] == None:
-    carregar_eventos_all()
+    st.session_state['evento_api'] = []
 if 'sl_ativo' not in st.session_state:
     st.session_state['sl_ativo'] = ""
 if 'sl_row' not in st.session_state:
@@ -92,13 +92,15 @@ with col2:
 with col3:
     # Área de Resultados (Pills)
     if st.session_state['lista_ativos_sugeridos']:
-        st.write("Selecione o ativo:")
-        ativo_escolhido = st.pills("Ativos encontrados:", options=st.session_state['lista_ativos_sugeridos'], label_visibility='collapsed', selection_mode="single", key="pills_selecao")
-        # Se mudar a seleção no Pills, carrega os eventos
-        if ativo_escolhido:
-            carregar_eventos(ativo_escolhido)
-        else:
-            carregar_eventos_all()
+        with st.container(horizontal=True, vertical_alignment='center'):
+            st.write("Selecione o ativo:")
+            ativo_escolhido = st.pills("Ativos encontrados:", options=st.session_state['lista_ativos_sugeridos'], label_visibility='collapsed', selection_mode="single", key="pills_selecao")
+            # Se mudar a seleção no Pills, carrega os eventos
+            if ativo_escolhido:
+                carregar_eventos(ativo_escolhido)
+            else:
+                if st.button('Selecionar tudo'):
+                    carregar_eventos_all()
 
 # --- TABELA DE EVENTOS ---
 if c1.button("➕ Inserir", width='stretch'):    

@@ -106,6 +106,24 @@ def api_request_simular(evento, operacao_param, posicao):
         st.error(f"Erro de conexão: {e}")
         return None
 
+def st_number_input_custom(label, value=None, key=None, placeholder="0,00"):
+    def converter_valor_br(texto):
+        if not texto:
+            return 0.0
+        try:
+            # Remove pontos de milhar e troca a vírgula decimal por ponto
+            limpo = texto.replace(".", "").replace(",", ".")
+            return float(limpo)
+        except ValueError:
+            return None
+    
+    entrada = st.text_input(label, value=value, placeholder=placeholder, key=key)
+    valor_numerico = converter_valor_br(entrada)
+    if entrada and valor_numerico is None:
+        st.warning("Use o formato 0,00")
+        return None
+    return valor_numerico
+
 # --- INTERFACE DE USUÁRIO (UI) ---
 def render_layout_input():
     """Renderiza os campos de entrada e retorna o dicionário de parâmetros."""
@@ -115,8 +133,10 @@ def render_layout_input():
     with col1:
         st.subheader('💰 Carteira para Teste')
         c1, c2 = st.columns(2)
-        quant_acum = c1.number_input("Qtd Cotas (qt)", format="%.5f", min_value=0.0)
-        custo_acum = c2.number_input("Custo Acumulado", format="%.5f", min_value=0.0)
+        with c1:
+            quant_acum = st_number_input_custom("Qtd Cotas (qt)",  value="100,00")
+        with c2:
+            custo_acum = st_number_input_custom("Custo Acumulado", value="10.000,00")
     
     with col2:
         st.subheader('📅 Período do Evento')
@@ -128,9 +148,9 @@ def render_layout_input():
         val_com = parse_date_native(evento.get('data_com'))
         val_pag = parse_date_native(evento.get('data_pag'))
 
-        data_aprov = c1.date_input('Aprovação', min_value=date(2000, 1, 1), value=val_aprov if val_aprov >= date(2000, 1, 1) else date(2000, 1, 1))
-        data_com = c2.date_input('Data Com', min_value=date(2000, 1, 1), value=val_com if val_com >= date(2000, 1, 1) else date(2000, 1, 1))
-        data_pag = c3.date_input('Pagamento', min_value=date(2000, 1, 1), value=val_pag if val_pag >= date(2000, 1, 1) else date(2000, 1, 1))
+        data_aprov = c1.date_input('Aprovação', format="DD/MM/YYYY", min_value=date(2000, 1, 1), value=val_aprov if val_aprov >= date(2000, 1, 1) else date(2000, 1, 1))
+        data_com = c2.date_input('Data Com', format="DD/MM/YYYY", min_value=date(2000, 1, 1), value=val_com if val_com >= date(2000, 1, 1) else date(2000, 1, 1))
+        data_pag = c3.date_input('Pagamento', format="DD/MM/YYYY", min_value=date(2000, 1, 1), value=val_pag if val_pag >= date(2000, 1, 1) else date(2000, 1, 1))
 
     st.divider()
     
@@ -138,7 +158,7 @@ def render_layout_input():
     tipo_list = ['ATUALIZAÇÃO', 'BONIFICAÇÃO', 'CISÃO', 'DESDOBRAMENTO', 'FRAÇÃO', 
                  'GRUPAMENTO', 'GRUPAMENTO_DESDOBRAMENTO', 'INCORPORAÇÃO', 'OPA', 'REDUÇÃO DE CAPITAL']
     
-    tipo = st.selectbox('Tipo de Evento', tipo_list)
+    tipo = st.selectbox('Tipo de Evento', tipo_list, index=tipo_list.index(evento.get('tipo', 'ATUALIZAÇÃO')))
     
     # Campos dinâmicos baseados no tipo
     inputs = {
@@ -192,19 +212,31 @@ def render_layout_input():
 
         elif tipo in ['INCORPORAÇÃO']:
             inputs["ativo_gerado"] = cols[1].text_input("ID Novo Ativo")
-            
-            use_formula = st.toggle('Usar fórmula')
-            if use_formula:
-                default_json = '[{"id_ativo": "EXEMPLO", "custo": "custo * 0.15", "qt": "qt * 0.25"}]'
-                raw_op = st.text_area('Fórmula da Operação (JSON)', value=default_json)
-                try: inputs["operacao"] = loads(raw_op)
-                except: st.error("JSON de operação inválido")
-            else:
-                inputs["proporcao"] = cols[2].number_input("Proporção qt nova", format="%.5f")
-                with st.container(horizontal=True):
-                    if st.toggle("Valor"):
-                        inputs["valor_gerado"] = st.number_input("Valor por cota novo", format="%.5f")
+            if st.toggle('FII'):
+                with cols[2]:
+                    inputs["proporcao"] = st_number_input_custom("Proporção qt nova %")
+                    inputs["valor_gerado"] = st_number_input_custom("Valor por cota novo")
+                with cols[0]:
+                    valor_venda = st_number_input_custom("Valor de venda")
+                with cols[1]:
+                    valor_dinheiro = st_number_input_custom("Valor em dinheiro")
+                    inputs["dinheiro"] = f"({valor_dinheiro} * qt) - 0.2 * (qt * {valor_venda} - custo) if (qt *  {valor_venda} - custo) > 0 else {valor_dinheiro}  * qt"
+                st.text(f"Formula Dinheiro:")
+                st.text(f"{inputs["dinheiro"]} = {(valor_dinheiro * quant_acum) - 0.2 * (quant_acum * valor_venda - custo_acum) if (quant_acum *  valor_venda - custo_acum) > 0 else valor_dinheiro  * quant_acum}")
 
+            else:
+                use_formula = st.toggle('Usar fórmula')
+                if use_formula:
+                    default_json = '[{"id_ativo": "EXEMPLO", "custo": "custo * 0.15", "qt": "qt * 0.25"}]'
+                    raw_op = st.text_area('Fórmula da Operação (JSON)', value=default_json)
+                    try: inputs["operacao"] = loads(raw_op)
+                    except: st.error("JSON de operação inválido")
+                else:
+                    with cols[2]:
+                        inputs["proporcao"] = st_number_input_custom("Proporção qt nova %")
+                    with st.container(horizontal=True):
+                        if st.toggle("Valor"):
+                            inputs["valor_gerado"] = st_number_input_custom("Valor por cota novo")
         elif tipo == 'REDUÇÃO DE CAPITAL':
             inputs["ativo_gerado"] = inputs["id_ativo"]
             inputs["valor"] = cols[1].number_input("Valor por cota", format="%.5f")
@@ -232,6 +264,42 @@ if t3.button("🧐 Eventos Pendentes", width='stretch'):
 if 'evento_pedente_sel' in st.session_state and st.session_state['evento_pedente_sel'] is not None:
    st.header("Evento Pendente Selecionado para Simulação")
    st.dataframe([st.session_state.evento_pedente_sel])
+
+# Exibição dos Resultados
+c1, c2, c3, c4, _ = st.columns([1, 1, 1, 1, 2])
+
+if st.session_state['lista_criada']:  
+    if c2.button('💾 Salvar', width="stretch"):
+        evento_final = sanitizar_evento(st.session_state['lista_criada'][0])    
+        df_envio = pd.DataFrame([evento_final])
+        enviar_tabela(df_envio)
+        st.session_state['lista_criada'] = None
+        st.session_state['evento_pedente_sel'] = None
+        
+    if c3.button('📝 Modificar antes de enviar', width="stretch"):
+        st.session_state['evento_dict'] = st.session_state['lista_criada'][0]
+        st.switch_page('Pages/Evento/insert_evento.py')
+
+    if c1.button(' Voltar', width="stretch"):
+        st.session_state['lista_criada'] = None
+        st.rerun()
+
+    if c4.button('🗑️ Limpar', width="stretch"):
+        st.session_state['lista_criada'] = None
+        st.session_state['evento_pedente_sel'] = None
+        st.rerun()
+
+if st.session_state['lista_criada']:     
+    st.success("✅ Simulação concluída!")
+    # Exibe a prévia formatada (se existir no estado)
+    if 'previa_df' in st.session_state:
+        df = pd.DataFrame(st.session_state['previa_df'])
+        # (Lógica de formatação de colunas aqui se desejar mostrar o DF formatado)
+        st.subheader("Prévia do Cálculo")
+        st.dataframe(df)
+
+    st.subheader("Eventos Gerados")
+    st.dataframe(pd.DataFrame(st.session_state['lista_criada']))
 
 if not st.session_state['lista_criada']:
     tipo, inputs, q_acum, c_acum, d_aprov, d_com, d_pag = render_layout_input()
@@ -265,36 +333,3 @@ if not st.session_state['lista_criada']:
                     st.rerun()
                 else:
                     st.warning("A simulação não retornou dados suficientes. Verifiar data_com e data_pag.")
-
-# Exibição dos Resultados
-c1, c2, c3, _ = st.columns([1, 1, 1, 3])
-
-if st.session_state['lista_criada']:
-    st.success("✅ Simulação concluída!")
-    
-    # Exibe a prévia formatada (se existir no estado)
-    if 'previa_df' in st.session_state:
-        df = pd.DataFrame(st.session_state['previa_df'])
-        # (Lógica de formatação de colunas aqui se desejar mostrar o DF formatado)
-        st.subheader("Prévia do Cálculo")
-        st.dataframe(df)
-
-    st.subheader("Eventos Gerados")
-    st.dataframe(pd.DataFrame(st.session_state['lista_criada']))
-    
-
-    if c2.button('💾 Salvar', width="stretch"):
-        evento_final = sanitizar_evento(st.session_state['lista_criada'][0])    
-        df_envio = pd.DataFrame([evento_final])
-        enviar_tabela(df_envio)
-        st.session_state['lista_criada'] = None
-        st.session_state['evento_pedente_sel'] = None
-        
-    if c3.button('📝 Modificar antes de enviar', width="stretch"):
-        st.session_state['evento_dict'] = st.session_state['lista_criada'][0]
-        st.switch_page('Pages/Evento/insert_evento.py')
-
-if c1.button('🗑️ Limpar', width="stretch"):
-    st.session_state['lista_criada'] = None
-    st.session_state['evento_pedente_sel'] = None
-    st.rerun()

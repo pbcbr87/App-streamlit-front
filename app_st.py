@@ -81,7 +81,8 @@ def ajustar_CSS_main():
 
 try:
     # O retorno não precisa ser armazenado se é só para "acordar"
-    api_request('GET', '', timeout=2) 
+    api_request('GET', '', timeout=2)
+    time.sleep(2)
 except:
     pass # Ignoramos erros aqui, o foco é apenas o estímulo inicial
 
