@@ -124,6 +124,21 @@ def st_number_input_custom(label, value=None, key=None, placeholder="0,00"):
         return None
     return valor_numerico
 
+def fmt_numero(valor):
+    # Se for None, vazio ou a string "0,00", retorna o padrão
+    if valor is None or valor == "" or valor == "0,00":
+        return "0,00"
+    
+    try:
+        # Se vier como string (ex: "1.50" ou "1,50"), tratamos a vírgula e convertemos
+        if isinstance(valor, str):
+            valor = valor.replace(',', '.')
+            
+        valor_float = float(valor)
+        return f"{valor_float:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except (ValueError, TypeError):
+        return "0,00"
+
 # --- INTERFACE DE USUÁRIO (UI) ---
 def render_layout_input():
     """Renderiza os campos de entrada e retorna o dicionário de parâmetros."""
@@ -155,10 +170,19 @@ def render_layout_input():
     st.divider()
     
     # Lista de tipos e seleção
+    MAPA_TIPOS = {
+                'BONIFICACAO': 'BONIFICAÇÃO',
+                'CIS RED CAP': 'CISÃO',
+                'INCORPORACAO': 'INCORPORAÇÃO',
+                'RESG TOTAL RV': 'OPA'
+                }
+    tipo_bruto = evento.get('tipo', 'ATUALIZAÇÃO')
+    tipo_corrigido = MAPA_TIPOS.get(tipo_bruto, tipo_bruto)
     tipo_list = ['ATUALIZAÇÃO', 'BONIFICAÇÃO', 'CISÃO', 'DESDOBRAMENTO', 'FRAÇÃO', 
                  'GRUPAMENTO', 'GRUPAMENTO_DESDOBRAMENTO', 'INCORPORAÇÃO', 'OPA', 'REDUÇÃO DE CAPITAL']
-    
-    tipo = st.selectbox('Tipo de Evento', tipo_list, index=tipo_list.index(evento.get('tipo', 'ATUALIZAÇÃO')))
+    if tipo_corrigido not in tipo_list:
+        tipo_corrigido = 'ATUALIZAÇÃO'    
+    tipo = st.selectbox('Tipo de Evento', tipo_list, index=tipo_list.index(tipo_corrigido))
     
     # Campos dinâmicos baseados no tipo
     inputs = {
@@ -176,12 +200,15 @@ def render_layout_input():
             
         if tipo == 'BONIFICAÇÃO':
             inputs["ativo_gerado"] = inputs["id_ativo"]
-            inputs["valor"] = cols[1].number_input("Valor por cota", format="%.5f")
-            inputs["proporcao"] = cols[2].number_input("Proporção", format="%.5f")
+            with cols[1]:
+                inputs["valor"] = st_number_input_custom("Valor por cota")
+            with cols[2]:
+                inputs["proporcao"] = st_number_input_custom("Proporção %", value=fmt_numero(evento.get('proporcao',"0.00")))
             
         elif tipo == 'DESDOBRAMENTO' or tipo == 'GRUPAMENTO':
             inputs["ativo_gerado"] = inputs["id_ativo"]
-            inputs["proporcao"] = cols[1].number_input("Proporção", format="%.5f")
+            with cols[1]:
+                inputs["proporcao"] = st_number_input_custom("Proporção %", value=fmt_numero(evento.get('proporcao',"0.00")))
             
         elif tipo == 'GRUPAMENTO_DESDOBRAMENTO':
             inputs["ativo_gerado"] = inputs["id_ativo"]
@@ -190,7 +217,8 @@ def render_layout_input():
 
         elif tipo in ['ATUALIZAÇÃO']:
             inputs["ativo_gerado"] = cols[1].text_input("ID Novo Ativo")
-            inputs["proporcao"] = cols[2].number_input("Proporção", format="%.5f")
+            with cols[2]:
+                inputs["proporcao"] = st_number_input_custom("Proporção %", value=fmt_numero(evento.get('proporcao',"0.00")))
 
         elif tipo in ['CISÃO']:
             inputs["ativo_gerado"] = cols[1].text_input("ID Novo Ativo")
@@ -202,13 +230,17 @@ def render_layout_input():
                 try: inputs["operacao"] = loads(raw_op)
                 except: st.error("JSON de operação inválido")
             else:
-                inputs["proporcao"] = cols[2].number_input("Proporção qt nova", format="%.5f")
+                with cols[2]:
+                    inputs["proporcao"] = st_number_input_custom("Proporção qt nova %")
                 c1, c2, c3 = st.columns([3, 3, 1])
-                inputs["pro_ativo"] = c1.number_input("Redução ativo original", format="%.5f")
+                with c1:
+                    inputs["pro_ativo"] = st_number_input_custom("Redução custo ativo original %")
                 if c3.toggle("Valor"):
-                    inputs["valor_gerado"] =c2.number_input("Valor por cota novo", format="%.5f")
+                    with c2:
+                        inputs["valor_gerado"] = st_number_input_custom("Valor por cota novo")
                 else:
-                    inputs["pro_gerado"] = c2.number_input("Proporção por cota novo", format="%.5f")
+                    with c2:
+                        inputs["pro_gerado"] = st_number_input_custom("Proporção custo cota novo %")
 
         elif tipo in ['INCORPORAÇÃO']:
             inputs["ativo_gerado"] = cols[1].text_input("ID Novo Ativo")
@@ -239,10 +271,12 @@ def render_layout_input():
                             inputs["valor_gerado"] = st_number_input_custom("Valor por cota novo")
         elif tipo == 'REDUÇÃO DE CAPITAL':
             inputs["ativo_gerado"] = inputs["id_ativo"]
-            inputs["valor"] = cols[1].number_input("Valor por cota", format="%.5f")
+            with cols[1]:
+                inputs["valor"] = st_number_input_custom("Valor por cota")
 
         elif tipo == 'OPA' or tipo == 'FRAÇÃO':
-            inputs["valor"] = cols[1].number_input("Valor por cota", format="%.5f")
+            with cols[1]:
+                inputs["valor"] = st_number_input_custom("Valor por cota")
 
     # Opção de Dinheiro Global
     if st.toggle('Configurar fórmula de recebimento em dinheiro'):

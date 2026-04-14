@@ -76,7 +76,7 @@ st.header("🔍 Pesquisa de Eventos por Ativo")
 
 # Container de Filtros
 with st.container(border=True):
-    col1, col2, col3 = st.columns([1, 1, 3])
+    col1, col2, col3, col4 = st.columns([1, 1, 1, 4],vertical_alignment='center')
 
 st.divider()
 # --- BOTÕES DE AÇÃO ---
@@ -90,18 +90,18 @@ with col2:
     # Input de Texto para o Ticker
     st.text_input("Pesquisar Ticker:", placeholder="Digite o código (ex: PETR4)", key='sl_ativo', on_change=get_ativos)
 with col3:
+    st.write("")
+    if st.button('Selecionar tudo', width="stretch"):
+        carregar_eventos_all()
+with col4:
     # Área de Resultados (Pills)
     if st.session_state['lista_ativos_sugeridos']:
-        with st.container(horizontal=True, vertical_alignment='center'):
-            st.write("Selecione o ativo:")
-            ativo_escolhido = st.pills("Ativos encontrados:", options=st.session_state['lista_ativos_sugeridos'], label_visibility='collapsed', selection_mode="single", key="pills_selecao")
-            # Se mudar a seleção no Pills, carrega os eventos
-            if ativo_escolhido:
-                carregar_eventos(ativo_escolhido)
-            else:
-                if st.button('Selecionar tudo'):
-                    carregar_eventos_all()
-
+        st.write("Selecione o ativo:")
+        ativo_escolhido = st.pills("Ativos encontrados:", options=st.session_state['lista_ativos_sugeridos'], label_visibility='collapsed', selection_mode="single", key="pills_selecao")
+        # Se mudar a seleção no Pills, carrega os eventos
+        if ativo_escolhido:
+            carregar_eventos(ativo_escolhido)
+                
 # --- TABELA DE EVENTOS ---
 if c1.button("➕ Inserir", width='stretch'):    
     st.switch_page('Pages/Evento/insert_evento.py')

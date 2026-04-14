@@ -10,7 +10,8 @@ from datetime import date, datetime
 
 def carregar_dividendos():
     headers = {'Authorization': f"Bearer {st.session_state.get('token')}"}
-    resp = requests.get(f'{API_URL}dividendos/pegar_dividendos', headers=headers)
+    params = {'ativo': st.session_state.get("sl_fk_ativo", "WEGE3")}
+    resp = requests.get(f'{API_URL}dividendos/pegar_dividendos', params=params, headers=headers)
     if resp.status_code == 200:
         st.session_state['dividendos_api'] = resp.json()
     else:
@@ -157,7 +158,7 @@ def carregar_tabela():
 
 def filtro(df):
     with st.container(border=True, horizontal=True):
-        sl_fk_ativo = st.text_input("Filtrar por Ativo Original", width=200)
+        sl_fk_ativo = st.text_input("Filtrar por Ativo Original", width=200, key='sl_fk_ativo', on_change=carregar_dividendos)
         
         sl = st.pills('Slecione',options=['DIVIDENDO', 'JCP', 'REND. TRIBUTADO', 'RENDIMENTO', 'RENDIMENTO EXT', 'AMORTIZAÇÃO','AGENCY PROC. FEE'],  selection_mode="multi", width='stretch')
         df_filtrado = df[df['tipo'].isin(sl)] if sl else df
@@ -212,14 +213,15 @@ c1, c2, c3, c4, c5 = layout_form_dividendo.columns(5)
 if c1.button("➕ Inserir Dividendo", width="stretch"):
     inserir_dividendo(st.session_state['dividendo_dict'])
 
-if c4.button("🗑️ Excluir Tudo", width="stretch"):
-    excluir_all()
-    st.session_state.dividendos_api = None
-    st.rerun()
+with c4.expander("🗑️ Excluir Tudo", width="stretch"):
+    if st.button("🗑️ Conifrimar", width="stretch"):  
+        excluir_all()
+        st.session_state.dividendos_api = None
+        st.rerun()
 
 if c5.button("📥 Inserir tabela", width="stretch"):
     carregar_tabela()
-
+filtro_lay = st.container()
 linha_selecionada = {}
 if 'dividendos_api' not in st.session_state or not st.session_state.dividendos_api:
     st.info("💡 Nenhum Dividendos Encontrado no Banco de dados.")
@@ -228,7 +230,8 @@ else:
     # Tabela de Dividendos Cadastrados
     #------------------------------------------------------------------
     df = pd.DataFrame(st.session_state.dividendos_api).sort_values(by='data_aprov', ascending=False)
-    df = filtro(df)
+    with filtro_lay:
+        df = filtro(df)
     st.write("Selecione uma linha para editar ou visualizar detalhes:")
 
     dividendo_sl = st.dataframe(df, width="stretch", height=200, hide_index=True,
