@@ -174,7 +174,7 @@ def form_dividendo(dividendo_dict):
 
     st.session_state['dividendo_dict'] = {}
     st.session_state['dividendo_dict']['id'] = dividendo_dict.get('id', None)
-    form_1, form_2, form_3, form_4, form_5, form_6, form_7 = st.columns(7)
+    form_1, form_2, form_3, form_4, form_5, form_6, form_7, form_8 = st.columns(8)
     st.session_state['dividendo_dict']['fk_ativo'] = form_1.text_input("Ativo Categoria", value=dividendo_dict.get('fk_ativo', "")).upper()
     # Validação do index do selectbox
     tipo_list = ['DIVIDENDO', 'JCP', 'REND. TRIBUTADO', 'RENDIMENTO', 'RENDIMENTO EXT', 'AMORTIZAÇÃO','AGENCY PROC. FEE']
@@ -196,6 +196,8 @@ def form_dividendo(dividendo_dict):
 
     data_pag = form_7.date_input("data_pag", key="data_pag", min_value=date(2000, 1, 1), value=None)
     st.session_state['dividendo_dict']['data_pag'] = data_pag.isoformat() if data_pag else None
+
+    st.session_state['dividendo_dict']['ano_calendario_ir'] = form_8.number_input("Ano Calendário IR", value=dividendo_dict.get('ano_calendario_ir', None) )
 
 #--------------------------------------------------------
 if 'dividendos_api' not in st.session_state or st.session_state['dividendos_api'] is None:
