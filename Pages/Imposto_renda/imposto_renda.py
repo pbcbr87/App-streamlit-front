@@ -129,10 +129,10 @@ if not df_bens.empty or not df_divs.empty:
             col_tab1.table(pd.DataFrame(tabela_bens).set_index("🔍 Posição"), border="horizontal", width="stretch")
 
             with col_tab2:
-                v_bruto_ext_brl = subset_divs['total_bruto_brl'].sum() if not subset_divs.empty else 0.0
-                v_bruto_ext_usd = subset_divs['total_bruto_usd'].sum() if not subset_divs.empty else 0.0
-                v_imp_pago_ext_brl = subset_divs['total_imposto_brl'].sum() if not subset_divs.empty else 0.0
-                v_imp_pago_ext_usd = subset_divs['total_imposto_usd'].sum() if not subset_divs.empty else 0.0
+                v_bruto_ext_brl = subset_divs[subset_divs['tipo'] == "RENDIMENTO EXT"]['total_bruto_brl'].sum() if not subset_divs.empty else 0.0
+                v_bruto_ext_usd = subset_divs[subset_divs['tipo'] == "RENDIMENTO EXT"]['total_bruto_usd'].sum() if not subset_divs.empty else 0.0
+                v_imp_pago_ext_brl = subset_divs[subset_divs['tipo'] == "RENDIMENTO EXT"]['total_imposto_brl'].sum() if not subset_divs.empty else 0.0
+                v_imp_pago_ext_usd = subset_divs[subset_divs['tipo'] == "RENDIMENTO EXT"]['total_imposto_usd'].sum() if not subset_divs.empty else 0.0
                 l_venda_ext_brl = subset_vendas['lucro_brl'].sum() if not subset_vendas.empty else 0.0
                 l_venda_ext_usd = subset_vendas['lucro_usd'].sum() if not subset_vendas.empty else 0.0
 
