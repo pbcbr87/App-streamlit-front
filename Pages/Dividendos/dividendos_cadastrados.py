@@ -17,6 +17,27 @@ def carregar_dividendos():
     else:
         st.session_state['dividendos_api'] = []
 
+@st.dialog("Set Aditado", width='medium', on_dismiss=carregar_dividendos)
+def set_auditado(status, id):
+    dados = {
+        'auditado': status
+    }
+
+    dados_json = dumps(dados, ensure_ascii=False)
+
+    resp = requests.patch(f'{API_URL}dividendos/audit_dividendo/{id}', dados_json, headers={'Authorization':f'Bearer {st.session_state.token}'})
+    try:
+        resposta_json = resp.json()
+        if resp.status_code == 200:
+            st.success('✅ Status atualizado com sucesso!')
+        
+        if resp.status_code != 200:
+            st.error(f"⚠️ Erro na API. Status {resp.status_code}: {resp.text}")
+    except:
+        st.error(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
+        # --- Tratamento de Sucesso (200 OK) ---
+    
+
 @st.dialog("Edit Dividendos", width='medium', on_dismiss=carregar_dividendos)
 def edit_dividendo(dados): 
     # dados = st.session_state['dividendo_dict']
@@ -210,7 +231,7 @@ if 'dividendo_dict' not in st.session_state:
 st.title("💰 Dividendos Cadastrados")
 
 layout_form_dividendo = st.container(border=True)
-c1, c2, c3, c4, c5 = layout_form_dividendo.columns(5)  
+c1, c2, c3, c4, c5, c6 = layout_form_dividendo.columns(6)  
 
 if c1.button("➕ Inserir Dividendo", width="stretch"):
     inserir_dividendo(st.session_state['dividendo_dict'])
@@ -256,6 +277,13 @@ else:
             excluir(linha_selecionada)
             st.session_state.dividendos_api = None
             st.rerun()
+
+        if linha_selecionada['auditado']:
+            if c6.button("[⬜] Pendente", width="stretch"):
+                set_auditado(False, linha_selecionada['id'])                
+        else:
+            if c6.button("[✅] Auditado", width="stretch"):
+                set_auditado(True, linha_selecionada['id'])         
 
     else:
         st.info("💡 Clique em uma linha da tabela acima para habilitar as ações.")
