@@ -143,6 +143,7 @@ if moeda == 'BRL':
     div_liq_col = 'div_liq_brl'
     valor_mercado_col = 'valor_mercado_brl'
     valor_plan_col = 'valor_plan_brl'
+    renda_col = 'renda_brl'
 else:
     moeda_simbolo = 'US$'
     lucro_col = 'lucro_usd'
@@ -151,6 +152,7 @@ else:
     div_liq_col = 'div_liq_usd'
     valor_mercado_col = 'valor_mercado_usd'
     valor_plan_col = 'valor_plan_usd'
+    renda_col = 'renda_usd'
 
 # Trantando dados recebidos
 if not st.session_state['carteira_api']:
@@ -227,6 +229,7 @@ df_carteira_front['Valor Planejado'] = df_carteira[valor_plan_col]
 df_carteira_front['Aporte'] = df_carteira[valor_plan_col] - df_carteira[valor_mercado_col]
 df_carteira_front['Aporte %'] = df_carteira_front.apply(lambda row: divisao_percentual_segura(row, coluna_numerador='Aporte', coluna_denominador='Valor Planejado'), axis=1)
 
+df_carteira_front['Renda'] = df_carteira[renda_col].round(2)
 df_carteira_front['Divid'] = df_carteira[div_liq_col]
 df_carteira_front['Lucro + Div'] = df_carteira[lucro_div_col]
 df_carteira_front['Lucro + Div %'] = df_carteira['%_lucro_div']
@@ -239,6 +242,7 @@ df_carteira_front = df_carteira_front.sort_values(op_ordem[option], ascending=[F
 with metrica_total_container:
     valor_total = df_carteira_front['Valor de mercado'].sum()
     custo_total = df_carteira_front['Custo'].sum()
+    renda_total = df_carteira_front['Renda'].sum()
     lucro_total = valor_total - custo_total
     lucro_total_perc = 100*(valor_total - custo_total) / custo_total if custo_total != 0 else Decimal('0')
 
@@ -246,6 +250,7 @@ with metrica_total_container:
     st.metric(label="Custo", value=f'{numero_padrao(custo_total)} {moeda_simbolo}', width ='stretch')
     st.metric(label="Valor de mercado", value=f'{numero_padrao(valor_total)} {moeda_simbolo}', width ='stretch')
     st.metric(label="Lucro", value=f"{numero_padrao(lucro_total)} {moeda_simbolo}", delta=f'{numero_padrao(lucro_total_perc)} %', width ='stretch')
+    st.metric(label="Renda Mensal", value=f'{numero_padrao(renda_total)} {moeda_simbolo}', width ='stretch')
 #-----------------------------------------------------------
 # Criar abas
 #-----------------------------------------------------------
@@ -259,6 +264,7 @@ with tab1:
                                                                                                     'Custo',
                                                                                                     'Valor de mercado',
                                                                                                     'Lucro',
+                                                                                                    'Renda',
                                                                                                     'Valor Planejado',
                                                                                                     'Aporte'])
                                             .format(precision=0, thousands=".", decimal=",", subset=['Peso', 'Nota'])

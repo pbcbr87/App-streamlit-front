@@ -288,8 +288,8 @@ def navegacao():
                     st.Page('Pages/Carteira/page_4.py', title='Aporte')
                     ]
     
-    imposto_renda_pages = [st.Page('Pages/Imposto_renda/imposto_renda.py', title='Imposto de Renda'),
-                            st.Page('Pages/Imposto_renda/resumo_vendas_mensal.py', title='Resumo Vendas Mensal')
+    imposto_renda_pages = [st.Page('Pages/Imposto_renda/imposto_renda.py', title='Bens Direito - BRL/USD'),
+                            st.Page('Pages/Imposto_renda/resumo_vendas_mensal.py', title='Operações Comuns e FIIs - BRL')
                             ]
 
     evento_usuario_pages = [st.Page('Pages/Evento_usuario/evento_cadastrados.py', title='Gerenciar Eventos'),
