@@ -289,7 +289,8 @@ def navegacao():
                     ]
     
     imposto_renda_pages = [st.Page('Pages/Imposto_renda/imposto_renda.py', title='Bens Direito - BRL/USD'),
-                            st.Page('Pages/Imposto_renda/resumo_vendas_mensal.py', title='Operações Comuns e FIIs - BRL')
+                            st.Page('Pages/Imposto_renda/resumo_vendas_mensal.py', title='Operações Comuns e FIIs - BRL'),
+                            st.Page('Pages/Imposto_renda/rendimento.py', title='Rendimentos - BRL')
                             ]
 
     evento_usuario_pages = [st.Page('Pages/Evento_usuario/evento_cadastrados.py', title='Gerenciar Eventos'),
