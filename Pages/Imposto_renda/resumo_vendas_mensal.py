@@ -75,6 +75,35 @@ if "input_irrf" not in st.session_state:
 col_titulo, col_ano, col_btn = st.columns([6, 2, 2])
 col_titulo.title("📊 Consolidação de Impostos")
 
+with st.expander("💡 Onde preencher os dados no Programa IRPF?"):
+    col_inst1, col_inst2 = st.columns(2)
+    
+    with col_inst1:
+        st.markdown("""
+        ### 🏢 FII e FIAGRO
+        **Ficha:** *Renda Variável -> Operações em FII ou Fiagro*
+        
+        1. **Prejuízo Acumulado:** Se você tem prejuízos de anos anteriores, insira o valor na coluna **'Resultado negativo até o mês anterior'** no mês de **JANEIRO**.
+        2. **Lucro Tributável:** Informe o lucro ou prejuízo do mês na coluna **'Resultado líquido do mês'**. 
+        3. **Atenção:** O programa calculará o imposto (20%) automaticamente se houver lucro após compensar os prejuízos.
+        4. **IRRF Dedo-Duro:** Informe o valor retido em **'Imposto retido no mês'** (Lei 11.033/2004) na coluna de cada mês.
+        5. **DARF Paga:** Informar o valor pago em **'Imposto Pago'** na coluna de cada mês.
+        """)
+        
+    with col_inst2:
+        st.markdown("""
+        ### 📈 Operações Comuns (Ações, BDR, ETF)
+        **Ficha:** *Renda Variável -> Operações Comuns / Day-Trade*
+        
+        1. **Prejuízo Acumulado:** Insira o valor acumulado em **'Resultado negativo até o mês anterior'** no mês de **JANEIRO** (Coluna 'Operações Comuns').
+        2. **Lucro Tributável:** No campo **'Mercado à Vista - ações'**, insira o lucro ou prejuízo calculado para aquele mês.
+        3. **Atenção:** O programa calculará o imposto (15%) automaticamente se houver lucro após compensar os prejuízos.
+        4. **IRRF Dedo-Duro:** Informe o valor retido em **'Imposto retido no mês'** (Lei 11.033/2004) ao final da ficha de cada mês.
+        5. **DARF Paga:** Informar o valor pago em **'Imposto Pago'** ao final da ficha de cada mês.
+        """)
+    
+    st.info("📌 **Dica:** Os valores de 'Prejuízo Acumulado' e 'Lucro Tributável' para cada mês estão detalhados na tabela abaixo e na seção 'Memória de Cálculo'.")
+
 with col_ano:
     anos_disponiveis = list(range(2020, date.today().year + 2))
     ano = st.selectbox("Ano", anos_disponiveis, index=len(anos_disponiveis)-2, label_visibility="collapsed")
