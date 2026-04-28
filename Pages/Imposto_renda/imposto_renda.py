@@ -61,6 +61,25 @@ if btn_carregar:
 df_bens, df_divs, df_eventos, df_vendas = st.session_state.df_bens, st.session_state.df_divs, st.session_state.df_eventos, st.session_state.df_vendas
 
 if not df_bens.empty or not df_divs.empty:
+    df_bens.loc[df_bens['setor'] == 'FIAGRO', 'categoria'] = 'FIAGRO'
+
+    map_codigo_receita = {
+        'AÇÕES': 'Grupo 03 - Cod. 01 - Pais. 105',
+        'STOCK': 'Grupo 03 - Cod. 01 - Pais. 249',
+        'REIT': 'Grupo 03 - Cod. 01 - Pais. 249',
+        'ETF-US': 'Grupo 07 - Cod. 99 - Pais. 249',
+        'ETF': 'Grupo 07 - Cod. 08 - Pais. 105',
+        'FII': 'Grupo 07 - Cod. 03 - Pais. 105',
+        'FIAGRO': 'Grupo 07 - Cod. 02 - Pais. 105',
+        'BDR': 'Grupo 04 - Cod. 04 - Pais. 105'
+            
+    }
+    # 3. Criação da nova coluna usando .map()
+    df_bens['codigo_receita'] = df_bens['categoria'].map(map_codigo_receita)
+
+    # 4. Tratamento opcional para categorias não mapeadas (evitar NaN)
+    df_bens['codigo_receita'] = df_bens['codigo_receita'].fillna("Categoria não mapeada")
+
     categorias_unicas = sorted(df_bens['categoria'].unique().tolist()) if not df_bens.empty else []
     filtro_cat = st.pills("Categorias", categorias_unicas, selection_mode="multi")
 
@@ -88,8 +107,9 @@ if not df_bens.empty or not df_divs.empty:
         categoria = ativo.get('categoria', 'N/A').upper()
         is_exterior = categoria in ['STOCK', 'REIT', 'ETF-US']
         fk_ativo_atual = ativo.get('ativo_cat') 
+        codigo_receita = ativo.get('codigo_receita')
 
-        with st.expander(f"📌 {ticker} - {nome_empresa} - {categoria}"):
+        with st.expander(f"📌 {ticker} - {nome_empresa} - {categoria} - {codigo_receita}"):
             tabela_bens = []
             v_ant_brl, v_atu_brl = fmt_brl(ativo.get('custo_anterior_brl', 0)), fmt_brl(ativo.get('custo_atual_brl', 0))
             
@@ -196,7 +216,7 @@ if not df_bens.empty or not df_divs.empty:
             st.code(texto_limpo, wrap_lines=True)
             
             if desc_transito_list:
-                st.caption("⚠️ **Copiar Item de Créditos em Trânsito:**")
+                st.caption("⚠️ **Copiar Item de Créditos em Trânsito - Grupo 99 - Cod. 07 - Pais. 105:**")
                 for item_tr in desc_transito_list:
                     st.code(item_tr.upper(), wrap_lines=True)
 else:
