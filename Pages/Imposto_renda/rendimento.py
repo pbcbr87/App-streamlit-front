@@ -40,6 +40,10 @@ with col_ano:
 if col_btn.button("🔄 Recarregar Tudo", use_container_width=True):
     if "df_ir_rendimentos" in st.session_state:
         del st.session_state.df_ir_rendimentos
+    if "df_ir_bonificacoes" in st.session_state:
+        del st.session_state.df_ir_bonificacoes
+    if "df_resumo_isento" in st.session_state:
+        del st.session_state.df_resumo_isento
     st.rerun()
 
 # --- 2. CARREGAMENTO ---
@@ -60,8 +64,67 @@ if "df_ir_rendimentos" not in st.session_state:
     except Exception as e:
         st.error(f"Erro ao carregar dados: {e}")
 
+if "df_resumo_isento" not in st.session_state:
+    try:
+        user_id = st.session_state.get("id", 0)
+        # Buscamos os dados do ano-calendário selecionado
+        resumo_raw = requests.get(f"{API_URL}ir/resumo_vendas_mensal/{user_id}", 
+                                 params={"ano": ano_sel}, headers=headers).json()
+        
+        df_res_temp = pd.DataFrame(resumo_raw)
+        
+        if not df_res_temp.empty:
+            # Soma o lucro isento de todos os meses do ano
+            total_isento_ano = df_res_temp['lucro_isento_acoes'].sum()
+            
+            if total_isento_ano > 0:
+                # Criamos o DataFrame de uma linha para o append
+                df_lucro_isento = pd.DataFrame([{
+                    'tipo_rend_id': "20 - Ganhos líquidos em operações no mercado à vista de ações...",
+                    'codigo_ativo': "-",
+                    'nome': "LUCRO ISENTO NAS VENDAS DE AÇÕES (ATÉ 20K)",
+                    'total_liquido_brl': total_isento_ano
+                }])
+                st.session_state.df_resumo_isento = df_lucro_isento
+            else:
+                st.session_state.df_resumo_isento = pd.DataFrame()
+        else:
+            st.session_state.df_resumo_isento = pd.DataFrame()
+    except Exception as e:
+        st.error(f"Erro ao carregar resumo de vendas: {e}")
+
+if "df_ir_bonificacoes" not in st.session_state:
+    try:
+        token = st.session_state.get("token")
+        headers = {'Authorization': f'Bearer {token}'}
+        resp_boni = requests.get(f"{API_URL}ir/bonificacoes/{user_id}", params={"ano": ano_sel}, headers=headers)
+        
+        if resp_boni.status_code == 200:
+            df_raw_boni = pd.DataFrame(resp_boni.json())
+            if not df_raw_boni.empty:
+                # Filtramos apenas BONIFICAÇÃO
+                df_boni_filtrado = df_raw_boni[df_raw_boni['tipo'] == 'BONIFICAÇÃO'].copy()
+                if not df_boni_filtrado.empty:
+                    # Preparamos o DataFrame para bater com a estrutura do df_isento
+                    df_to_append = pd.DataFrame()
+                    df_to_append['tipo_rend_id'] = ["18 - Incorporação de lucros ao capital / Bonificação em ações"] * len(df_boni_filtrado)
+                    df_to_append['codigo_ativo'] = df_boni_filtrado['codigo_ativo'].values
+                    df_to_append['nome'] = df_boni_filtrado['nome'].values
+                    
+                    # Calculamos o valor e formatamos para String (para manter seu padrão fmt_brl)
+                    df_to_append['total_liquido_brl'] = df_boni_filtrado['preco_op_brl'].values
+                    
+                    # Guardamos no session_state para uso
+                    st.session_state.df_ir_bonificacoes = df_to_append
+                else:
+                    st.session_state.df_ir_bonificacoes = pd.DataFrame()
+    except Exception as e:
+        st.error(f"Erro ao carregar bonificações: {e}")
+
 # --- 3. EXIBIÇÃO ---
 df_base = st.session_state.get("df_ir_rendimentos", pd.DataFrame())
+df_boni_ext = st.session_state.get("df_ir_bonificacoes", pd.DataFrame())
+df_venda_isenta = st.session_state.get("df_resumo_isento", pd.DataFrame())
 
 if not df_base.empty:
     df = df_base.copy()
@@ -79,6 +142,14 @@ if not df_base.empty:
 
     # 🔵 TABELA 1: ISENTOS
     df_isento = df[df['Cod'].isin(['09', '99'])].copy()
+    if not df_boni_ext.empty:
+        df_isento = pd.concat([df_isento, df_boni_ext], ignore_index=True)
+
+    if not df_venda_isenta.empty:
+        df_isento = pd.concat([df_isento, df_venda_isenta], ignore_index=True)
+
+    df_isento = df_isento.sort_values(by=['tipo_rend_id', 'codigo_ativo'])
+
     if not df_isento.empty:
         st.subheader("🔵 Rendimentos Isentos e Não Tributáveis")
         df_isento['valor_f'] = df_isento['total_liquido_brl'].apply(fmt_brl)
