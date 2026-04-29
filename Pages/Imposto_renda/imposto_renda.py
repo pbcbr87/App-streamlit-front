@@ -60,8 +60,38 @@ if btn_carregar:
 
 df_bens, df_divs, df_eventos, df_vendas = st.session_state.df_bens, st.session_state.df_divs, st.session_state.df_eventos, st.session_state.df_vendas
 
-if not df_bens.empty or not df_divs.empty:
-    df_bens.loc[df_bens['setor'] == 'FIAGRO', 'categoria'] = 'FIAGRO'
+# --- 4. LÓGICA DE PROCESSAMENTO ---
+if not (df_bens.empty and df_divs.empty and df_vendas.empty):
+    # --- CONSTRUÇÃO DO CADASTRO CENTRALIZADO ---
+    cadastro_ativos = {}
+
+    def alimentar_cadastro(df):
+        if df is not None and not df.empty:
+            for _, row in df.iterrows():
+                tk = str(row.get('codigo_ativo', '')).upper()
+                if not tk: continue
+                
+                if tk not in cadastro_ativos:
+                    cadastro_ativos[tk] = {
+                        'nome': str(row.get('nome', '')).upper(),
+                        'cnpj': row.get('cnpj', '00.000.000/0000-00'),
+                        'categoria': str(row.get('categoria', 'N/A')).upper(),
+                        'ativo_cat': row.get('ativo_cat')
+                    }
+                else:
+                    # Preenchimento incremental
+                    if not cadastro_ativos[tk]['nome'] or cadastro_ativos[tk]['nome'] == 'NAN':
+                        cadastro_ativos[tk]['nome'] = str(row.get('nome', '')).upper()
+                    if cadastro_ativos[tk]['cnpj'] == '00.000.000/0000-00':
+                        cadastro_ativos[tk]['cnpj'] = row.get('cnpj', '00.000.000/0000-00')
+
+    # Prioridade: Bens -> Dividendos -> Vendas
+    if not df_bens.empty:
+        df_bens.loc[df_bens['setor'] == 'FIAGRO', 'categoria'] = 'FIAGRO'
+    
+    alimentar_cadastro(df_bens)
+    alimentar_cadastro(df_divs)
+    alimentar_cadastro(df_vendas)
 
     map_codigo_receita = {
         'AÇÕES': 'Grupo 03 - Cod. 01 - Pais. 105',
@@ -72,43 +102,34 @@ if not df_bens.empty or not df_divs.empty:
         'FII': 'Grupo 07 - Cod. 03 - Pais. 105',
         'FIAGRO': 'Grupo 07 - Cod. 02 - Pais. 105',
         'BDR': 'Grupo 04 - Cod. 04 - Pais. 105'
-            
     }
-    # 3. Criação da nova coluna usando .map()
-    df_bens['codigo_receita'] = df_bens['categoria'].map(map_codigo_receita)
 
-    # 4. Tratamento opcional para categorias não mapeadas (evitar NaN)
-    df_bens['codigo_receita'] = df_bens['codigo_receita'].fillna("Categoria não mapeada")
-
-    categorias_unicas = sorted(df_bens['categoria'].unique().tolist()) if not df_bens.empty else []
-    filtro_cat = st.pills("Categorias", categorias_unicas, selection_mode="multi")
-
-    todos_tickers = sorted(pd.concat([
-        df_bens['codigo_ativo'] if not df_bens.empty else pd.Series(dtype=str),
-        df_divs['codigo_ativo'] if not df_divs.empty else pd.Series(dtype=str),
-        df_vendas['codigo_ativo'] if not df_vendas.empty else pd.Series(dtype=str)
-    ]).unique())
+    todas_cats = sorted(list(set(info['categoria'] for info in cadastro_ativos.values())))
+    filtro_cat = st.pills("Categorias", todas_cats, selection_mode="multi")
+    todos_tickers = sorted(cadastro_ativos.keys())
 
     for ticker in todos_tickers:
+        dados_base = cadastro_ativos[ticker]
+        nome_empresa = dados_base['nome'] if dados_base['nome'] not in ['', 'NAN'] else "ATIVO VENDIDO / VER EXTRATO"
+        cnpj_final = dados_base['cnpj']
+        categoria = dados_base['categoria']
+        fk_ativo_atual = dados_base['ativo_cat']
+        codigo_receita = map_codigo_receita.get(categoria, "Categoria não mapeada")
+        
+        # DEFINIÇÃO DE EXTERIOR (Necessário para a lógica das tabelas abaixo)
+        is_exterior = categoria in ['STOCK', 'REIT', 'ETF-US']
+
+        # Filtros
+        if (busca_ticker and (busca_ticker not in ticker and busca_ticker not in nome_empresa)):
+            continue
+        if filtro_cat and categoria not in filtro_cat:
+            continue
+
+        # Dados numéricos
         ativo_list = df_bens[df_bens['codigo_ativo'] == ticker].to_dict('records') if not df_bens.empty else []
         ativo = ativo_list[0] if ativo_list else {}
         subset_divs = df_divs[df_divs['codigo_ativo'] == ticker] if not df_divs.empty else pd.DataFrame()
         subset_vendas = df_vendas[df_vendas['codigo_ativo'] == ticker] if not df_vendas.empty else pd.DataFrame()
-
-        nome_empresa = ativo.get('nome', '').upper()
-        if not nome_empresa and not subset_divs.empty:
-            nome_empresa = subset_divs['nome'].iloc[0].upper()
-        nome_empresa = nome_empresa or "ATIVO VENDIDO / VER EXTRATO"
-        cnpj_final = ativo.get('cnpj', "00.000.000/0000-00")
-
-        if (busca_ticker and (busca_ticker not in ticker.upper() and busca_ticker not in nome_empresa)) or \
-           (filtro_cat and ativo.get('categoria', 'N/A').upper() not in filtro_cat):
-            continue
-
-        categoria = ativo.get('categoria', 'N/A').upper()
-        is_exterior = categoria in ['STOCK', 'REIT', 'ETF-US']
-        fk_ativo_atual = ativo.get('ativo_cat') 
-        codigo_receita = ativo.get('codigo_receita')
 
         with st.expander(f"📌 {ticker} - {nome_empresa} - {categoria} - {codigo_receita}"):
             tabela_bens = []
