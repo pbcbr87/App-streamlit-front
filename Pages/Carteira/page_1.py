@@ -45,7 +45,7 @@ def get_operacoes(token):
     return dict_resp
 
 # Enviar dados para o banco de dados
-@st.dialog("Enviando Dados", on_dismiss='rerun')
+@st.dialog("Enviando Dados",width="large", on_dismiss='rerun')
 def enviar_tabela(dataframe, b3):
     st.session_state['carteira_api'] = None
     st.session_state['operacao_api'] = None
@@ -84,10 +84,8 @@ def enviar_tabela(dataframe, b3):
         if linhas_rejeitadas:
             st.warning(f"Foram encontradas {len(linhas_rejeitadas)} linha(s) com erro de validação.")
             df_erros = pd.DataFrame(linhas_rejeitadas)
-
             st.dataframe(df_erros, width='content',
-                            column_config={"msg": st.column_config.ListColumn(width='large'),
-                                        "data_operacao": st.column_config.DateColumn(format="DD.MM.YYYY")})
+                            column_config={"msg": st.column_config.ListColumn(width='large')}, hide_index=True)
         else:
             st.text(f"Detalhe de erro da API: {detail}")
 
