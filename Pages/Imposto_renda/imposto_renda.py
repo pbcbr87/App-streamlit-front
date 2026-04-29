@@ -85,7 +85,8 @@ if not df_bens.empty or not df_divs.empty:
 
     todos_tickers = sorted(pd.concat([
         df_bens['codigo_ativo'] if not df_bens.empty else pd.Series(dtype=str),
-        df_divs['codigo_ativo'] if not df_divs.empty else pd.Series(dtype=str)
+        df_divs['codigo_ativo'] if not df_divs.empty else pd.Series(dtype=str),
+        df_vendas['codigo_ativo'] if not df_vendas.empty else pd.Series(dtype=str)
     ]).unique())
 
     for ticker in todos_tickers:
