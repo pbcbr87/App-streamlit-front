@@ -22,6 +22,20 @@ def fmt_qtd(valor):
         s = s.rstrip('0').rstrip(',')
     return s
 
+def formatar_cnpj(cnpj):
+    cnpj = str(cnpj).zfill(14) # Garante que tenha 14 dígitos (preenche com zeros)
+    return f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
+
+def safe_post_list(url, json_data):
+    try:
+        token = st.session_state.get("token")
+        headers = {'Authorization': f'Bearer {token}'}
+        response = requests.post(url, json=json_data, headers=headers)
+        return response.json() if response.status_code == 200 else []
+    except Exception as e:
+        st.error(f"Erro ao conectar na API (POST): {e}")
+        return []
+
 def safe_get_list(url, params):
     try:
         token = st.session_state.get("token")
@@ -33,7 +47,7 @@ def safe_get_list(url, params):
         return []
 
 # --- 1. ESTADO DA SESSÃO ---
-for df_key in ["df_bens", "df_divs", "df_eventos", "df_vendas"]:
+for df_key in ["df_bens", "df_divs", "df_eventos", "df_vendas", "df_base_oficial"]:
     if df_key not in st.session_state:
         st.session_state[df_key] = pd.DataFrame()
 
@@ -52,46 +66,49 @@ with col_filtro:
 if btn_carregar:
     with st.spinner("Buscando dados na API..."):
         user_id = st.session_state.get("id", 0)
+        
+        # Chamadas usando seu padrão safe_get_list
         st.session_state.df_bens = pd.DataFrame(safe_get_list(f"{API_URL}ir/bens_direito/{user_id}", {"ano": ano_calendario}))
         st.session_state.df_divs = pd.DataFrame(safe_get_list(f"{API_URL}ir/ir_dividendos/{user_id}", {"ano": ano_calendario}))
         st.session_state.df_eventos = pd.DataFrame(safe_get_list(f"{API_URL}ir/bonificacoes/{user_id}", {"ano": ano_calendario}))
         st.session_state.df_vendas = pd.DataFrame(safe_get_list(f"{API_URL}ir/resumo_vendas_ativos/{user_id}", {"ano": ano_calendario}))
+
+        # Coleta os IDs para a busca consolidada
+        todos_ids = set()
+        for dff in [st.session_state.df_bens, st.session_state.df_divs, st.session_state.df_eventos, st.session_state.df_vendas]:
+            if not dff.empty and 'ativo_cat' in dff.columns:
+                todos_ids.update(dff['ativo_cat'].dropna().unique().tolist())
+
+        # USANDO O PADRÃO SAFE PARA A NOVA ROTA
+        if todos_ids:
+            dados_base = safe_post_list(f"{API_URL}ativos/lista_ativos_base", list(todos_ids))
+            st.session_state.df_base_oficial = pd.DataFrame(dados_base)
+        else:
+            st.session_state.df_base_oficial = pd.DataFrame()
+        
         st.success("Dados carregados com sucesso!")
 
-df_bens, df_divs, df_eventos, df_vendas = st.session_state.df_bens, st.session_state.df_divs, st.session_state.df_eventos, st.session_state.df_vendas
+df_bens = st.session_state.df_bens
+df_divs = st.session_state.df_divs
+df_eventos = st.session_state.df_eventos
+df_vendas = st.session_state.df_vendas
+df_base_oficial = st.session_state.df_base_oficial
 
 # --- 4. LÓGICA DE PROCESSAMENTO ---
-if not (df_bens.empty and df_divs.empty and df_vendas.empty):
-    # --- CONSTRUÇÃO DO CADASTRO CENTRALIZADO ---
+if not df_base_oficial.empty:
     cadastro_ativos = {}
-
-    def alimentar_cadastro(df):
-        if df is not None and not df.empty:
-            for _, row in df.iterrows():
-                tk = str(row.get('codigo_ativo', '')).upper()
-                if not tk: continue
-                
-                if tk not in cadastro_ativos:
-                    cadastro_ativos[tk] = {
-                        'nome': str(row.get('nome', '')).upper(),
-                        'cnpj': row.get('cnpj', '00.000.000/0000-00'),
-                        'categoria': str(row.get('categoria', 'N/A')).upper(),
-                        'ativo_cat': row.get('ativo_cat')
-                    }
-                else:
-                    # Preenchimento incremental
-                    if not cadastro_ativos[tk]['nome'] or cadastro_ativos[tk]['nome'] == 'NAN':
-                        cadastro_ativos[tk]['nome'] = str(row.get('nome', '')).upper()
-                    if cadastro_ativos[tk]['cnpj'] == '00.000.000/0000-00':
-                        cadastro_ativos[tk]['cnpj'] = row.get('cnpj', '00.000.000/0000-00')
-
-    # Prioridade: Bens -> Dividendos -> Vendas
-    if not df_bens.empty:
-        df_bens.loc[df_bens['setor'] == 'FIAGRO', 'categoria'] = 'FIAGRO'
-    
-    alimentar_cadastro(df_bens)
-    alimentar_cadastro(df_divs)
-    alimentar_cadastro(df_vendas)
+    for _, row in df_base_oficial.iterrows():
+        # Usamos 'codigo_ativo' conforme seu modelo
+        tk = str(row.get('codigo_ativo', '')).upper().strip()
+           
+        cadastro_ativos[tk] = {
+            'nome': str(row.get('razao_social', '')).upper().strip(), # Razão Social é melhor para o IR
+            'cnpj': formatar_cnpj(row.get('cnpj_ativo', '00000000000000')),     # Campo correto: cnpj_ativo
+            'categoria': str(row.get('categoria_fiscal', 'N/A')).upper().strip(),
+            'ativo_cat': row.get('ativo_cat'),
+            'adm_nome': row.get('nome_adm', 'NÃO INFORMADO'),        # Nomes exatos do seu Ativos class
+            'adm_cnpj': formatar_cnpj(row.get('cnpj_adm', '00000000000000'))
+        }
 
     map_codigo_receita = {
         'AÇÕES': 'Grupo 03 - Cod. 01 - Pais. 105',
@@ -103,33 +120,33 @@ if not (df_bens.empty and df_divs.empty and df_vendas.empty):
         'FIAGRO': 'Grupo 07 - Cod. 02 - Pais. 105',
         'BDR': 'Grupo 04 - Cod. 04 - Pais. 105'
     }
-
     todas_cats = sorted(list(set(info['categoria'] for info in cadastro_ativos.values())))
     filtro_cat = st.pills("Categorias", todas_cats, selection_mode="multi")
+    
+    # Filtramos e ordenamos os tickers
     todos_tickers = sorted(cadastro_ativos.keys())
 
     for ticker in todos_tickers:
         dados_base = cadastro_ativos[ticker]
-        nome_empresa = dados_base['nome'] if dados_base['nome'] not in ['', 'NAN'] else "ATIVO VENDIDO / VER EXTRATO"
+        nome_empresa = dados_base['nome']
         cnpj_final = dados_base['cnpj']
         categoria = dados_base['categoria']
         fk_ativo_atual = dados_base['ativo_cat']
         codigo_receita = map_codigo_receita.get(categoria, "Categoria não mapeada")
-        
-        # DEFINIÇÃO DE EXTERIOR (Necessário para a lógica das tabelas abaixo)
         is_exterior = categoria in ['STOCK', 'REIT', 'ETF-US']
 
-        # Filtros
+        # Filtros de interface
         if (busca_ticker and (busca_ticker not in ticker and busca_ticker not in nome_empresa)):
             continue
         if filtro_cat and categoria not in filtro_cat:
             continue
 
-        # Dados numéricos
+        # Seleção de dados específicos para este ticker
         ativo_list = df_bens[df_bens['codigo_ativo'] == ticker].to_dict('records') if not df_bens.empty else []
         ativo = ativo_list[0] if ativo_list else {}
         subset_divs = df_divs[df_divs['codigo_ativo'] == ticker] if not df_divs.empty else pd.DataFrame()
         subset_vendas = df_vendas[df_vendas['codigo_ativo'] == ticker] if not df_vendas.empty else pd.DataFrame()
+        subset_eventos = df_eventos[df_eventos['fk_ativo'] == fk_ativo_atual] if not df_eventos.empty else pd.DataFrame()
 
         with st.expander(f"📌 {ticker} - {nome_empresa} - {categoria} - {codigo_receita}"):
             tabela_bens = []
@@ -139,7 +156,7 @@ if not (df_bens.empty and df_divs.empty and df_vendas.empty):
             desc_principal = [f"TICKER: {ticker}", f"{label_entidade}: {nome_empresa}"]
 
             # Adiciona campos específicos por categoria
-            if is_exterior:
+            if is_exterior or categoria in ['BDR']:
                 pass # Stocks/REITs não levam CNPJ
             elif categoria in ['FII', 'FIAGRO', 'ETF']:
                 desc_principal.append(f"CNPJ DO FUNDO: {cnpj_final}")
