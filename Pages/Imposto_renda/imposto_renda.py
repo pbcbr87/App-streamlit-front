@@ -134,24 +134,23 @@ if not (df_bens.empty and df_divs.empty and df_vendas.empty):
         with st.expander(f"📌 {ticker} - {nome_empresa} - {categoria} - {codigo_receita}"):
             tabela_bens = []
             v_ant_brl, v_atu_brl = fmt_brl(ativo.get('custo_anterior_brl', 0)), fmt_brl(ativo.get('custo_atual_brl', 0))
+            # Define os campos básicos comuns a todos
+            desc_principal = [f"TICKER: {ticker}", f"EMPRESA: {nome_empresa}"]
+
+            # Adiciona campos específicos por categoria
             if is_exterior:
-                desc_principal = [
-                    f"TICKER: {ticker}", f"EMPRESA: {nome_empresa}",
-                    f"Quantidade em {ano_calendario-1}: {fmt_qtd(ativo.get('qtd_anterior', 0))}",
-                    f"Quantidade em {ano_calendario}: {fmt_qtd(ativo.get('qtd_atual', 0))}"
-                ]
+                pass # Stocks/REITs não levam CNPJ
             elif categoria in ['FII', 'FIAGRO']:
-                desc_principal = [
-                    f"TICKER: {ticker}", f"EMPRESA: {nome_empresa}", f"CNPJ DO FUNDO: {cnpj_final}", f'ADM. DO FUNDO: XXXX CNPJ: 00.000.000/0000-00',
-                    f"Quantidade em {ano_calendario-1}: {fmt_qtd(ativo.get('qtd_anterior', 0))}",
-                    f"Quantidade em {ano_calendario}: {fmt_qtd(ativo.get('qtd_atual', 0))}"
-                ]
+                desc_principal.append(f"CNPJ DO FUNDO: {cnpj_final}")
+                desc_principal.append(f"ADM. DO FUNDO: {dados_base.get('adm_nome', 'NOME_ADM')} CNPJ: {dados_base.get('adm_cnpj', '00.000.000/0000-00')}")
             else:
-                desc_principal = [
-                    f"TICKER: {ticker}", f"EMPRESA: {nome_empresa}", f"CNPJ: {cnpj_final}",
-                    f"Quantidade em {ano_calendario-1}: {fmt_qtd(ativo.get('qtd_anterior', 0))}",
-                    f"Quantidade em {ano_calendario}: {fmt_qtd(ativo.get('qtd_atual', 0))}"
-                ]
+                desc_principal.append(f"CNPJ: {cnpj_final}")
+
+            # Adiciona as quantidades (comum a todos)
+            desc_principal.extend([
+                f"QUANTIDADE EM {ano_calendario-1}: {fmt_qtd(ativo.get('qtd_anterior', 0))}",
+                f"QUANTIDADE EM {ano_calendario}: {fmt_qtd(ativo.get('qtd_atual', 0))}"
+            ])
 
             tabela_bens.append({"🔍 Posição": f"📦 Quantidade de {ticker}", f"📅 {ano_calendario-1}": fmt_qtd(ativo.get('qtd_anterior', 0)), f"📅 {ano_calendario}": fmt_qtd(ativo.get('qtd_atual', 0))})
             
