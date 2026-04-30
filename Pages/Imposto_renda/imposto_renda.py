@@ -135,7 +135,8 @@ if not (df_bens.empty and df_divs.empty and df_vendas.empty):
             tabela_bens = []
             v_ant_brl, v_atu_brl = fmt_brl(ativo.get('custo_anterior_brl', 0)), fmt_brl(ativo.get('custo_atual_brl', 0))
             # Define os campos básicos comuns a todos
-            desc_principal = [f"TICKER: {ticker}", f"EMPRESA: {nome_empresa}"]
+            label_entidade = "FUNDO" if categoria in ['FII', 'FIAGRO', 'ETF'] else "EMPRESA"
+            desc_principal = [f"TICKER: {ticker}", f"{label_entidade}: {nome_empresa}"]
 
             # Adiciona campos específicos por categoria
             if is_exterior:
