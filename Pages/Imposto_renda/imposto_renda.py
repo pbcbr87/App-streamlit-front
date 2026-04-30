@@ -140,7 +140,7 @@ if not (df_bens.empty and df_divs.empty and df_vendas.empty):
             # Adiciona campos específicos por categoria
             if is_exterior:
                 pass # Stocks/REITs não levam CNPJ
-            elif categoria in ['FII', 'FIAGRO']:
+            elif categoria in ['FII', 'FIAGRO', 'ETF']:
                 desc_principal.append(f"CNPJ DO FUNDO: {cnpj_final}")
                 desc_principal.append(f"ADM. DO FUNDO: {dados_base.get('adm_nome', 'NOME_ADM')} CNPJ: {dados_base.get('adm_cnpj', '00.000.000/0000-00')}")
             else:
