@@ -106,7 +106,7 @@ if not df_base_oficial.empty:
             'cnpj': formatar_cnpj(row.get('cnpj_ativo', '00000000000000')),     # Campo correto: cnpj_ativo
             'categoria': str(row.get('categoria_fiscal', 'N/A')).upper().strip(),
             'ativo_cat': row.get('ativo_cat'),
-            'adm_nome': row.get('nome_adm', 'NÃO INFORMADO')[:40],        # Nomes exatos do seu Ativos class
+            'adm_nome': str(row.get('nome_adm', 'NÃO INFORMADO'))[:40],        # Nomes exatos do seu Ativos class
             'adm_cnpj': formatar_cnpj(row.get('cnpj_adm', '00000000000000'))
         }
 
