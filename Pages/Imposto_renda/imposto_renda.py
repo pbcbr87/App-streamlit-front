@@ -102,7 +102,7 @@ if not df_base_oficial.empty:
         tk = str(row.get('codigo_ativo', '')).upper().strip()
            
         cadastro_ativos[tk] = {
-            'nome': str(row.get('razao_social', row.get('nome', ''))).upper().strip()[:40], # Razão Social é melhor para o IR
+            'nome': str(row.get('nome_curto',row.get('razao_social', row.get('nome', '')))).upper().strip()[:40], # Razão Social é melhor para o IR
             'cnpj': formatar_cnpj(row.get('cnpj_ativo', '00000000000000')),     # Campo correto: cnpj_ativo
             'categoria': str(row.get('categoria_fiscal', 'N/A')).upper().strip(),
             'ativo_cat': row.get('ativo_cat'),
