@@ -97,12 +97,14 @@ df_base_oficial = st.session_state.df_base_oficial
 # --- 4. LÓGICA DE PROCESSAMENTO ---
 if not df_base_oficial.empty:
     cadastro_ativos = {}
+    df_base_oficial = df_base_oficial.fillna('')
     for _, row in df_base_oficial.iterrows():
         # Usamos 'codigo_ativo' conforme seu modelo
         tk = str(row.get('codigo_ativo', '')).upper().strip()
-           
+        
+        nome_raw = row.get('nome_curto') or row.get('razao_social') or row.get('nome') or 'NÃO INFORMADO'
         cadastro_ativos[tk] = {
-            'nome': str(row.get('nome_curto',row.get('razao_social', row.get('nome', '')))).upper().strip()[:40], # Razão Social é melhor para o IR
+            'nome': str(nome_raw).upper().strip()[:40], # Razão Social é melhor para o IR
             'cnpj': formatar_cnpj(row.get('cnpj_ativo', '00000000000000')),     # Campo correto: cnpj_ativo
             'categoria': str(row.get('categoria_fiscal', 'N/A')).upper().strip(),
             'ativo_cat': row.get('ativo_cat'),
