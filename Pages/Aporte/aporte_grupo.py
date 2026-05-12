@@ -461,7 +461,7 @@ def widget_ajuste_manual_dinamico(df, valor_total_aporte, moeda):
         <div style="background-color: #f0f2f6; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
             <div style="display: flex; justify-content: space-between; font-weight: bold; color: #31333F;">
                 <div style="flex: 1;">Ticker</div>
-                <div style="flex: 1.5;">Valor Aporte (R$)</div>
+                <div style="flex: 1.5;">Valor Aporte</div>
                 <div style="flex: 1;">Qtd. Aprox.</div>
                 <div style="flex: 2;">Alocação (%)</div>
                 <div style="flex: 1.5;">Sugestão</div>
