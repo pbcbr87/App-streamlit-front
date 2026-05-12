@@ -89,7 +89,7 @@ df_carteira = pd.DataFrame(st.session_state['carteira_api_aporte'])
 #Trocar None por valores validos.
 cols_numericas = df_carteira.select_dtypes(include=[np.number]).columns
 df_carteira[cols_numericas] = df_carteira[cols_numericas].fillna(0)
-cols_texto = df_carteira.select_dtypes(include=['object']).columns
+cols_texto = df_carteira.select_dtypes(include=['object', "string"]).columns
 df_carteira[cols_texto] = df_carteira[cols_texto].fillna('')
 #-----------------------------------------------------------
 #Containers layout

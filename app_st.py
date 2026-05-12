@@ -191,7 +191,7 @@ def login():
         user_input = st.text_input('Usuário')
         senha_input = st.text_input('Senha', type='password')
 
-        if st.form_submit_button("Acessar Sistema", use_container_width=True):
+        if st.form_submit_button("Acessar Sistema", width="stretch"):
             if not user_input or not senha_input:
                 st.warning('⚠️ Preencha usuário e senha.')
                 return
@@ -283,11 +283,14 @@ def navegacao():
     
     cateira_pages = [st.Page('Pages/Carteira/page_2.py', title='Carteira', default=True),
                     st.Page('Pages/Carteira/page_1.py', title='Operações'),
-                    st.Page('Pages/Carteira/movimentacao.py', title='Movimentações'),
-                    st.Page('Pages/Carteira/page_3.py', title='Planejar'),
-                    st.Page('Pages/Carteira/page_4.py', title='Aporte')
+                    st.Page('Pages/Carteira/movimentacao.py', title='Movimentações')
                     ]
     
+    aporte_planejado_pages = [st.Page('Pages/Aporte/planejamento.py', title='Planejar'),
+                            st.Page('Pages/Aporte/aporte_simples.py', title='Aporte simples'),
+                            st.Page('Pages/Aporte/aporte_grupo.py', title='Aporte em Grupo')]
+
+
     imposto_renda_pages = [st.Page('Pages/Imposto_renda/imposto_renda.py', title='Bens Direito - BRL/USD'),
                             st.Page('Pages/Imposto_renda/resumo_vendas_mensal.py', title='Operações Comuns e FIIs - BRL'),
                             st.Page('Pages/Imposto_renda/rendimento.py', title='Rendimentos - BRL'),
@@ -314,7 +317,7 @@ def navegacao():
 
     admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:')]
 
-    pages = {"Sua Carteira": cateira_pages, "Remunerações Coorporativas": dividendos_usuarios_pages, "Imposto de Renda": imposto_renda_pages, "Eventos Coorporativos": evento_usuario_pages, "Conta": conta_pages}
+    pages = {"Sua Carteira": cateira_pages, "Aporte Planejado": aporte_planejado_pages, "Remunerações Coorporativas": dividendos_usuarios_pages, "Imposto de Renda": imposto_renda_pages, "Eventos Coorporativos": evento_usuario_pages, "Conta": conta_pages}
     # pages = {"Manutençao": [st.Page(maintenance_page_gif, title='Manutenção')]}
     if st.session_state.admin == True:
         pages["Admin"] = admin_pages

@@ -63,7 +63,7 @@ def excluir():
 
 def pesquisa_online(ativo):
     resp = requests.get(f'{API_URL}ativos/pesquisa_ativo/{ativo}', headers={'Authorization':f'Bearer {st.session_state.token}'})
-    
+    print(resp)
     try:
         resposta_json = resp.json()
     except:

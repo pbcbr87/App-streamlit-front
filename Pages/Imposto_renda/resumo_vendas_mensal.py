@@ -311,7 +311,7 @@ if not df.empty:
         else:
             msg_help = "Cálculo simulado: (Imposto Bruto + Saldo DARF Mínima) - (Novo IRRF + Crédito Acumulado)."
    
-        if st.button("💾 Salvar", use_container_width=True, type="primary"):
+        if st.button("💾 Salvar", width="stretch", type="primary"):
             payload = {
                 "periodo_referencia": item['periodo_referencia'].strftime('%Y-%m-%d'),
                 "irrf_retido_mes": novo_irrf,
