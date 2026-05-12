@@ -451,7 +451,7 @@ def formata_br(valor):
     """Converte um número para string no formato R$ 1.234,56"""
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-def widget_ajuste_manual_dinamico(df, valor_total_aporte):
+def widget_ajuste_manual_dinamico(df, valor_total_aporte, moeda):
     novos_dados = []
     total_percentual_atual = 0.0
 
@@ -487,12 +487,11 @@ def widget_ajuste_manual_dinamico(df, valor_total_aporte):
             # Valor Financeiro Calculado (BR)
             novo_percentual = st.session_state[f"perc_{ticker}"]
             valor_financeiro = (novo_percentual / 100) * valor_total_aporte
-            c2.write(f"R$ {formata_br(valor_financeiro)}")
+            c2.write(f"{moeda} {formata_br(valor_financeiro)}")
             
             # Cálculo de Ativos
             quantidade_ativos = int(valor_financeiro // preco_unitario) if preco_unitario > 0 else 0
-            valor_efetivo = quantidade_ativos * preco_unitario
-            
+                        
             c3.markdown(f"<span style='color: #0068c9; font-weight: bold; font-size: 18px;'>{quantidade_ativos}</span>", unsafe_allow_html=True)
             
             # Input de Percentual
@@ -505,15 +504,15 @@ def widget_ajuste_manual_dinamico(df, valor_total_aporte):
             
             # Sugestão original (BR)
             valor_sug_original = perc_sugerido * valor_total_aporte / 100
-            c5.write(f"R$ {formata_br(valor_sug_original)} / {formata_br(perc_sugerido)}%")
 
+            c5.write(f"{moeda} {formata_br(valor_sug_original)} / {formata_br(perc_sugerido)}%")
+        total_efetivo += valor_financeiro
         total_percentual_atual += novo_percentual
         row_atualizada = row.to_dict()
         row_atualizada.update({
             'Ajuste %': novo_percentual,
-            'Novo Aporte R$': valor_financeiro,
-            'Quantidade': quantidade_ativos,
-            'Valor Efetivo': valor_efetivo
+            f'Novo Aporte {moeda}': valor_financeiro,
+            'Quantidade': quantidade_ativos
         })
         novos_dados.append(row_atualizada)
 
@@ -524,11 +523,11 @@ def widget_ajuste_manual_dinamico(df, valor_total_aporte):
               delta=f"{formata_br(total_percentual_atual - 100)}%" if abs(total_percentual_atual - 100) > 0.01 else None,
               delta_color="inverse" if total_percentual_atual > 100.01 else "normal")
     
-    total_efetivo = sum(d['Valor Efetivo'] for d in novos_dados)
+    
     sobra = valor_total_aporte - total_efetivo
     
-    m2.metric("Total Efetivo", f"R$ {formata_br(total_efetivo)}")
-    m3.metric("Sobra em Caixa", f"R$ {formata_br(sobra)}")
+    m2.metric("Total Efetivo", f"{moeda} {formata_br(total_efetivo)}")
+    m3.metric("Sobra em Caixa", f"{moeda} {formata_br(sobra)}")
 
     if total_percentual_atual > 100.01:
         st.error(f"⚠️ Distribuição acima de 100%. Reduza {formata_br(total_percentual_atual - 100)}%.")
@@ -542,7 +541,8 @@ def widget_aposte_final():
     for item in dist:   
         lista_valores_aporte_grupo.append({
             "grupo": " + ".join(item["grupo"]),
-            "valor_alocado": item.get("valor_alocado", 0.0)
+            "valor_alocado": item.get("valor_alocado", 0.0),
+            "moeda": item.get("moeda", "BRL")
         }) 
     df_valores_aporte = pd.DataFrame(lista_valores_aporte_grupo)
   
@@ -553,11 +553,13 @@ def widget_aposte_final():
 
             if not df_ativos_check.empty:
                 valor_row = df_valores_aporte[df_valores_aporte['grupo'] == grupo]['valor_alocado']
+                moeda_row = df_valores_aporte[df_valores_aporte['grupo'] == grupo]['moeda']
                 if not valor_row.empty:
                     valor_total = float(valor_row.values[0]) # <--- Pega o número real
+                    moeda = moeda_row.values[0] if not moeda_row.empty else "BRL"
                     
-                    with st.expander(f"📌 Ajuste Manual: {grupo} - Aporte: R$ {formata_br(valor_total)}", expanded=False):
-                        widget_ajuste_manual_dinamico(df_ativos_check, valor_total)
+                    with st.expander(f"📌 Ajuste Manual: {grupo} - Aporte: {moeda} {formata_br(valor_total)}", expanded=False):
+                        widget_ajuste_manual_dinamico(df_ativos_check, valor_total, moeda)
                 else:
                     st.warning(f"Valor de aporte não encontrado para o grupo {grupo}")
 
