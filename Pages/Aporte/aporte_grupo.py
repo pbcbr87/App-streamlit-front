@@ -454,6 +454,7 @@ def formata_br(valor):
 def widget_ajuste_manual_dinamico(df, valor_total_aporte, moeda):
     novos_dados = []
     total_percentual_atual = 0.0
+    total_efetivo = 0.0
 
     # 1. Cabeçalho Estilizado
     st.markdown("""
@@ -535,7 +536,6 @@ def widget_ajuste_manual_dinamico(df, valor_total_aporte, moeda):
     return pd.DataFrame(novos_dados)
 
 def widget_aposte_final():
-    st.header("🚀 Aporte por Ativo - Ajuste Manual")
     lista_valores_aporte_grupo = []
     dist = data["sugestao_grupos"]
     for item in dist:   
@@ -545,7 +545,9 @@ def widget_aposte_final():
             "moeda": item.get("moeda", "BRL")
         }) 
     df_valores_aporte = pd.DataFrame(lista_valores_aporte_grupo)
-  
+    if "data_editor" in st.session_state['page_aportes'] and st.session_state['page_aportes']['data_editor']:
+        st.header("🚀 Aporte por Ativo - Ajuste Manual")
+
     for grupo, df_selecionado in st.session_state['page_aportes']['data_editor'].items():
         if not df_selecionado.empty:
             # Filtramos apenas os ativos marcados com o Checkbox
