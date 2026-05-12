@@ -202,7 +202,7 @@ def widget_resultado_grupo(dados):
     def aplicar_cores_estrategia(row):
         # 1. Lógica para Defasagem (Texto Colorido)
         cor_defasagem = 'color: #D32F2F' if row['Defasagem Financeira'] < 0 else 'color: #388E3C'
-        
+        cor_defasagem_per = 'color: #D32F2F' if row['Defasagem %'] < 0 else 'color: #388E3C'
         # 2. Lógica para Valor Aporte (Fundo Verde Suave se houver aporte)
         # Usamos uma cor de fundo (background) para dar destaque
         bg_aporte = 'background-color: rgba(0, 255, 0, 0.1); font-weight: bold' if row['Valor Aporte'] > 0 else ''
@@ -210,7 +210,7 @@ def widget_resultado_grupo(dados):
         estilos = [''] * len(row)
         
         # Aplicando os estilos nos índices corretos
-        estilos[3] = cor_defasagem  # Defasagem %
+        estilos[3] = cor_defasagem_per  # Defasagem %
         estilos[6] = cor_defasagem  # Defasagem Financeira
         estilos[7] = bg_aporte      # Valor Aporte (Destaque verde)
         
@@ -218,8 +218,8 @@ def widget_resultado_grupo(dados):
 
     
     colunas_visiveis = [
-        "Grupo", "Meta", "Atual %", "Defasagem %", 
-        "Valor Planejado", "Valor Atual", "Defasagem Financeira", 
+        "Grupo", "Atual %", "Meta", "Defasagem %", 
+        "Valor Atual", "Valor Planejado", "Defasagem Financeira", 
         "Valor Aporte", "Aporte %"
     ]
    
@@ -463,6 +463,7 @@ def widget_ajuste_manual_dinamico(df, valor_total_aporte, moeda):
                 <div style="flex: 1;">Ticker</div>
                 <div style="flex: 1.5;">Valor Aporte</div>
                 <div style="flex: 1;">Qtd. Aprox.</div>
+                <div style="flex: 1;">Preço Unitário</div>
                 <div style="flex: 2;">Alocação (%)</div>
                 <div style="flex: 1.5;">Sugestão</div>
             </div>
@@ -481,7 +482,7 @@ def widget_ajuste_manual_dinamico(df, valor_total_aporte, moeda):
             st.session_state[f"perc_{ticker}"] = float(perc_sugerido)
 
         with st.container(border=True):
-            c1, c2, c3, c4, c5 = st.columns([1, 1.5, 1, 2, 1.5])
+            c1, c2, c3, c4, c5, c6 = st.columns([1, 1.5, 1, 1, 2, 1.5])
             
             c1.markdown(f"**{ticker}**")
             
@@ -495,8 +496,11 @@ def widget_ajuste_manual_dinamico(df, valor_total_aporte, moeda):
                         
             c3.markdown(f"<span style='color: #0068c9; font-weight: bold; font-size: 18px;'>{quantidade_ativos}</span>", unsafe_allow_html=True)
             
+            # Preço Unitário
+            c4.write(f"{moeda} {formata_br(preco_unitario)}")
+
             # Input de Percentual
-            novo_percentual = c4.number_input(
+            novo_percentual = c5.number_input(
                 f"% {ticker}",
                 min_value=0.0, max_value=100.0, step=0.1,
                 label_visibility="collapsed",
@@ -506,7 +510,7 @@ def widget_ajuste_manual_dinamico(df, valor_total_aporte, moeda):
             # Sugestão original (BR)
             valor_sug_original = perc_sugerido * valor_total_aporte / 100
 
-            c5.write(f"{moeda} {formata_br(valor_sug_original)} / {formata_br(perc_sugerido)}%")
+            c6.write(f"{moeda} {formata_br(valor_sug_original)} / {formata_br(perc_sugerido)}%")
         total_efetivo += valor_financeiro
         total_percentual_atual += novo_percentual
         row_atualizada = row.to_dict()
