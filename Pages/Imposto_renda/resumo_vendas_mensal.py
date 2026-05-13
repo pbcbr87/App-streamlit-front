@@ -369,8 +369,11 @@ if not df.empty:
             df_vendas = st.session_state.df_vendas.copy()
             
             # 1. Preparação e Filtro
-            df_vendas['data_op_com'] = pd.to_datetime(df_vendas['data_op_com'])
-            df_vendas = df_vendas[df_vendas['data_op_com'].dt.strftime('%m/%Y') == mes_sel]
+            if 'data_op_com' in df_vendas.columns:
+                df_vendas['data_op_com'] = pd.to_datetime(df_vendas['data_op_com'])
+                df_vendas = df_vendas[df_vendas['data_op_com'].dt.strftime('%m/%Y') == mes_sel]
+            else:
+                df_vendas = pd.DataFrame()  # Garante que df_vendas seja um DataFrame vazio se a coluna não existir
             
             if not df_vendas.empty:
                 # --- REGRA DE AGRUPAMENTO ---
