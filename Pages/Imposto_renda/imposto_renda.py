@@ -5,7 +5,6 @@ from settings import API_URL
 from datetime import date
 
 
-st.write(st.session_state)
 # --- Configurações da Página ---
 st.set_page_config(page_title="Legacynvest - Auxiliar IR", layout="wide")
 
