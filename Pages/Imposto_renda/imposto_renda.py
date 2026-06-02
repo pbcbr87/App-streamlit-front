@@ -2,7 +2,10 @@ import streamlit as st
 import requests
 import pandas as pd
 from settings import API_URL
+from datetime import date
 
+
+st.write(st.session_state)
 # --- Configurações da Página ---
 st.set_page_config(page_title="Legacynvest - Auxiliar IR", layout="wide")
 
@@ -56,7 +59,7 @@ st.title("📂 Auxiliar de Declaração IRPF")
 
 col_ano, col_btn, col_filtro = st.columns([2, 2, 6])
 with col_ano:
-    ano_calendario = st.selectbox("Ano", [2024, 2025, 2026], index=1, label_visibility="collapsed")
+    ano_calendario = st.selectbox("Ano-Calendário", list(range(date.today().year, 2023, -1)), index=1, label_visibility="collapsed")
 with col_btn:
     btn_carregar = st.button("🔄 Carregar Dados", width='stretch')
 with col_filtro:
@@ -253,13 +256,22 @@ if not df_base_oficial.empty:
                     for _, ev in subset_eventos.iterrows():
                         tipo_ev, at_gerado = ev['tipo'].upper(), ev.get('ativo_gerado', 'N/A')
                         v_brl, v_usd = ev.get('preco_op_brl', 0), ev.get('preco_op_usd', 0)
+                        qtd_ev = ev.get('quant_', 0)
                         if is_exterior:
                             desc_principal.append(f"{tipo_ev} DE {at_gerado} ALTERADO CUSTO DE AQUISIÇÃO EM {fmt_brl(v_brl)} ({fmt_usd(v_usd)})")
                             val_tabela = f"{fmt_brl(v_brl)} (💵 {fmt_usd(v_usd)})"
+                            if qtd_ev != 0:
+                                p_unit_tabela = f"{fmt_brl(v_brl/qtd_ev)} (💵 {fmt_usd(v_usd/qtd_ev)})"
+                            else:
+                                p_unit_tabela = f"{fmt_brl(0)} (💵 {fmt_usd(0)})"
                         else:
                             desc_principal.append(f"{tipo_ev} DE {at_gerado} ALTERADO CUSTO DE AQUISIÇÃO EM {fmt_brl(v_brl)}")
                             val_tabela = fmt_brl(v_brl)
-                        tabela_ev.append({"📝 Evento": tipo_ev, "📦 Ativo Gerado": at_gerado, "📅 Data": pd.to_datetime(ev['data_op_com']).strftime('%d/%m/%Y'), "💰 Custo Total": val_tabela.replace("$", r"\$")})
+                            if qtd_ev != 0:
+                                p_unit_tabela = fmt_brl(v_brl/qtd_ev)
+                            else:
+                                p_unit_tabela = fmt_brl(0)
+                        tabela_ev.append({"📝 Evento": tipo_ev, "📦 Ativo Gerado": at_gerado, "📅 Data": pd.to_datetime(ev['data_op_com']).strftime('%d/%m/%Y'), "🔢 Qtd": qtd_ev, "🏷️ P Unt": p_unit_tabela.replace("$", r"\$"), "💰 Custo Total": val_tabela.replace("$", r"\$")})
                     st.table(pd.DataFrame(tabela_ev).set_index("📝 Evento"), border="horizontal", width="stretch")
 
             st.caption("📋 **Copiar Discriminação Principal (Bens e Direitos):**")

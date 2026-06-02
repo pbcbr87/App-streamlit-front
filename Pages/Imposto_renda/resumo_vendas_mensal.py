@@ -105,8 +105,7 @@ with st.expander("💡 Onde preencher os dados no Programa IRPF?"):
     st.info("📌 **Dica:** Os valores de 'Prejuízo Acumulado' e 'Lucro Tributável' para cada mês estão detalhados na tabela abaixo e na seção 'Memória de Cálculo'.")
 
 with col_ano:
-    anos_disponiveis = list(range(2020, date.today().year + 2))
-    ano = st.selectbox("Ano", anos_disponiveis, index=len(anos_disponiveis)-2, label_visibility="collapsed")
+    ano = st.selectbox("Ano-Calendário", list(range(date.today().year, 2019, -1)), index=1, label_visibility="collapsed")
 
 with col_btn:
     btn_carregar = st.button("🔄 Carregar/Atualizar Dados",width="stretch")
@@ -208,7 +207,10 @@ if not df.empty:
                 locations=loc.body(columns=["saldo_darf_minima", "irrf_saldo_acumulado", "prejuizo_acumulado_rv", "prejuizo_acumulado_fii"])
             )
             .tab_style(
-                style=[style.fill(color="#F0F2F6"), style.text(weight="bold")],
+                style=[
+                    style.fill(color="rgba(0, 0, 0, 0.05)"),
+                    style.text(weight="bold") 
+                ],
                 locations=loc.body(columns=["valor_darf_emitida"])
             )
             .cols_align(align="center", columns=["pago_display"])
@@ -419,7 +421,7 @@ if not df.empty:
                     )
                     # Estilos via Lambda para segurança
                     .tab_style(
-                        style=[style.fill(color="#f8f9fa"), style.text(weight="bold")],
+                        style=[style.text(weight="bold")],
                         locations=loc.body(rows=lambda df: df["codigo_ativo"] == "SUBTOTAL")
                     )
                     .tab_style(

@@ -489,7 +489,9 @@ def widget_ajuste_manual_dinamico(df, valor_total_aporte, moeda):
             # Valor Financeiro Calculado (BR)
             novo_percentual = st.session_state[f"perc_{ticker}"]
             valor_financeiro = (novo_percentual / 100) * valor_total_aporte
-            c2.write(f"{moeda} {formata_br(valor_financeiro)}")
+            # c2.write(f"{moeda} {formata_br(valor_financeiro)}")
+            cor_aporte = "#24a148" if valor_financeiro > 0 else "#31333F" # Verde se tiver aporte, cor padrão se for 0
+            c2.markdown(f"<span style='color: {cor_aporte}; font-weight: bold;'>{moeda} {formata_br(valor_financeiro)}</span>", unsafe_allow_html=True)
             
             # Cálculo de Ativos
             quantidade_ativos = int(valor_financeiro // preco_unitario) if preco_unitario > 0 else 0

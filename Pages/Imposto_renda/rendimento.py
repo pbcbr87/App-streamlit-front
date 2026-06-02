@@ -35,8 +35,8 @@ col_tit, col_ano, col_btn = st.columns([6, 2, 2])
 col_tit.title("📑 Rendimentos Anuais (IRPF)")
 
 with col_ano:
-    ano_sel = st.selectbox("Ano-Calendário", list(range(date.today().year, 2019, -1)), label_visibility="collapsed")
-
+    ano_sel = st.selectbox("Ano-Calendário", list(range(date.today().year, 2019, -1)), index=1, label_visibility="collapsed")
+ 
 if col_btn.button("🔄 Recarregar Tudo", width="stretch"):
     if "df_ir_rendimentos" in st.session_state:
         del st.session_state.df_ir_rendimentos

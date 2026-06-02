@@ -58,8 +58,7 @@ with st.expander("ℹ️ Instruções para Declaração IRPF"):
     """)
 
 with col_ano:
-    anos_disponiveis = list(range(2024, date.today().year + 2))
-    ano = st.selectbox("Ano", anos_disponiveis, index=0, label_visibility="collapsed")
+    ano = st.selectbox("Ano-Calendário", list(range(date.today().year, 2023, -1)), index=1, label_visibility="collapsed")
 
 with col_btn:
     btn_carregar = st.button("🔄 Sincronizar Exterior", width="stretch")
