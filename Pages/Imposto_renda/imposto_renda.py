@@ -70,10 +70,10 @@ if btn_carregar:
         user_id = st.session_state.get("id", 0)
         
         # Chamadas usando seu padrão safe_get_list
-        st.session_state.df_bens = pd.DataFrame(safe_get_list(f"{API_URL}ir/bens_direito/{user_id}", {"ano": ano_calendario}))
-        st.session_state.df_divs = pd.DataFrame(safe_get_list(f"{API_URL}ir/ir_dividendos/{user_id}", {"ano": ano_calendario}))
-        st.session_state.df_eventos = pd.DataFrame(safe_get_list(f"{API_URL}ir/bonificacoes/{user_id}", {"ano": ano_calendario}))
-        st.session_state.df_vendas = pd.DataFrame(safe_get_list(f"{API_URL}ir/resumo_vendas_ativos/{user_id}", {"ano": ano_calendario}))
+        st.session_state.df_bens = pd.DataFrame(safe_get_list(f"{API_URL}ir/bens_direito/", {"ano": ano_calendario}))
+        st.session_state.df_divs = pd.DataFrame(safe_get_list(f"{API_URL}ir/ir_dividendos/", {"ano": ano_calendario}))
+        st.session_state.df_eventos = pd.DataFrame(safe_get_list(f"{API_URL}ir/bonificacoes/", {"ano": ano_calendario}))
+        st.session_state.df_vendas = pd.DataFrame(safe_get_list(f"{API_URL}ir/resumo_vendas_ativos/", {"ano": ano_calendario}))
 
         # Coleta os IDs para a busca consolidada
         todos_ids = set()
@@ -253,8 +253,8 @@ if not df_base_oficial.empty:
                 if not subset_eventos.empty:
                     tabela_ev = []
                     for _, ev in subset_eventos.iterrows():
-                        tipo_ev, at_gerado = ev['tipo'].upper(), ev.get('ativo_gerado', 'N/A')
-                        v_brl, v_usd = ev.get('preco_op_brl', 0), ev.get('preco_op_usd', 0)
+                        tipo_ev, at_gerado = ev['tipo'].upper(), ev.get('fk_ativo_gerado', 'N/A')
+                        v_brl, v_usd = ev.get('preco_contabil_brl', 0), ev.get('preco_contabil_usd', 0)
                         qtd_ev = ev.get('quant_', 0)
                         if is_exterior:
                             desc_principal.append(f"{tipo_ev} DE {at_gerado} ALTERADO CUSTO DE AQUISIÇÃO EM {fmt_brl(v_brl)} ({fmt_usd(v_usd)})")
@@ -270,7 +270,7 @@ if not df_base_oficial.empty:
                                 p_unit_tabela = fmt_brl(v_brl/qtd_ev)
                             else:
                                 p_unit_tabela = fmt_brl(0)
-                        tabela_ev.append({"📝 Evento": tipo_ev, "📦 Ativo Gerado": at_gerado, "📅 Data": pd.to_datetime(ev['data_op_com']).strftime('%d/%m/%Y'), "🔢 Qtd": qtd_ev, "🏷️ P Unt": p_unit_tabela.replace("$", r"\$"), "💰 Custo Total": val_tabela.replace("$", r"\$")})
+                        tabela_ev.append({"📝 Evento": tipo_ev, "📦 Ativo Gerado": at_gerado, "📅 Data": pd.to_datetime(ev['data_op_pag']).strftime('%d/%m/%Y'), "🔢 Qtd": qtd_ev, "🏷️ P Unt": p_unit_tabela.replace("$", r"\$"), "💰 Custo Total": val_tabela.replace("$", r"\$")})
                     st.table(pd.DataFrame(tabela_ev).set_index("📝 Evento"), border="horizontal", width="stretch")
 
             st.caption("📋 **Copiar Discriminação Principal (Bens e Direitos):**")

@@ -1,129 +1,372 @@
-import streamlit as st
-import requests
+import json
 import pandas as pd
-import numpy as np
-from settings import API_URL
-from json import dumps, loads
+import streamlit as st
 
+from Pages.utils.components import componente_buscador_ativo, exibir_tabela_generica
+from Pages.utils.ferramentas import formatar_ativo_visual
 
-# --- FUNÇÕES DE LÓGICA ---
+from Pages.utils.form_edit import renderizar_layout_edit_evento, renderizar_layout_importacao_tabela
 
-def get_ativos():
-    """Busca ativos baseados na categoria selecionada e no texto digitado"""
-    # Evita erro caso o token não esteja presente
-    token = st.session_state.get('token')
-    if not token:
-        st.error("Usuário não autenticado.")
+from Pages.utils.request_api import (
+    executar_requisicao_listar_eventos_corporativos,
+    executar_requisicao_obter_evento_corporativo,
+    executar_requisicao_inserir_pacote_eventos_corporativos,
+    executar_requisicao_criar_evento_corporativo,
+    executar_requisicao_atualizar_evento_corporativo,
+    executar_requisicao_excluir_eventos_corporativos_lote,
+)
+
+# ====================================================================
+# Configs da tela e mapeamento de colunas (USANDO O SEU MODEL)
+# ====================================================================
+PAGE_KEY = "page_eventos_corporativos"
+
+def resumo_instrucoes(row):
+    """Retorna uma string curta/legível a partir do campo 'instrucoes' (JSON armazenado em texto)."""
+    instr = row.get("instrucoes")
+    if not instr:
+        return ""
+    try:
+        # Se já é dict/list
+        if isinstance(instr, (dict, list)):
+            texto = json.dumps(instr, ensure_ascii=False)
+        else:
+            # tenta desserializar se for string JSON
+            texto = instr
+            # se for JSON válido, pretty-print reduzido
+            try:
+                obj = json.loads(instr)
+                texto = json.dumps(obj, ensure_ascii=False)
+            except Exception:
+                # mantém string tal qual
+                texto = instr
+        
+        return texto
+    except Exception:
+        return str(instr)[:120]
+
+CONFIG_COLUNAS_EVENTOS = {
+    "id": {"titulo": "ID", "tipo": "hide"},
+    "fk_ativo_base": {"titulo": "🏷️ Ativo Base", "tipo": "text", "funcao_map": lambda r: formatar_ativo_visual(r.get("fk_ativo_base"))},
+    "fk_ativo_gerado": {"titulo": "🏷️ Ativo Gerado", "tipo": "text", "funcao_map": lambda r: formatar_ativo_visual(r.get("fk_ativo_gerado"))},
+    "tipo": {"titulo": "⚡ Tipo", "tipo": "text"},
+    "data_aprov": {"titulo": "📅 Aprov.", "tipo": "date"},
+    "data_com": {"titulo": "📅 Data COM", "tipo": "date"},
+    "data_pag": {"titulo": "📅 Data PAG", "tipo": "date"},
+    "instrucoes": {"titulo": "🧾 Instruções", "tipo": "text", "funcao_map": resumo_instrucoes},
+}
+
+CONFIG_COLUNAS_IMPORTACAO_EVENTOS = {
+    "fk_ativo_base": {"titulo": "🏷️ Ativo Base", "tipo": "text", "funcao_map": lambda r: formatar_ativo_visual(r.get("fk_ativo_base"))},
+    "fk_ativo_gerado": {"titulo": "🏷️ Ativo Gerado", "tipo": "text", "funcao_map": lambda r: formatar_ativo_visual(r.get("fk_ativo_gerado"))},
+    "tipo": {"titulo": "⚡ Tipo", "tipo": "text"},
+    "data_aprov": {"titulo": "📅 Aprov.", "tipo": "date"},
+    "data_com": {"titulo": "📅 Data COM", "tipo": "date"},
+    "data_pag": {"titulo": "📅 Data PAG", "tipo": "date"},
+    "instrucoes": {"titulo": "🧾 Instruções", "tipo": "text", "funcao_map": resumo_instrucoes},
+}
+
+CONFIG_ERRO = {
+    "Motivo do Erro": {"titulo": "🚨 Detalhe do Erro", "tipo": "text"},
+    **CONFIG_COLUNAS_IMPORTACAO_EVENTOS,
+}
+
+COLUNAS_RESUMIDAS_EVENTOS = ["fk_ativo_base", "tipo", "data_com", "data_pag"]
+
+# ====================================================================
+# Estado da página
+# ====================================================================
+def inicializar_estado():
+    if PAGE_KEY not in st.session_state:
+        st.session_state[PAGE_KEY] = {}
+
+    state = st.session_state[PAGE_KEY]
+    state.setdefault("item_selecionado", None)
+    state.setdefault("modo_tela", "listagem")  # listagem, editar, inserir, inserir_pacote
+    state.setdefault("dados", [])
+    state.setdefault("filtro_busca", "Selecionar Ativo")
+    state.setdefault("carregar_tudo", False)
+    state.setdefault("ultimo_filtro_carregado", None)
+    state.setdefault("ultimo_carregar_tudo", False)
+    state.setdefault("reset_buscador_count", 0)
+    state.setdefault("form_key_count", 0)
+
+    return state
+
+# ====================================================================
+# Estilo opcional da tabela
+# ====================================================================
+def aplicar_estilo_tabela(dataframe_da_tela: pd.DataFrame, dados_originais) -> pd.DataFrame:
+    estilo = pd.DataFrame("", index=dataframe_da_tela.index, columns=dataframe_da_tela.columns)
+    for idx in dataframe_da_tela.index:
+        if idx < len(dados_originais):
+            registro = dados_originais[idx]
+            # destaque para eventos sem data_pag (exemplo de regra visual)
+            if not registro.get("data_pag"):
+                estilo.loc[idx] = "color: #856404; background-color: #fff3cd; font-style: italic;"
+    return estilo
+
+# ====================================================================
+# Integração com a API (usando seus clients em request_api.py)
+# ====================================================================
+def buscar_dados_api(filtro=None):
+    try:
+        if filtro and filtro != "Selecionar Ativo":
+            return executar_requisicao_listar_eventos_corporativos(ativo_id=filtro)
+        return executar_requisicao_listar_eventos_corporativos(ativo_id=None)
+    except Exception:
+        raise
+
+def inserir_pacote_api(payload):
+    return executar_requisicao_inserir_pacote_eventos_corporativos(payload)
+
+def obter_evento_api(evento_id):
+    return executar_requisicao_obter_evento_corporativo(evento_id)
+
+# ====================================================================
+# Callbacks
+# ====================================================================
+def acao_editar(registro):
+    state = st.session_state[PAGE_KEY]
+    try:
+        evento_id = registro.get("id")
+        if not evento_id:
+            st.warning("ID inválido para edição.")
+            return
+        with st.spinner("Buscando dados do evento..."):
+            dados = obter_evento_api(int(evento_id))
+        state["item_selecionado"] = dados
+        state["modo_tela"] = "editar"
+        state["form_key_count"] += 1
+    except Exception as e:
+        st.toast(f"Não foi possível abrir a edição: {e}", icon="❌")
+
+def acao_deletar(registros):
+    state = st.session_state[PAGE_KEY]
+    ids_validos = [r.get("id") for r in registros if r.get("id") is not None]
+    if not ids_validos:
+        st.warning("Nenhum registro válido selecionado.")
         return
 
-    categoria = st.session_state.get('sl_cat', 'AÇÕES')
-    termo = st.session_state.get('sl_ativo', '')
+    # Aqui você pode abrir modal_confirmar_delecao; para simplicidade executa direto:
+    try:
+        sucesso = executar_requisicao_excluir_eventos_corporativos_lote(ids_validos)
+        if sucesso:
+            st.session_state["toast_pendente"]  = {"mensagem": f"{len(ids_validos)} registro(s) excluído(s).", "icone": "✅"}
+
+            # Invalida cache local da página para forçar recarregamento na listagem
+            state["ultimo_ativo_carregado"] = None
+            state["ultimo_filtro_carregado"] = None
+            state["ultimo_carregar_tudo"] = False
+            state["modo_tela"] = "listagem"
+
+    except Exception as e:
+       st.session_state["erro_pendente"] = f"❌ Erro ao processar exclusão: {str(e)}"
+
+# ====================================================================
+# Cache / sincronização
+# ====================================================================
+def sincronizar_cache_dados(state):
+    filtro_atual = state.get("filtro_busca")
+    carregar_tudo = state.get("carregar_tudo", False)
+
+    if filtro_atual == "Selecionar Ativo" and not carregar_tudo:
+        state["dados"] = []
+        state["ultimo_filtro_carregado"] = None
+        state["ultimo_carregar_tudo"] = False
+        return
 
     try:
-        url = f'{API_URL}ativos/lista_ativos/{categoria}?ativo={termo}'
-        headers = {'Authorization': f'Bearer {token}'}
-        resp = requests.get(url, headers=headers)
-        
-        if resp.status_code == 200:
-            st.session_state['lista_ativos_sugeridos'] = resp.json()
-        else:
-            st.session_state['lista_ativos_sugeridos'] = []
-    except Exception as e:
-        st.error(f"Erro ao buscar ativos: {e}")
+        if carregar_tudo and not state.get("ultimo_carregar_tudo"):
+            with st.spinner("Carregando todos os eventos..."):
+                state["dados"] = buscar_dados_api(filtro=None)
+                state["ultimo_carregar_tudo"] = True
+                state["ultimo_filtro_carregado"] = None
 
-def carregar_eventos_all():
-    headers = {'Authorization': f"Bearer {st.session_state.get('token')}"}
-    resp = requests.get(f'{API_URL}eventos/get_eventos', headers=headers)
-    if resp.status_code == 200:
-        st.session_state['evento_api'] = resp.json()
-    else:
-        st.session_state['evento_api'] = []
+        elif filtro_atual != "Selecionar Ativo":
+            precisa = filtro_atual != state.get("ultimo_filtro_carregado") or state.get("ultimo_carregar_tudo")
+            if precisa:
+                with st.spinner(f"Buscando eventos para {filtro_atual}..."):
+                    state["dados"] = buscar_dados_api(filtro=filtro_atual)
+                    state["ultimo_filtro_carregado"] = filtro_atual
+                    state["ultimo_carregar_tudo"] = False
 
-def carregar_eventos(ativo_selecionado):
-    """Busca os eventos detalhados do ativo escolhido no Pills"""
-    if ativo_selecionado:
-        headers = {'Authorization': f"Bearer {st.session_state.get('token')}"}
-        resp = requests.get(f'{API_URL}eventos/pesquisa/{ativo_selecionado}', headers=headers)
-        if resp.status_code == 200:
-            st.session_state['evento_api'] = resp.json()
-        else:
-            st.session_state['evento_api'] = []
-
-def exluir():
-    headers = {'Authorization': f"Bearer {st.session_state.get('token')}"}
-    evento_id = st.session_state['evento_dict'].get('id')
-    resp = requests.delete(f'{API_URL}eventos/delete/{evento_id}', headers=headers)
-    if resp.status_code == 200:
-        st.success("Evento excluído com sucesso!")
-        carregar_eventos(st.session_state.get('pills_selecao'))
-        st.session_state['evento_dict'] = {}
-        st.rerun()
-    else:
-        st.error(f"Erro ao excluir evento: Status {resp.status_code}")
-
-# --- ESTADOS DA SESSÃO ---
-if 'lista_ativos_sugeridos' not in st.session_state:
-    st.session_state['lista_ativos_sugeridos'] = []
-if 'evento_api' not in st.session_state or st.session_state['evento_api'] == None:
-    st.session_state['evento_api'] = []
-if 'sl_ativo' not in st.session_state:
-    st.session_state['sl_ativo'] = ""
-if 'sl_row' not in st.session_state:
-    st.session_state['sl_row'] = None
-
-# --- LAYOUT INTERFACE ---
-st.header("🔍 Pesquisa de Eventos por Ativo")
-
-# Container de Filtros
-with st.container(border=True):
-    col1, col2, col3, col4 = st.columns([1, 1, 1, 4],vertical_alignment='center')
-
-st.divider()
-# --- BOTÕES DE AÇÃO ---
-c1, c2, c3, c4, c5 = st.columns(5)   
+    except Exception as exc:
+        state["dados"] = []
+        state["ultimo_filtro_carregado"] = None
+        state["ultimo_carregar_tudo"] = False
+        st.error(f"Erro ao carregar dados do servidor: {exc}")
 
 
-with col1:
-    # Selectbox de Categoria
-    st.selectbox('Categoria:', ['AÇÕES', 'FII', 'STOCK', 'REIT', 'ETF-US', 'ETF', 'BDR'], key='sl_cat', on_change=get_ativos)    
-with col2:
-    # Input de Texto para o Ticker
-    st.text_input("Pesquisar Ticker:", placeholder="Digite o código (ex: PETR4)", key='sl_ativo', on_change=get_ativos)
-with col3:
-    st.write("")
-    if st.button('Selecionar tudo', width="stretch"):
-        carregar_eventos_all()
-with col4:
-    # Área de Resultados (Pills)
-    if st.session_state['lista_ativos_sugeridos']:
-        st.write("Selecione o ativo:")
-        ativo_escolhido = st.pills("Ativos encontrados:", options=st.session_state['lista_ativos_sugeridos'], label_visibility='collapsed', selection_mode="single", key="pills_selecao")
-        # Se mudar a seleção no Pills, carrega os eventos
-        if ativo_escolhido:
-            carregar_eventos(ativo_escolhido)
-                
-# --- TABELA DE EVENTOS ---
-if c1.button("➕ Inserir", width='stretch'):    
-    st.switch_page('Pages/Evento/insert_evento.py')
-if c2.button("🧪 Simular", width='stretch'):
-    if 'evento_dict' in st.session_state:
-        st.session_state.evento_pedente_sel = st.session_state['evento_dict'] 
-    st.switch_page('Pages/Evento/simular.py')
-if c3.button("🧐 Eventos Pendentes", width='stretch'):
-    st.switch_page('Pages/Evento/eventos_pendentes.py')
+# ====================================================================
+# Filtros adicionais para a listagem de eventos (tipo, ativo base, ativo gerado)
+# ====================================================================
+
+def aplicar_filtros_eventos(dados_para_exibir):
+    # Divisão do layout em 2 colunas para Tipo e Ativo (Base/Gerado)
+    col_tipo, col_ativo = st.columns(2)
+
+    tipos_disponiveis = sorted({e.get("tipo", "") for e in dados_para_exibir if e.get("tipo")})
     
+    # Unificação das opções únicas de fk_ativo_base e fk_ativo_gerado via união de sets (|)
+    ativos_base = {e.get("fk_ativo_base") for e in dados_para_exibir if e.get("fk_ativo_base")}
+    ativos_gerados = {e.get("fk_ativo_gerado") for e in dados_para_exibir if e.get("fk_ativo_gerado")}
+    ativos_disponiveis = sorted(ativos_base | ativos_gerados)
 
-if st.session_state['evento_api']:
-    if st.session_state.get('pills_selecao'):
-        st.subheader(f"Eventos de {st.session_state.get('pills_selecao')}")
-    df_eventos = pd.DataFrame(st.session_state['evento_api'])
-    sl_row = st.dataframe(df_eventos, hide_index=True, on_select="rerun", selection_mode='single-row')
-    if sl_row:
-        if sl_row.get('selection').get('rows'):
-            st.session_state['evento_dict'] = df_eventos.replace({np.nan: None}).iloc[sl_row.get('selection').get('rows')[0]].to_dict()
-            if c4.button("📝 Editar", width='stretch'):
-                st.switch_page('Pages/Evento/edit_evento.py')
-            if c5.button("🗑️ Excluir", width='stretch'):
-                exluir()
+    with col_tipo:
+        tipos_sel = st.multiselect(
+            "Filtrar por Tipo",
+            options=tipos_disponiveis,
+            key="filtro_tipo_eventos"
+        )
+
+    with col_ativo:
+        # Seletor único de ativos
+        ativos_sel = st.multiselect(
+            "Filtrar por Ativo (Base ou Gerado)",
+            options=ativos_disponiveis,
+            key="filtro_ativo_eventos"
+        )
+
+    dados_filtrados = dados_para_exibir
+
+    if tipos_sel:
+        dados_filtrados = [e for e in dados_filtrados if e.get("tipo") in tipos_sel]
+
+    # Lógica 'OR' para validar se o ativo selecionado é o base OU o gerado
+    if ativos_sel:
+        dados_filtrados = [
+            e for e in dados_filtrados
+            if e.get("fk_ativo_base") in ativos_sel or e.get("fk_ativo_gerado") in ativos_sel
+        ]
+
+    return dados_filtrados
+
+# ====================================================================
+# Renderização da página
+# ====================================================================
+state = inicializar_estado()
+
+if state["modo_tela"] == "listagem":
+    col_titulo, col_btn_novo, col_btn_pacote = st.columns([4, 1, 1], vertical_alignment="center")
+    with col_titulo:
+        st.title("🎁 Gestão de Eventos Corporativos Cadastrados [ADMIN]")
+        st.caption("Visualize, edite, crie e remova eventos corporativos.")
+
+    with col_btn_novo:
+        if st.button("➕ Criar Novo", type="primary", width="stretch"):
+            state["item_selecionado"] = None
+            state["modo_tela"] = "inserir"
+            state["form_key_count"] += 1
+            st.rerun()
+
+    with col_btn_pacote:
+        if st.button("📦 Inserir Pacote Tabela", width="stretch"):
+            state["item_selecionado"] = None
+            state["modo_tela"] = "inserir_table"
+            state["form_key_count"] += 1
+            st.rerun()
+
+    c1, c2, c3 = st.columns([1.5, 2.5, 1.5], vertical_alignment="bottom")
+    with c1:
+        if st.button("👁️ Carregar Tudo", width="stretch"):
+            state["carregar_tudo"] = True
+            state["filtro_busca"] = "Selecionar Ativo"
+            state["reset_buscador_count"] += 1
+            st.rerun()
+    with c2:
+        sufixo = f"evt_{state['reset_buscador_count']}"
+        componente_buscador_ativo(state, "filtro_busca", sufixo_key=sufixo)
+    with c3:
+        if state["filtro_busca"] != "Selecionar Ativo" or state["carregar_tudo"]:
+            if st.button("🧹 Limpar Filtros", width="stretch"):
+                state["filtro_busca"] = "Selecionar Ativo"
+                state["reset_buscador_count"] += 1
+                state["carregar_tudo"] = False
+                state["dados"] = []
+                state["ultimo_filtro_carregado"] = None
+                state["ultimo_carregar_tudo"] = False
+                st.rerun()
+
+    sincronizar_cache_dados(state)
+    dados_para_exibir = state.get("dados", [])
+
+    if state["filtro_busca"] == "Selecionar Ativo" and not state["carregar_tudo"]:
+        st.info("💡 Selecione um filtro ou clique em Carregar Tudo.")
+    elif not dados_para_exibir:
+        st.warning("Nenhum evento encontrado.")
+    else:
+        st.caption(f"Exibindo {len(dados_para_exibir)} evento(s):")
+
+        dados_filtrados = aplicar_filtros_eventos(dados_para_exibir)
+        exibir_tabela_generica(
+            dados=dados_filtrados,
+            config_colunas=CONFIG_COLUNAS_EVENTOS,
+            colunas_resumidas=COLUNAS_RESUMIDAS_EVENTOS,
+            callback_edit=acao_editar,
+            callback_deletar=acao_deletar,
+            callback_estilo=aplicar_estilo_tabela,
+            chave_tabela="tabela_eventos_principal",
+            suporta_moeda=False,
+        )
+
+# Formulário: criar / editar
+elif state["modo_tela"] in ["inserir", "editar", "inserir_table"]:
+    if st.button("⬅️ Voltar para a Listagem", key="btn_voltar_eventos"):
+        state["modo_tela"] = "listagem"
+        st.rerun()
+
+    def ir_para_listagem_limpo():
+        state["ultimo_filtro_carregado"] = None
+        state["ultimo_carregar_tudo"] = False
+        state["modo_tela"] = "listagem"
+        st.rerun()
+
+    if state["modo_tela"] in ["inserir", "editar"]:
+        titulo_form = "➕ Criar Evento Corporativo" if state["modo_tela"] == "inserir" else "✏️ Editar Evento Corporativo"
+        st.title(titulo_form)
+
+        key_form = f"form_evento_{state.get('form_key_count', 0)}"
+        
+        try:
+            item = state.get("item_selecionado") or {}
+            modo_inserir = state.get("modo_tela") == "inserir"
+
+            renderizar_layout_edit_evento(
+                    registro_selecionado={"dados_origem": item},
+                    key_estado_dinamico=key_form,
+                    origin_config={
+                        "callback_request_api": (
+                            (lambda payload: executar_requisicao_criar_evento_corporativo(payload))
+                            if modo_inserir
+                            else (lambda payload: executar_requisicao_atualizar_evento_corporativo(evento_id=item.get("id"), payload=payload))
+                        ),
+                        "label_btn_gravar": "🚀 Criar Evento" if modo_inserir else "💾 Gravar Evento",
+                        "modo_insert": "MANUAL INSERT" if modo_inserir else "MANUAL EDIT"
+                    },
+                    on_sucesso=ir_para_listagem_limpo
+                )
+
+        except Exception:
+            with st.form(key=key_form):
+                st.info("Formulário de evento aqui (substitua pelo seu componente real).")
+                btn = st.form_submit_button("Salvar")
+                if btn:
+                    st.toast("Implementar salvamento no renderizador real.", icon="ℹ️")
+                    ir_para_listagem_limpo()
+
+    if state["modo_tela"] == "inserir_table":
+        renderizar_layout_importacao_tabela(
+            titulo="📥 Importação de Eventos por Tabela [ADMIN]",
+            funcao_envio_api=executar_requisicao_inserir_pacote_eventos_corporativos,
+            config_colunas=CONFIG_COLUNAS_IMPORTACAO_EVENTOS,
+            modelos_planilha=[
+                {"nome": "Modelo Padrão Eventos", "path": "resources/Eventos.xlsx", "file_name": "Eventos.xlsx"}
+            ],
+            config_colunas_erro=CONFIG_ERRO,
+            on_sucesso=ir_para_listagem_limpo,
+            key_estado_dinamico="importacao_eventos_tab"
+        )
+
 else:
-    st.info("Nenhum evento encontrado para o ativo selecionado.")                
+    st.warning(f"Modo desconhecido: {state['modo_tela']}")

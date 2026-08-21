@@ -1,357 +1,269 @@
-import streamlit as st
+from typing import Any, Dict, List
+
 import pandas as pd
-import requests
-from settings import API_URL
-from datetime import datetime
-from json import dumps, loads
-from datetime import date, datetime
+import streamlit as st
+
+from Pages.utils.components import exibir_tabela_generica, componente_buscador_ativo
+from Pages.utils.form_dividendos import renderizar_formulario_dividendo
+from Pages.utils.form_edit import renderizar_layout_importacao_tabela
+from Pages.utils.ferramentas import formatar_ativo_visual
+from Pages.utils.request_api import (
+                                        alterar_status_dividendo_api,
+                                        editar_dividendo_api,
+                                        excluir_dividendo_api,
+                                        inserir_dividendo_api,
+                                        listar_dividendos_usuarios_api,
+                                    )
+
+PAGE_KEY = "page_dividendos"
+
+st.session_state.setdefault(PAGE_KEY, {})
+state: Dict[str, Any] = st.session_state[PAGE_KEY]
+
+# Inicialização limpa e padronizada das chaves de controle
+state.setdefault('ativo_original', "Selecionar Ativo")
+state.setdefault('reset_buscador_count', 0)
+state.setdefault('carregar_tudo', False)
+state.setdefault('movimentacao_selecionada', None)
+state.setdefault('modo_tela', "listagem")
+state.setdefault('dados', [])
 
 
-def st_number_input_custom(label, value=None, key=None, placeholder="0,00"):
-    def converter_valor_br(texto):
-        if not texto:
-            return 0.0
-        try:
-            # Remove pontos de milhar e troca a vírgula decimal por ponto
-            limpo = texto.replace(".", "").replace(",", ".")
-            return float(limpo)
-        except ValueError:
-            return None
-    
-    entrada = st.text_input(label, value=value, placeholder=placeholder, key=key)
-    valor_numerico = converter_valor_br(entrada)
-    if entrada and valor_numerico is None:
-        st.warning("Use o formato 0,00")
-        return None
-    return valor_numerico
+def formatar_status(row: Dict[str, Any]) -> str:
+    return "✔️ Ativo" if row.get("aceito") else "⚪ Inativo"
 
-def carregar_dividendos():
-    headers = {'Authorization': f"Bearer {st.session_state.get('token')}"}
-    resp = requests.get(f'{API_URL}dividendos_usuarios/pegar_dividendos', headers=headers)
-    if resp.status_code == 200:
-        st.session_state['dividendos_usuarios_api'] = resp.json()
-    else:
-        st.session_state['dividendos_usuarios_api'] = []
+def colorir_linhas(dataframe: pd.DataFrame, dados_originais: List[Dict[str, Any]]) -> pd.DataFrame:
+    estilo = pd.DataFrame("", index=dataframe.index, columns=dataframe.columns)
+    for idx, registro in enumerate(dados_originais):
+        if not registro.get("aceito"):
+            estilo.loc[idx] = "color: #856404; background-color: #fff3cd; font-style: italic;"
+    return estilo
 
-@st.dialog("Edit Dividendos", width='medium', on_dismiss=carregar_dividendos)
-def set_aceito(status, id):
-    dados = {
-        'aceito': status
-    }
-    dados_json = dumps(dados, ensure_ascii=False)
+CONFIG_DIVIDENDOS = {
+    "id": {"titulo": "ID", "tipo": "hide"},
+    "aceito": {"titulo": "⚙️ Status", "tipo": "text", "funcao_map": formatar_status},
+    "fk_ativo": {"titulo": "🏷️ Ativo", "tipo": "text", "funcao_map": lambda row: formatar_ativo_visual(row.get("fk_ativo"))},
+    "tipo": {"titulo": "⚡ Tipo", "tipo": "text"},
+    "valor_bruto": {"titulo": "💰 Bruto", "tipo": "currency", "multi_moeda": True, "precisao": 2},
+    "imposto": {"titulo": "🏛️ Imposto", "tipo": "currency", "multi_moeda": True, "precisao": 2},
+    "valor_liq": {"titulo": "💵 Líquido", "tipo": "currency", "multi_moeda": True, "precisao": 2},
+    "data_aprov": {"titulo": "📅 Aprovação", "tipo": "date"},
+    "data_com": {"titulo": "📅 Data Com", "tipo": "date"},
+    "data_pag": {"titulo": "📅 Pagamento", "tipo": "date"},
+    "ano_calendario_ir": {"titulo": "📅 Ano IR", "tipo": "number", "precisao": 0},
+    "data_insert": {"titulo": "🕒 Cadastro", "tipo": "date"},
+    "modo_insert": {"titulo": "📥 Origem", "tipo": "text"},
+}
 
-    resp = requests.put(f'{API_URL}dividendos_usuarios/edit_campo/{id}', dados_json, headers={'Authorization':f'Bearer {st.session_state.token}'})
+TIPOS_DIVIDENDO = [
+    "DIVIDENDO", "JCP", "REND. TRIBUTADO", "RENDIMENTO",
+    "RENDIMENTO EXT", "AMORTIZAÇÃO", "AGENCY PROC. FEE",
+]
+
+CONFIG_IMPORTACAO_DIVIDENDOS = {
+    "fk_ativo": {"titulo": "🏷️ Ativo", "tipo": "text"},
+    "tipo": {"titulo": "⚡ Tipo", "tipo": "text"},
+    "valor_bruto": {"titulo": "💰 Bruto", "tipo": "currency", "multi_moeda": False, "precisao": 2},
+    "valor_liq": {"titulo": "💸 Líquido", "tipo": "currency", "multi_moeda": False, "precisao": 2},
+    "data_aprov": {"titulo": "📅 Aprovação", "tipo": "date"},
+    "data_com": {"titulo": "📅 Data Com", "tipo": "date"},
+    "data_pag": {"titulo": "📅 Pagamento", "tipo": "date"},
+    "ano_calendario_ir": {"titulo": "📅 Ano IR", "tipo": "number", "precisao": 0},
+}
+
+CONFIG_ERRO_IMPORTACAO_DIVIDENDOS = {
+    **CONFIG_IMPORTACAO_DIVIDENDOS,
+    "Motivo do Erro": {"titulo": "🚨 Motivo do Erro", "tipo": "text"},
+}
+
+
+def acao_editar(registro: Dict[str, Any]) -> None:
+    state["registro_selecionado"] = registro
+    state["modo_tela"] = "editar"
+    state["form_key_count"] = state.get("form_key_count", 0) + 1
+
+
+def acao_excluir(registros: List[Dict[str, Any]]) -> None:
     try:
-        resposta_json = resp.json()
-        st.success('✅ Status atualizado com sucesso!')
-    except:
-        st.error(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
-        # --- Tratamento de Sucesso (200 OK) ---
+        for registro in registros:
+            excluir_dividendo_api(registro["id"])
+        st.session_state["toast_pendente"] = {"mensagem": f"✅ {len(registros)} dividendo(s) excluído(s).", "icone": "🗑️"}
+        state["dados"] = []
+    except Exception as erro:
+        st.error(f"❌ Erro ao excluir dividendos: {erro}")
 
-    if resp.status_code != 200:
-        st.error(f"⚠️ Erro na API. Status {resp.status_code}: {resp.text}")
 
-@st.dialog("Edit Dividendos", width='medium', on_dismiss=carregar_dividendos)
-def edit_dividendo(dados): 
-    # dados = st.session_state['dividendos_usuarios_dict']
-    id_div = dados.get('id', None)
-
-    st.dataframe([dados], width='content' )
-    dados_json = dumps(dados, ensure_ascii=False)
-    if st.button('Enviar Edição'):
-
-        resp = requests.put(f'{API_URL}dividendos_usuarios/edit_dividendo/{id_div}', dados_json, headers={'Authorization':f'Bearer {st.session_state.token}'})
-        try:
-            resposta_json = resp.json()
-        except:
-            st.toast(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
-    
-            # --- Tratamento de Sucesso (200 OK) ---
-        if resp.status_code == 200:
-            st.success('✅ Dados enviados com sucesso!')          
-        # --- Tratamento de Erro de Validação (422 Unprocessable Entity) ---
-        elif resp.status_code == 422:
-            st.error('❌ Existe dados inválidos no seu arquivo. Veja abaixo os detalhes:')  
-            detail = resposta_json.get('detail', {})
-            if type(detail) is list:
-                st.warning(f"Validação de dados schemas: {resposta_json}")
-            else:
-                linhas_rejeitadas = detail.get('linhas_rejeitadas', [])
-                
-                if linhas_rejeitadas:
-                    st.warning(f"Foram encontradas {len(linhas_rejeitadas)} linha(s) com erro de validação.")
-                    df_erros = pd.DataFrame(linhas_rejeitadas)
-                    st.dataframe(df_erros)
-                else:
-                    st.text(f"Detalhe de erro da API: {detail}")
-        else:
-            st.error(f"⚠️ Erro HTTP inesperado: Status {resp.status_code}")
-
-def excluir(selecao):
-    dados = selecao
-
-    id_div = dados.get('id', '')
-    resp = requests.delete(f'{API_URL}dividendos_usuarios/delete/{id_div}', headers={'Authorization':f'Bearer {st.session_state.token}'})
-    
+def acao_status(registros: List[Dict[str, Any]]) -> None:
     try:
-        resposta_json = resp.json()
-    except:
-        st.toast(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
-  
-        # --- Tratamento de Sucesso (200 OK) ---    
-    if resp.status_code == 200:
-        pass
+        for registro in registros:
+            alterar_status_dividendo_api(registro["id"], not bool(registro.get("aceito")))
+        state["dados"] = []
+        st.session_state["toast_pendente"] = {"mensagem": "✅ Status atualizado.", "icone": "🔄"}
+    except Exception as erro:
+        st.error(f"❌ Erro ao alterar status: {erro}")
 
-    if resp.status_code != 200:
-        st.toast(f"⚠️ Erro na API. Status {resp.status_code}: {resp.text}")
 
-def formatar_data(valor):
-    """Converte string do banco para objeto date do Python"""
+def salvar_dividendo(payload: Dict[str, Any], editando: bool) -> bool:
+    dados = dict(payload)
+    dividendo_id = dados.pop("id", None)
+    if editando:
+        return editar_dividendo_api(dividendo_id, dados)
+    return inserir_dividendo_api({"dados": [dados]}, modo_insert="MANUAL")
+
+
+def voltar_listagem() -> None:
+    state["modo_tela"] = "listagem"
+    state["registro_selecionado"] = None
+    state["dados"] = []
+    st.rerun()
+
+
+def garantir_dados_em_cache(state: dict):
+    """
+    Gerenciador Inteligente de Cache para chamadas de API.
+    
+    Analisa o estado atual dos filtros e só faz a requisição para a API se os 
+    parâmetros de busca tiverem mudado. Caso contrário, mantém os dados em memória.
+    """
+    ativo_atual = state.get('ativo_original')
+    carregar_tudo = state.get('carregar_tudo')
+
+    # Caso 1: Filtro vazio e sem comando de "Carregar Tudo" -> Reseta e sai
+    if ativo_atual == "Selecionar Ativo" and not carregar_tudo:
+        state['dados'] = []
+        state['ultimo_ativo_carregado'] = None
+        state['ultimo_carregar_tudo'] = False
+        return
+
     try:
-        return datetime.strptime(valor, "%Y-%m-%d").date()
-    except:
-        return None
+        # Caso 2: Filtro por Ativo Selecionado (Diferente do que está em cache)
+        if ativo_atual != "Selecionar Ativo":
+            if ativo_atual != state.get('ultimo_ativo_carregado'):
+                st.write("")
+                with st.spinner(f"Buscando movimentações de {ativo_atual}..."):
+                    state['dados'] = listar_dividendos_usuarios_api(ativo_id=ativo_atual, sem_data_corte=state.get('sem_data_corte', False))
+                    state['ultimo_ativo_carregado'] = ativo_atual
+                    state['ultimo_carregar_tudo'] = False
 
-@st.dialog("Inserir Dividendos", width='medium',on_dismiss=carregar_dividendos)
-def inserir_dividendo(dados_dict):
-    st.header("Novo Dividendo")
-    # dados_dict = st.session_state['dividendos_usuarios_dict']
-    if 'id' in dados_dict.keys():
-        dados_dict.pop("id")
-    dados = pd.DataFrame([dados_dict])
-    st.dataframe(dados, width='content', hide_index=True)
-    if st.button('Enviar'):
-        with st.spinner(text="In progress..."):
-            enviar_tabela(dados)
+        # Caso 3: Solicitação de Carga Completa (E ainda não está em cache)
+        elif carregar_tudo:
+            if not state.get('ultimo_carregar_tudo'):
+                st.write("")
+                with st.spinner("Buscando histórico completo..."):
+                    state['dados'] = listar_dividendos_usuarios_api(ativo_id=None, sem_data_corte=state.get('sem_data_corte', False))
+                    state['ultimo_carregar_tudo'] = True
+                    state['ultimo_ativo_carregado'] = None
 
-def enviar_tabela(dataframe):
-    linhas = dataframe.to_json(orient='records', date_format='iso')
-    linhas = loads(linhas)
-    tabela = dumps({"dados": linhas})
-    resp = requests.post(f'{API_URL}dividendos_usuarios/inserir_dividendos_tabela', tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
-    try:
-        resposta_json = resp.json()
-    except:
-        st.error(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
+    except Exception as e:
+        # Em caso de erro na API, limpa o cache preventivamente e exibe mensagem
+        state['dados'] = []
+        state['ultimo_ativo_carregado'] = None
+        state['ultimo_carregar_tudo'] = False
+        st.error(f"Erro ao carregar dados do servidor: {str(e)}")
 
-        # --- Tratamento de Sucesso (200 OK) ---
-    if resp.status_code == 200:
-        st.success('✅ Dados enviados com sucesso!')          
-    # --- Tratamento de Erro de Validação (422 Unprocessable Entity) ---
-    elif resp.status_code == 422:
-        st.error('❌ Existe dados inválidos no seu arquivo. Veja abaixo os detalhes:')
-                            
-        detail = resposta_json.get('detail', {})
-        linhas_rejeitadas = detail.get('linhas_rejeitadas', [])
-        
-        if linhas_rejeitadas:
-            st.warning(f"Foram encontradas {len(linhas_rejeitadas)} linha(s) com erro de validação.")
-            df_erros = pd.DataFrame(linhas_rejeitadas)
-            st.dataframe(df_erros)
-        else:
-            st.text(f"Detalhe de erro da API: {detail}")
-    else:
-        st.error(f"⚠️ Erro HTTP inesperado: Status {resp.status_code}")
-
-@st.dialog("Inserir Excel", width='medium',on_dismiss=carregar_dividendos)        
-def carregar_tabela():
-    uploaded_file  = st.file_uploader('Excolha o arquico com as operações')
-    if uploaded_file  is not None:        
-        dataframe = pd.read_excel(uploaded_file)
-        
-        titulo = dataframe.columns.tolist()
-        if 'valor_bruto_brl' in titulo:
-            titulo_padrao = ['fk_ativo', 'tipo', 
-                    'valor_bruto_brl', 'imposto_brl',
-                    'data_aprov', 'data_com', 'data_pag', 'ano_calendario_ir']
-        else:
-            titulo_padrao = ['fk_ativo', 'tipo', 
-                    'valor_bruto_usd', 'imposto_usd',
-                    'data_aprov', 'data_com', 'data_pag', 'ano_calendario_ir']
-
-        if not titulo_padrao == titulo:
-            st.warning('Colunas fora do padrão')
-        else:
-            with st.expander('Exibir Dados input'):
-                st.dataframe(dataframe, width='content')
-
-            if st.button('Enviar'):
-                with st.spinner(text="In progress..."):
-                    enviar_tabela(dataframe)
-
-def filtro(df):
-    with st.container(border=True, horizontal=True):
-        sl_fk_ativo = st.text_input("Filtrar por Ativo Original", width=200)
-        
-        sl = st.pills('Slecione',options=['DIVIDENDO', 'JCP', 'REND. TRIBUTADO', 'RENDIMENTO', 'RENDIMENTO EXT', 'AMORTIZAÇÃO', 'AGENCY PROC. FEE'],  selection_mode="multi", width='stretch')
-        df_filtrado = df[df['tipo'].isin(sl)] if sl else df
-
-        if sl_fk_ativo:       
-            df_filtrado = df_filtrado[df_filtrado['fk_ativo'].str.contains(sl_fk_ativo.upper())]
-    return df_filtrado
-
-@st.fragment
-def form_dividendo(dividendo_dict):
-    for key in dividendo_dict:
-        dividendo_dict[key] = dividendo_dict.get(key) if dividendo_dict.get(key) else ""
+if state["modo_tela"] == "listagem":
+    titulo, btn_novo, btn_importar = st.columns([6, 1, 1], vertical_alignment="center")
+    titulo.title("💰 Dividendos Cadastrados")
+    if btn_novo.button("➕ Novo", type="primary", width="stretch"):
+        state["modo_tela"] = "inserir"
+        state["form_key_count"] = state.get("form_key_count", 0) + 1
+        st.rerun()
+    if btn_importar.button("📥 Importar", width="stretch"):
+        state["modo_tela"] = "importar"
+        state["form_key_count"] = state.get("form_key_count", 0) + 1
+        st.rerun()
     
-    st.session_state['dividendos_usuarios_dict'] = {}
-    st.session_state['dividendos_usuarios_dict']['id'] = dividendo_dict.get('id', None)
-
-    form_1, form_2, form_3, form_4, form_5, form_6, form_7, form_8 = st.columns(8)
-    st.session_state['dividendos_usuarios_dict']['fk_ativo'] = form_1.text_input("Ativo Categoria", value=dividendo_dict.get('fk_ativo', "")).upper()
-    # Validação do index do selectbox
-    tipo_list = ['DIVIDENDO', 'JCP', 'REND. TRIBUTADO', 'RENDIMENTO', 'RENDIMENTO EXT', 'AMORTIZAÇÃO','AGENCY PROC. FEE']
-    try:
-        idx_tipo = tipo_list.index(dividendo_dict.get('tipo'))
-    except:
-        idx_tipo = 0
-        
-    st.session_state['dividendos_usuarios_dict']['tipo'] = form_2.selectbox("Tipo", options=tipo_list, index=idx_tipo).upper() 
-    
-    with form_3:
-        st.session_state['dividendos_usuarios_dict'][valor_bruto_col] = st_number_input_custom(f"Valor Bruto {moeda_simbolo}", 
-                                                                                               value=dividendo_dict.get(valor_bruto_col, None))     
-    with form_4:
-        st.session_state['dividendos_usuarios_dict'][imposto_col] = st_number_input_custom(f"Imposto {moeda_simbolo}", 
-                                                                                               value=dividendo_dict.get(imposto_col, None))
-    # entrada = form_3.text_input(f"Valor Bruto {moeda_simbolo}", value=dividendo_dict.get(valor_bruto_col, None), placeholder="0,00")
-    # valor_numerico = converter_valor_br(entrada)
-    # if entrada and valor_numerico == None:
-    #     st.session_state['dividendos_usuarios_dict'][valor_bruto_col] = None         
-    #     form_3.warning("Inválido (0,00)")
-    # else:
-    #     st.session_state['dividendos_usuarios_dict'][valor_bruto_col] = valor_numerico
-    
-    # entrada = form_4.text_input(f"Imposto {moeda_simbolo}", value=dividendo_dict.get(imposto_col, None), placeholder="0,00")
-    # valor_numerico = converter_valor_br(entrada)
-    # if entrada and valor_numerico == None:
-    #     st.session_state['dividendos_usuarios_dict'][imposto_col] = None         
-    #     form_4.warning("Inválido (0,00)")
-    # else:
-    #     st.session_state['dividendos_usuarios_dict'][imposto_col] = valor_numerico
-
-    data_aprov = form_5.date_input("data_aprov", key="data_aprov", min_value=date(2000, 1, 1), value=None)
-    st.session_state['dividendos_usuarios_dict']['data_aprov'] = data_aprov.isoformat() if data_aprov else None
-    
-    data_com = form_6.date_input("data_com", key="data_com", min_value=date(2000, 1, 1), value=None)
-    st.session_state['dividendos_usuarios_dict']['data_com'] = data_com.isoformat() if data_com else None
-
-    data_pag = form_7.date_input("data_pag", key="data_pag", min_value=date(2000, 1, 1), value=None)
-    st.session_state['dividendos_usuarios_dict']['data_pag'] = data_pag.isoformat() if data_pag else None
-
-    with form_8:
-        st.session_state['dividendos_usuarios_dict']['ano_calendario_ir'] = st_number_input_custom(f"Ano Calendário IR", 
-                                                                                               value=dividendo_dict.get('ano_calendario_ir', None), placeholder="0")  
-
-#--------------------------------------------------------
-if 'dividendos_usuarios_api' not in st.session_state or st.session_state['dividendos_usuarios_api'] is None:
-   carregar_dividendos()
-
-if 'dividendos_usuarios_dict' not in st.session_state:
-   st.session_state['dividendos_usuarios_dict'] = {}
-
-#--------------------------------------------------------
-c1_t, _, c2_t = st.columns([6,4,2])
-c1_t.title("💰 Dividendos Cadastrados")
-moeda = c2_t.radio('Moeda dos valores', ['BRL', 'USD'], key='moeda_valores', horizontal=True, on_change=lambda: st.session_state['dividendos_usuarios_dict'].update({}))
-
-colunas = ['id', 'fk_usuario', 'fk_dividendo', 'fk_evento_usuario', 'fk_ativo', 'tipo', 
-            'valor_bruto_brl','imposto_brl', 'valor_liq_usd', 'valor_bruto_usd','imposto_usd', 'valor_liq_brl',
-            'data_aprov', 'data_com', 'data_pag','ano_calendario_ir', 'data_insert', 'modo_insert', 'aceito']
-if moeda == 'BRL':
-    colunas_view = ['aceito', 'fk_ativo', 'tipo', 'valor_bruto_brl','imposto_brl', 'valor_liq_brl', 'data_aprov', 'data_com', 'data_pag', 'ano_calendario_ir', 'data_insert', 'modo_insert']
-    valor_bruto_col = 'valor_bruto_brl'
-    valor_liq_col = 'valor_liq_brl'
-    imposto_col = 'imposto_brl'
-    moeda_simbolo = 'R$'
-else:
-    colunas_view = ['aceito', 'fk_ativo', 'tipo', 'valor_bruto_usd','imposto_usd', 'valor_liq_usd', 'data_aprov', 'data_com', 'data_pag', 'ano_calendario_ir', 'data_insert', 'modo_insert']
-    valor_bruto_col = 'valor_bruto_usd'
-    valor_liq_col = 'valor_liq_usd'
-    imposto_col = 'imposto_usd'
-    moeda_simbolo = 'US$'
-
-layout_form_dividendo = st.container(border=True)
-c1, c2, c3, c4, c5 = layout_form_dividendo.columns(5)  
-
-if c1.button("➕ Inserir Dividendo", width="stretch"):
-    inserir_dividendo(st.session_state['dividendos_usuarios_dict'])
-
-if c5.button("📥 Inserir tabela", width="stretch"):
-    carregar_tabela()
-
-linha_selecionada = {}
-if 'dividendos_usuarios_api' not in st.session_state or not st.session_state.dividendos_usuarios_api:
-    st.info("💡 Nenhum Dividendos Encontrado no Banco de dados.")
-else:
-    #------------------------------------------------------------------
-    # Tabela de Dividendos Cadastrados
-    #------------------------------------------------------------------
-    df = pd.DataFrame(st.session_state.dividendos_usuarios_api).sort_values(by='data_aprov', ascending=False)
-    df = filtro(df)
-    st.write("Selecione uma linha para editar ou visualizar detalhes:")
-    
-    df_display = df[colunas].copy()
-    df_display['aceito'] = df_display['aceito'].apply(lambda x: "✔️" if x else "⚪")
-
-    dividendo_sl = st.dataframe(
-                            df_display, width="stretch", height=200, hide_index=True,
-                                on_select="rerun",
-                                selection_mode="single-row",                            
-                                column_order=colunas_view,
-                                column_config={
-                                    'aceito': st.column_config.Column("On/Off", width="small"),
-                                    valor_bruto_col: st.column_config.NumberColumn(f"Valor Bruto {moeda_simbolo}", help='Moeda do ativo', format="%.2f"),
-                                    imposto_col: st.column_config.NumberColumn(f"Imposto {moeda_simbolo}", help='Moeda do ativo', format="%.2f"),
-                                    valor_liq_col: st.column_config.NumberColumn(f"Valor Liquido {moeda_simbolo}", help='Moeda do ativo', format="%.2f"),
-                                    'data_aprov': st.column_config.DateColumn("Data de Aprovação"),
-                                    'data_com': st.column_config.DateColumn("Data Com"),
-                                    'data_pag': st.column_config.DateColumn("Data Pagamento"),
-                                    'ano_calendario_ir': st.column_config.NumberColumn("Ano Calendário IR", help='Ano calendário para cálculo de imposto', format="%.0f")
-                                    }
-                                )
-
-    #------------------------------------------------------------------
-    # Capturar a seleção
-    #------------------------------------------------------------------
-    selecao = dividendo_sl.selection.get("rows", [])
-
-    if selecao:
-        idx = selecao[0]
-        linha_selecionada = df.iloc[idx].to_dict()    
-        
-        if c2.button("✏️ Editar Dividendo", width="stretch"):
-            edit_dividendo(st.session_state['dividendos_usuarios_dict'])
-
-        if c3.button("🗑️ Excluir Dividendo", width="stretch"):
-            excluir(linha_selecionada)
-            st.session_state.dividendos_usuarios_api = None
+    # 1. Grid de Filtros de Entrada
+    c1, c2, c3, c4 = st.columns([1.5, 2.5, 1.5, 0.5], vertical_alignment="bottom")
+    with c4:
+        state['sem_data_corte'] = st.checkbox("📅 Todos", key="mais_de_um_mes")
+    with c1:
+        if st.button("👁️ Carregar Tudo", width="stretch"):
+            state['carregar_tudo'] = True
+            state['ativo_original'] = "Selecionar Ativo"
+            state['reset_buscador_count'] += 1
+            state['dados'] = []
+            state['ultimo_ativo_carregado'] = None
+            state['ultimo_carregar_tudo'] = False
             st.rerun()
 
-        if linha_selecionada['aceito']:
-            if c4.button("[OFF⚪] Desligar", width="stretch"):
-                set_aceito(False, linha_selecionada['id'])                
+    with c2:
+        sufixo_dinamico = f"o_{state['reset_buscador_count']}"
+        componente_buscador_ativo(state, 'ativo_original', sufixo_key=sufixo_dinamico)
+
+    with c3:
+        if state['ativo_original'] != "Selecionar Ativo" or state['carregar_tudo']:
+            if st.button("🧹 Limpar Filtros", width="stretch"):
+                state['ativo_original'] = "Selecionar Ativo"
+                state['reset_buscador_count'] += 1
+                state['carregar_tudo'] = False
+                state['dados'] = []
+                state['ultimo_ativo_carregado'] = None
+                state['ultimo_carregar_tudo'] = False
+                st.rerun()
+
+    # 2. Executa o gerenciador de cache de forma transparente 🧠
+    garantir_dados_em_cache(state)
+
+    # 3. Define fonte de dados após validação do cache
+    dados_para_exibir = state['dados']
+    # 4. Renderização Condicional da Interface
+    if state['ativo_original'] == "Selecionar Ativo" and not state['carregar_tudo']:
+        st.info("💡 Escolha um ativo no menu acima ou clique em **Carregar Tudo**.")        
+    elif not dados_para_exibir:
+        st.warning("Nenhuma movimentação encontrada.")        
+    else:        
+        f1, f2 = st.columns(2)
+
+        opcoes_tipos = list(set([mov.get('tipo', '') for mov in dados_para_exibir if mov.get('tipo')]))
+        tipos_selecionados = f1.multiselect("Filtrar por Tipo", options=opcoes_tipos, key="filtro_tipo")
+        
+        opcoes_ativos = list(set([mov.get('fk_ativo', '') for mov in dados_para_exibir if mov.get('fk_ativo')]))
+        ativos_selecionados = f2.multiselect("Filtrar por Ativo", options=opcoes_ativos, format_func=formatar_ativo_visual, key="filtro_ativo")
+
+        if tipos_selecionados:
+            dados_para_exibir = [item for item in dados_para_exibir if item.get("tipo") in tipos_selecionados]
+        if ativos_selecionados:
+            dados_para_exibir = [item for item in dados_para_exibir if item.get("fk_ativo", "") in ativos_selecionados]
+
+        if not dados_para_exibir:
+            st.info("💡 Nenhum dividendo encontrado para os filtros atuais.")
         else:
-            if c4.button("[✔️ON] Ligar", width="stretch"):
-                set_aceito(True, linha_selecionada['id'])                
+            exibir_tabela_generica(
+                dados=dados_para_exibir,
+                config_colunas=CONFIG_DIVIDENDOS,
+                colunas_resumidas=["aceito", "fk_ativo", "tipo", "valor_bruto", "imposto", "valor_liq", "data_com", "data_pag"],
+                callback_edit=acao_editar,
+                callback_deletar=acao_excluir,
+                callback_estilo=colorir_linhas,
+                botoes_acao=[{"icone": "🔄", "callback": acao_status, "somente_unico": False, "help": "Alternar status"}],
+                chave_tabela="dividendos_principal",
+                suporta_moeda=True,
+            )
 
+else:
+    if st.button("⬅️ Voltar para a Listagem", key="voltar_dividendos"):
+        voltar_listagem()
+
+    key_form = f"dividendo_{state.get('form_key_count', 0)}"
+    if state["modo_tela"] == "importar":
+        renderizar_layout_importacao_tabela(
+            titulo="📥 Importação de Dividendos por Tabela",
+            funcao_envio_api=lambda payload: inserir_dividendo_api(payload, modo_insert="TABELA"),
+            config_colunas=CONFIG_IMPORTACAO_DIVIDENDOS,
+            config_colunas_erro=CONFIG_ERRO_IMPORTACAO_DIVIDENDOS,
+            on_sucesso=voltar_listagem,
+            key_estado_dinamico=key_form,
+            modelos_planilha=[
+                {"nome": "Modelo Padrão Dividendos", "path": "resources/Dividendos.xlsx", "file_name": "Dividendos.xlsx"}
+            ]
+        )
     else:
-        st.info("💡 Clique em uma linha da tabela acima para habilitar as ações.")
-
-with layout_form_dividendo:
-    if 'data_aprov' in st.session_state:
-        st.session_state.data_aprov = formatar_data(linha_selecionada.get('data_aprov', None))
-    if 'data_com' in st.session_state:
-        st.session_state.data_com = formatar_data(linha_selecionada.get('data_com', None))
-    if 'data_pag' in st.session_state:
-        st.session_state.data_pag = formatar_data(linha_selecionada.get('data_pag', None))
-    if valor_bruto_col in linha_selecionada:
-        linha_selecionada[valor_bruto_col] = "{:,.2f}".format(float(linha_selecionada.get(valor_bruto_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
-    if imposto_col in linha_selecionada:
-        linha_selecionada[imposto_col] = "{:,.2f}".format(float(linha_selecionada.get(imposto_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
-    # if valor_liq_col in linha_selecionada:
-    #     linha_selecionada[valor_liq_col] =  "{:,.2f}".format(float(linha_selecionada.get(valor_liq_col))).replace(',', 'v').replace('.', ',').replace('v', '.')
-
-    form_dividendo(linha_selecionada)
-
+        st.title("✏️ Editar Dividendo" if state["modo_tela"] == "editar" else "➕ Novo Dividendo")
+        renderizar_formulario_dividendo(
+            registro=state.get("registro_selecionado"),
+            moeda=state["moeda"],
+            on_salvar=salvar_dividendo,
+            on_sucesso=voltar_listagem,
+            key_estado_dinamico=key_form,
+        )

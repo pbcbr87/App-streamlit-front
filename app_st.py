@@ -1,39 +1,29 @@
 import streamlit as st
 import requests
-from decimal import Decimal
+import time
 from settings import API_URL, MANUTENCAO
 from streamlit_extras.cookie_manager import cookie_manager
-import time
-from datetime import datetime
+from Pages.utils.components import renderizar_status_motor_sidebar, processar_notificacoes_pendentes
+from Pages.utils.request_api import ( autenticar_usuario_api,
+                                      executar_requisicao_disparar_update,
+                                      obter_perfil_usuario_api,
+                                      ApiRequestError
+                                    )
 
-
-# print("---------Inicio--------------")
-# print(f'st.state: Logado: {st.session_state.logado if "logado" in st.session_state else None}, cmd Delete cookie: {st.session_state.deleteCookie if "deleteCookie" in st.session_state else None}, Ativar cookie: {st.session_state.ative_cookie if "ative_cookie" in st.session_state else None} ')
-
+print("---------Inicio--------------")
+print(f'st.state: Logado: {st.session_state.logado if "logado" in st.session_state else None}, cmd Delete cookie: {st.session_state.deleteCookie if "deleteCookie" in st.session_state else None}, Ativar cookie: {st.session_state.ative_cookie if "ative_cookie" in st.session_state else None} ')
+# print("Calculo em antamento: ", st.session_state.motor_em_andamento)
+print("-----------------------------")
 # ------------------------------------------------
 # 1. FUNÇÃO CENTRALIZADA DE REQUESTS (BOA PRÁTICA)
 # ------------------------------------------------
-def api_request(method, endpoint, data=None, params=None, timeout=10):
-    headers = {}
-    if 'token' in st.session_state and st.session_state.token:
-        headers['Authorization'] = f"Bearer {st.session_state.token}"
-    
-    url = f"{API_URL}{endpoint}"
-    
-    try:
-        if method == 'GET':
-            return requests.get(url, headers=headers, params=params, timeout=timeout)
-        return requests.post(url, headers=headers, data=data, timeout=timeout)
-    except Exception as e:
-        # Retorna o erro para ser identificado no st.error
-        return e
-
 def get_user_cached():
-    resp = api_request('GET', 'usuarios/')
-    if isinstance(resp, Exception):        
-        st.error(f"❌ Erro de Conexão: {resp}")
+    """Busca o perfil do usuário logado usando o cliente padronizado."""
+    try:
+        return obter_perfil_usuario_api()
+    except ApiRequestError as e:
+        st.error(f"❌ {e.message}")
         return None
-    return resp.json() if resp and resp.status_code == 200 else None 
 
 def reset_usuario():
     """
@@ -45,7 +35,24 @@ def reset_usuario():
     
     for key in keys_usuario:
         st.session_state[key] = None
-    
+
+    st.session_state.update_login_disparado = False
+
+    for key in ['carteira_api', 
+                'carteira_api_aporte', 
+                'page_aportes',
+                'page_aporte_rapido',
+                'planejamento_guiado',
+                'page_eventos',
+                'operacao_api', 
+                'evento_usuario_dict', 
+                'dividendos_usuarios_api', 
+                'page_movimentacao',
+                'page_dividendos',
+                'dados_carteira_cache']:
+        if key in st.session_state:
+            del st.session_state[key]
+
     st.cache_data.clear()
 
 #------------------------------------------------
@@ -80,21 +87,27 @@ def ajustar_CSS_main():
     )
 
 try:
-    # O retorno não precisa ser armazenado se é só para "acordar"
-    resp = api_request('GET', '', timeout=2)
+    # Ping inicial para 'acordar' a API caso esteja em sleep (ex: Render/Free tier)
+    resp = requests.get(f"{API_URL.rstrip('/')}/", timeout=2)
     if isinstance(resp, Exception):
         time.sleep(2)
 except:
     pass # Ignoramos erros aqui, o foco é apenas o estímulo inicial
 
-#------------------------------------------------
+#==========================================================
 #Delcarar sessions
-#------------------------------------------------
-defaults = { "ative_cookie": True, "deleteCookie": False }
+#==========================================================
+# Inicializa a flag de controle na sessão se ela não existir
+defaults = {
+        "motor_em_andamento": False,
+        "update_login_disparado": False,
+        "ative_cookie": True,
+        "deleteCookie": False,
+    }
 for key, value in defaults.items():
-    if key not in st.session_state:
-        st.session_state[key] = value
+    st.session_state.setdefault(key, value)
 
+# Só verificar cookie se foi ativado ou tever um reload(defaul == True)
 if st.session_state.ative_cookie == True:
     manager = cookie_manager(key="LY_CM")
     if not manager.ready():
@@ -130,124 +143,116 @@ if st.session_state.logado == False:
 
 if st.session_state.logado == True:
     st.session_state.ative_cookie = False
+    if not st.session_state.get('update_login_disparado', False):
+        try:
+            executar_requisicao_disparar_update(st.session_state.id)
+            st.session_state.update_login_disparado = True  # Trava para não disparar de novo nos próximos reruns
+        except ApiRequestError as e:
+            print(f"[LOGIN UPDATE] Aviso/Erro ao disparar recálculo no login: {e.message}")
+            st.session_state.update_login_disparado = True  # Marca como True para evitar loops
 
-#------------------------------------------------
+#==========================================================
 # Funções para paiginas
+#==========================================================
 #------------------------------------------------
 #Pagina Em manutenção
-def maintenance_page_gif():    
-# CSS para centralizar até os componentes nativos
-    st.markdown(
-        """
-        <style>
-            .stMain {
-                text-align: center;
-            }
-            /* Centraliza o box do st.info */
-            .stAlert {
-                text-align: left; /* Mantém o texto do box legível, mas o box centralizado */
-                display: inline-block;
-                width: auto;
-            }
-            div[data-testid="stMarkdownContainer"] > p {
-                text-align: center;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+#------------------------------------------------
+def maintenance_page_gif():
+    if "main_aceito" not in st.session_state:
+        st.session_state["main_aceito"] = False
 
-    # Layout centralizado
-    col1, col2, col3 = st.columns([1, 4, 1])
     
-    with col2:
-        st.markdown("## 🚧 Manutenção em Andamento")
-        
-        # GIF com largura total da coluna
-        st.image(
-            "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGNucTV2c294ZHRjbm42bGNzeTdrYWVidHJ5M2hlb2Nlc3NzaGh4aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Qu0jn2SFM8m193ghie/giphy.gif", 
-            width='stretch'
-        )
+    _, col, _ = st.columns([1,1,1])
+    with col:
+        container = st.container(horizontal=False, horizontal_alignment="center", vertical_alignment="center")
+        with container:
+            st.write("## 🚧 Manutenção em Andamento")
+            
+            # GIF com largura total da coluna
+            st.image(
+                "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGNucTV2c294ZHRjbm42bGNzeTdrYWVidHJ5M2hlb2Nlc3NzaGh4aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Qu0jn2SFM8m193ghie/giphy.gif", 
+                width=500
+            )
 
-        st.markdown("#### Estamos realizando melhorias importantes para você.")
-        st.markdown("Agradeço imensamente a sua compreensão e paciência!")
+            st.markdown("#### Estamos realizando melhorias importantes para você.")
+            st.markdown("Agradeço imensamente a sua compreensão e paciência!")
 
-        # Espaçamento
-        st.write("") 
+            # Espaçamento
+            st.write("") 
 
-        # O toque especial sobre o Thomas centralizado
-        st.info(
-            "👶 **Nota do Papai:** Pode demorar um pouquinho mais que o planejado... "
-            "O **Thomas** está na fase que exige total atenção do pai, e por aqui, "
-            "ele é sempre a prioridade número um! 💙"
-        )
+            # O toque especial sobre o Thomas centralizado
+            st.info(
+                "👶 **Nota do Papai:** Pode demorar um pouquinho mais que o planejado... "
+                "O **Thomas** está na fase que exige total atenção do pai, e por aqui, "
+                "ele é sempre a prioridade número um! 💙"
+            )
 
+            if st.button("Seque o jogo. Vamos testar Juntos", type="primary"):
+                st.session_state["main_aceito"] = True
+                st.rerun()
+
+#------------------------------------------------
 #Pagina de login
+#------------------------------------------------
 def login():
     with st.container(horizontal_alignment="center").form("login", width="content", enter_to_submit=True, clear_on_submit=True):
         a, b, c = st.columns([1,5,1], vertical_alignment="center")
-        b.image('imagens/login.png', width="stretch")
+        b.image('imagens/login.png', width="stretch", caption="🫘 Plante o seu legado🌱")
 
-        user_input = st.text_input('Usuário')
-        senha_input = st.text_input('Senha', type='password')
+        user_input = st.text_input('Usuário', icon=":material/person:")
+        senha_input = st.text_input('Senha', type='password', icon=":material/lock:")
 
         if st.form_submit_button("Acessar Sistema", width="stretch"):
             if not user_input or not senha_input:
                 st.warning('⚠️ Preencha usuário e senha.')
                 return
-            
             with st.status("Autenticando...", expanded=False) as status:
-                resp = api_request('POST', 'auth/token', data={'username': user_input, 'password': senha_input})
-                
-                # 1. Tratamento de Erro de Conexão (Exception)
-                if isinstance(resp, Exception):
-                    status.update(label="Falha na conexão", state="error")
-                    st.error(f"❌ Servidor offline. (Detalhe: {type(resp).__name__})")
-                    reset_usuario()
-                    return
+                try:
+                    data = autenticar_usuario_api(user_input, senha_input)
+                    token = data.get("access_token")
 
-                # 2. Sucesso (Status 200)
-                if resp.status_code == 200:
-                    data = resp.json()
-                    token = data.get('access_token')
                     if not token:
-                        status.update(label="Erro na resposta", state="error")
+                        status.update(
+                            label="Erro na resposta", state="error"
+                        )
                         st.error("API não retornou um token válido.")
                         return
-                    # Se valido armazena o token no cookie por 10 dias (864000 segundos)
-                    manager.set("LY_SID", token, max_age=864000, samesite="lax")
-                    status.update(label="Sucesso!", state="complete")
-                    
-                    # Carrega dados do usuário
+
+                    # Guarda token no cookie (10 dias)
+                    manager.set(
+                        "LY_SID", token, max_age=864000, samesite="lax"
+                    )
                     st.session_state.token = token
+
+                    # Carrega perfil do usuário
                     user_info = get_user_cached()
                     if user_info:
                         st.session_state.logado = True
-                        st.session_state.token = token
-                        st.session_state.nome = user_info['nome'].upper()
-                        st.session_state.user = user_info['login'].upper()
-                        st.session_state.email = user_info['email'].upper()
-                        st.session_state.admin = user_info['admin']
-                        st.session_state.id = user_info['id']
-                        
+                        st.session_state.nome = user_info["nome"].upper()
+                        st.session_state.user = user_info["login"].upper()
+                        st.session_state.email = user_info["email"].upper()
+                        st.session_state.admin = user_info["admin"]
+                        st.session_state.id = user_info["id"]
+
                         status.update(label="Bem-vindo!", state="complete")
                         st.rerun()
                         return
                     else:
-                        status.update(label="Erro de Perfil", state="error")
+                        status.update( label="Erro de Perfil", state="error" )
                         st.error("❌ Erro ao carregar perfil do usuário.")
 
-                # 3. Erros de Credenciais (400, 401)
-                elif resp.status_code in [400, 401]:
-                    status.update(label="Acesso Negado", state="error")
-                    st.error("🚫 Usuário ou senha incorretos.")
-                
-                # 4. Outros Erros
-                else:
-                    status.update(label="Erro Inesperado", state="error")
-                    st.error(f"⚠️ Servidor retornou erro {resp.status_code}")
+                except ApiRequestError as e:
+                    status.update(label="Falha no Acesso", state="error")
 
+                    if e.status_code in (400, 401):
+                        st.error("🚫 Usuário ou senha incorretos.")
+                    else:
+                        st.error(f"❌ {e.message}")
+
+                    reset_usuario()
+#------------------------------------------------
 #Pagina de logut 
+#------------------------------------------------
 def logout():       
     st.session_state.deleteCookie = True
     st.session_state.ative_cookie = True    
@@ -263,8 +268,7 @@ def logout():
 #------------------------------------------------
 def navegacao():
     if st.session_state.logado == False:
-        pages = {"Login": [st.Page(login)],
-                "extras": [st.Page('Pages/page_bruno.py', title='Bruno')]}
+        pages = {"Login": [st.Page(login)]}
         pg = st.navigation(pages, position="hidden")
         return pg
         
@@ -276,96 +280,112 @@ def navegacao():
     #------------------------------------------------
     #Estrutura de navegação principal
     #------------------------------------------------
-    conta_pages = [st.Page("Pages/Conta/home.py",title='inicio', icon=":material/home:"),
-                    st.Page("Pages/Conta/settings.py", title="Meus cadastro", icon=":material/settings:"),
-                    st.Page(logout, title='Sair', icon= ':material/logout:')    
-                    ]
+    conta_pages = [
+        st.Page("Pages/Conta/home.py", title="Início", icon="🏠"),
+        st.Page("Pages/Conta/settings.py", title="Meu Cadastro", icon="⚙️"),
+        st.Page(logout, title="Sair", icon="🚪"),
+    ]
+
+    cateira_pages = [
+        st.Page("Pages/Carteira/dashboard_carteira.py", title="Composição", icon="📊", default=True),
+        st.Page("Pages/Carteira/movimentacao.py", title="Movimentações", icon="📜"),
+        st.Page("Pages/Carteira/eventos_usuario.py", title="Gerenciar Eventos", icon="🎁"),
+    ]
+
+    aporte_planejado_pages = [
+        st.Page("Pages/Aporte/aporte_rapido.py", title="Onde Aportar Rápido", icon="🫗"),
+        st.Page("Pages/Aporte/aporte_grupo.py", title="Onde Aportar Macro", icon="🚿"),
+        st.Page("Pages/Aporte/planejar_guiado.py", title="Objetivos 🎯", icon="🍎"),
+    ]
+
+    imposto_renda_pages = [
+        st.Page("Pages/Imposto_renda/imposto_renda.py", title="Bens Direito - BRL/USD", icon="🏛️"),
+        st.Page("Pages/Imposto_renda/resumo_vendas_mensal.py", title="Operações Comuns e FIIs - BRL", icon="💱"),
+        st.Page("Pages/Imposto_renda/rendimento.py", title="Rendimentos - BRL", icon="🧾"),
+        st.Page("Pages/Imposto_renda/resumo_ano_exterior.py", title="Resumo Exterior - USD", icon="🌐"),
+    ]
+
+    dividendos_usuarios_pages = [
+        st.Page("Pages/Dividendos_usuarios/dividendos_grafico.py", title="Gráfico de Dividendos 🤑", icon="📈"),
+        st.Page("Pages/Dividendos_usuarios/dividendos_usuarios.py", title="Gerenciar Dividendos", icon="✍️"),
+    ]
+
+    evento_pages = [
+        st.Page("Pages/Evento/eventos_cadastrados.py", title="Eventos Cadastrados", icon="📅"),
+        st.Page("Pages/Evento/eventos_pendentes.py", title="Eventos Pendentes", icon="⏳"),
+    ]
+
+    dividendos_pages = [
+        st.Page("Pages/Dividendos/dividendos_cadastrados.py", title="Dividendos Cadastrados", icon="💵")
+    ]
+
+    ativos_pages = [
+        st.Page("Pages/Ativos/ativos_cadastrados.py", title="Ativos Cadastrados", icon="🏷️")
+    ]
+
+    admin_pages = [
+        st.Page("Pages/Usuarios/create_user.py", title="Criar Usuário", icon="👤")
+    ]
+
+    status = "🟢"
+    if st.session_state.motor_em_andamento == True:
+        status = "🔄"
+    elif st.session_state.motor_em_andamento == "ERRO":
+        status = "🚫"
+    user = f"{st.session_state.user}".title()
+    texto_user = f"**{user}** {status}"
+
+    if st.session_state.admin:
+        texto_user = f"**{user}** {status} [ADMIN]"
+    pages = {"🏦 Sua Carteira": cateira_pages, 
+             "💧 Aporte e Objetivos 🌳": aporte_planejado_pages, 
+             "💰 Remunerações 🧺": dividendos_usuarios_pages, 
+             "🏛️ Imposto de Renda": imposto_renda_pages,
+             texto_user: conta_pages}
     
-    cateira_pages = [st.Page('Pages/Carteira/page_2.py', title='Carteira', default=True),
-                    st.Page('Pages/Carteira/page_1.py', title='Operações'),
-                    st.Page('Pages/Carteira/movimentacao.py', title='Movimentações')
-                    ]
-    
-    aporte_planejado_pages = [st.Page('Pages/Aporte/planejamento.py', title='Planejar'),
-                            st.Page('Pages/Aporte/aporte_simples.py', title='Aporte simples'),
-                            st.Page('Pages/Aporte/aporte_grupo.py', title='Aporte em Grupo')]
-
-
-    imposto_renda_pages = [st.Page('Pages/Imposto_renda/imposto_renda.py', title='Bens Direito - BRL/USD'),
-                            st.Page('Pages/Imposto_renda/resumo_vendas_mensal.py', title='Operações Comuns e FIIs - BRL'),
-                            st.Page('Pages/Imposto_renda/rendimento.py', title='Rendimentos - BRL'),
-                            st.Page('Pages/Imposto_renda/resumo_ano_exterior.py', title='Resumo Exterior - USD')
-                            ]
-
-    evento_usuario_pages = [st.Page('Pages/Evento_usuario/evento_cadastrados.py', title='Gerenciar Eventos'),
-                            st.Page('Pages/Evento_usuario/insert_evento_coorp.py', title='Inserir Evento Coorporativos')
-                            ]
-
-    evento_pages = [st.Page('Pages/Evento/eventos_cadastrados.py', title='Eventos Cadastrados'),
-                    st.Page('Pages/Evento/eventos_pendentes.py', title='Evento Pendentes'),
-                    st.Page('Pages/Evento/simular.py', title='Simular Evento'),
-                    st.Page('Pages/Evento/insert_evento.py', title='Inserir Evento'),
-                    st.Page('Pages/Evento/edit_evento.py', title='Editar Evento')
-                    ]
-    dividendos_usuarios_pages = [   
-                                 st.Page('Pages/Dividendos_usuarios/dividendos_grafico.py', title='Gráfico de Dividendos'),
-                                 st.Page('Pages/Dividendos_usuarios/dividendos_usuarios.py', title='Gerenciar Dividendos')
-                                 ]
-
-    dividendos_pages = [st.Page('Pages/Dividendos/dividendos_cadastrados.py', title='Dividendos Cadastrados')]
-    ativos_pages = [st.Page('Pages/Ativos/ativos_cadastrados.py', title='Ativos Cadastrados')]
-
-    admin_pages = [st.Page('Pages/Admin/create_user.py', title='Criar Usuário', icon=':material/person_add:')]
-
-    pages = {"Sua Carteira": cateira_pages, "Aporte Planejado": aporte_planejado_pages, "Remunerações Coorporativas": dividendos_usuarios_pages, "Imposto de Renda": imposto_renda_pages, "Eventos Coorporativos": evento_usuario_pages, "Conta": conta_pages}
-    # pages = {"Manutençao": [st.Page(maintenance_page_gif, title='Manutenção')]}
     if st.session_state.admin == True:
-        pages["Admin"] = admin_pages
-        pages["Evento"] = evento_pages
-        pages["Ativos"] = ativos_pages
-        pages["Dividendos"] = dividendos_pages
+        pages["Usuarios 🛡️[ADMIN]"] = admin_pages
+        pages["Eventos 🛡️[ADMIN]"] = evento_pages
+        pages["Ativos 🛡️[ADMIN]"] = ativos_pages
+        pages["Dividendos 🛡️[ADMIN]"] = dividendos_pages
 
-    if MANUTENCAO and st.session_state.admin == False:
-        pages = {"Manutençao": [st.Page(maintenance_page_gif, title='Manutenção')]}
+    if MANUTENCAO and st.session_state.admin == False and not st.session_state.get("main_aceito", False):
+        pages = {"Manutenção": [st.Page(maintenance_page_gif, title='Manutenção')]}
         pg = st.navigation(pages, position="top")
         return pg
     
     pg = st.navigation(pages, position="top")    
     #Adicionar componentes na sidebar
     st.logo(image='imagens/icon_grande.png', size="large")
-    with st.sidebar:
+    with st.sidebar:        
         st.image('imagens/login.png', width="stretch" )
+        renderizar_status_motor_sidebar(st.session_state.id)
+
         if st.button('🔄 Atualizar Carteira', type='primary', key='atualizar_carteira', width="stretch"):
             keys_para_limpar = [
-                                    'carteira_api', 
-                                    'carteira_api_aporte', 
-                                    'operacao_api', 
-                                    'evento_usuario_dict', 
-                                    'dividendos_usuarios_api'
-                                ]                                
+                'carteira_api', 
+                'carteira_api_aporte', 
+                'operacao_api', 
+                'evento_usuario_dict', 
+                'dividendos_usuarios_api'
+            ]                                
             for key in keys_para_limpar:
                 if key in st.session_state:
                     del st.session_state[key]
 
-            with st.spinner("Calculando...", show_time=True):
-                resp = api_request('GET', f'comandos_api/calcular/{st.session_state.id}', timeout=1000)
-                
-                # Verificação de erro de    REDE ou TIMEOUT
-                if isinstance(resp, Exception):
-                    st.error(f"Erro de conexão: {resp}") # Aqui você vê o erro real!
-                
-                # Verificação de erro da API (ex: 500 ou 404)
-                elif resp.status_code != 200:
-                    st.error(f"Erro na API ({resp.status_code}): {resp.text}")
-                
-                else:
-                    st.success("Carteira atualizada!")
+            # Reutilizando a função padronizada para o botão manual também!
+            try:
+                executar_requisicao_disparar_update(st.session_state.id)
+                st.toast("Cálculo da carteira iniciado em background!", icon="🚀")
+            except ApiRequestError as e:
+                st.error(f"Erro ao disparar recálculo: {e.message}")   
     return pg
 
 #------------------------------------------------
 #Executar navegação
+#------------------------------------------------
 ajustar_CSS_main()
-
+processar_notificacoes_pendentes()
 pg = navegacao()
 pg.run()
 

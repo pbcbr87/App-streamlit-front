@@ -63,7 +63,6 @@ def excluir():
 
 def pesquisa_online(ativo):
     resp = requests.get(f'{API_URL}ativos/pesquisa_ativo/{ativo}', headers={'Authorization':f'Bearer {st.session_state.token}'})
-    print(resp)
     try:
         resposta_json = resp.json()
     except:
@@ -85,7 +84,7 @@ def formatar_data(valor):
 
 def carregar_ativos(ativo):
     headers = {'Authorization': f"Bearer {st.session_state.get('token')}"}
-    resp = requests.get(f'{API_URL}ativos/pesquisar_dados_ativos/{ativo}', headers=headers)
+    resp = requests.get(f'{API_URL}ativos/pesquisar_dados_ativos/{ativo}', headers=headers, params={'limite': 0})
     if resp.status_code == 200:
         st.session_state['ativos_api'] = resp.json()
     else:

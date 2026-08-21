@@ -10,3 +10,110 @@ serverAddress = "0.0.0.0"
 
 [runner]
 fastReruns = false
+
+# ==============================================================================
+# 🎨 CONFIGURAÇÕES GLOBAIS DE DESIGN (LEGACY SEED IDENTITY)
+# ==============================================================================
+[theme]
+base = "dark"
+primaryColor = "#C5A059"
+baseRadius = "8px"
+buttonRadius = "6px"
+
+font = "'Inter':https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+codeFont = "'JetBrains Mono':https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+codeFontSize = "0.875rem"
+baseFontSize = 15
+baseFontWeight = 400
+headingFontSizes = ["32px", "26px", "22px", "18px", "16px", "14px"]
+headingFontWeights = [600, 600, 600, 600, 600, 600]
+linkUnderline = false
+showSidebarBorder = false
+
+# Paleta de Gráficos (Baseada em Ouro, Verde Folha, Bronze e Terra)
+chartCategoricalColors = [
+    "#C5A059", # Dourado Principal
+    "#2D5A3F", # Verde Floresta
+    "#8B7355", # Bronze Ouro
+    "#4A7C59", # Verde Musgo
+    "#E2C044", # Amarelo Dourado Claro
+    "#386641", # Verde Botânico
+    "#A3B18A"  # Verde Sálvia
+]
+
+# 🎨 Cores Semânticas Globais (Definem as cores base dos alertas)
+redColor = "#BA181B"
+orangeColor = "#E07A5F"
+yellowColor = "#D4AF37"
+greenColor = "#2D5A3F"
+blueColor = "#3D5A80"
+violetColor = "#7D44CF"
+grayColor = "#6C757D"
+
+# ==============================================================================
+# 🌙 TEMA ESCURO (DARK THEME - LUXURY GREEN & GOLD SOFT LIGHT)
+# ==============================================================================
+[theme.dark]
+primaryColor = "#C5A059"
+backgroundColor = "#2A352D"                  # 🛠️ Fundo principal mais claro e suave
+secondaryBackgroundColor = "#344238"         # 🛠️ Cards e inputs em tom elevado para destaque
+codeBackgroundColor = "#212A24"              # 🛠️ Fundo de código ajustado
+textColor = "#F0F4F1"
+linkColor = "#D4AF37"
+borderColor = "rgba(197, 160, 89, 0.3)"
+showWidgetBorder = true
+codeTextColor = "#E2E8E4"
+dataframeBorderColor = "rgba(197, 160, 89, 0.3)"
+dataframeHeaderBackgroundColor = "#344238"    # 🛠️ Cabeçalho de tabelas acompanhando o tom secundário
+
+# Cores semânticas adaptadas para Dark Mode (Alerta st.info, st.warning, etc.)
+redColor = "#E63946"
+orangeColor = "#F4A261"
+yellowColor = "#E2C044"
+greenColor = "#386641"
+blueColor = "#4EA8DE"
+grayColor = "#A3A8B8"
+
+[theme.dark.sidebar]
+backgroundColor = "#344238"                  # 🛠️ Sidebar acompanhando a nova tonalidade
+secondaryBackgroundColor = "#2A352D"         # 🛠️ Elementos internos da sidebar
+codeBackgroundColor = "#2A352D"
+textColor = "#F0F4F1"
+borderColor = "rgba(197, 160, 89, 0.3)"
+primaryColor = "#C5A059"
+dataframeHeaderBackgroundColor = "#344238"
+dataframeBorderColor = "rgba(197, 160, 89, 0.3)"
+
+# ==============================================================================
+# ☀️ TEMA CLARO (LIGHT THEME - CLEAN ECO LUXURY)
+# ==============================================================================
+[theme.light]
+primaryColor = "#2D5A3F"
+backgroundColor = "#F9FAF8"
+secondaryBackgroundColor = "#FFFFFF"
+codeBackgroundColor = "#F0F4F1"
+textColor = "#1B2B20"
+linkColor = "#2D5A3F"
+borderColor = "#D8E2DC"
+showWidgetBorder = true
+codeTextColor = "#1B2B20"
+dataframeBorderColor = "#D8E2DC"
+dataframeHeaderBackgroundColor = "#F0F4F1"
+
+# Cores semânticas adaptadas para Light Mode
+redColor = "#BA181B"
+orangeColor = "#D97706"
+yellowColor = "#B45309"
+greenColor = "#2D5A3F"
+blueColor = "#1D4ED8"
+grayColor = "#6B7280"
+
+[theme.light.sidebar]
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F9FAF8"
+codeBackgroundColor = "#F0F4F1"
+textColor = "#1B2B20"
+borderColor = "#D8E2DC"
+primaryColor = "#2D5A3F"
+dataframeHeaderBackgroundColor = "#F0F4F1"
+dataframeBorderColor = "#D8E2DC"

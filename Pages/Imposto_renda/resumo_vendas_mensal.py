@@ -114,8 +114,8 @@ with col_btn:
 if btn_carregar:
     with st.spinner(f"Buscando fechamentos de {ano}..."):
         user_id = st.session_state.get("id", 0)
-        resumo_raw = safe_get_list(f"{API_URL}ir/resumo_vendas_mensal/{user_id}", {"ano": ano})
-        operacao_raw = safe_get_list(f"{API_URL}ordem_cal/pegar_vendas_ano/{user_id}", {"ano": ano})
+        resumo_raw = safe_get_list(f"{API_URL}ir/resumo_vendas_mensal/", {"ano": ano})
+        operacao_raw = safe_get_list(f"{API_URL}ir/pegar_vendas_ano/", {"ano": ano})
         
         df_temp = pd.DataFrame(resumo_raw)
         if not df_temp.empty:
@@ -324,7 +324,7 @@ if not df.empty:
                 token = st.session_state.get("token")
                 user_id = st.session_state.get("id", 0)
                 headers = {'Authorization': f'Bearer {token}'}
-                url_update = f"{API_URL}ir/atualizar_fechamento/{user_id}"
+                url_update = f"{API_URL}ir/atualizar_fechamento/"
                 
                 response = requests.post(url_update, json=payload, headers=headers)
                 
@@ -360,20 +360,21 @@ if not df.empty:
             * $IRRF_a$: Crédito de IRRF acumulado
             """, help="O crédito acumulado ($IRRF_a$) refere-se ao saldo de meses anteriores que ainda não foi compensado.")
         # Métrica Principal
+        delta_texto = "Abaixo do Mín." if 0 < darf_exibicao < 10 else None
         metirca.metric(
             "Prev. DARF", 
             fmt_brl(darf_exibicao), 
-            delta=None if darf_exibicao >= 10 else "Abaixo do Mín.",
+            delta=delta_texto,
             delta_color="off",
             help="Cálculo simulado para conferência antes do salvamento."
         )
         with st.expander('📋 Detalhamento das Operações'):
             df_vendas = st.session_state.df_vendas.copy()
-            
+            # st.write(df_vendas)
             # 1. Preparação e Filtro
-            if 'data_op_com' in df_vendas.columns:
-                df_vendas['data_op_com'] = pd.to_datetime(df_vendas['data_op_com'])
-                df_vendas = df_vendas[df_vendas['data_op_com'].dt.strftime('%m/%Y') == mes_sel]
+            if 'data_op_pag' in df_vendas.columns:
+                df_vendas['data_op_pag'] = pd.to_datetime(df_vendas['data_op_pag'])
+                df_vendas = df_vendas[df_vendas['data_op_pag'].dt.strftime('%m/%Y') == mes_sel]
             else:
                 df_vendas = pd.DataFrame()  # Garante que df_vendas seja um DataFrame vazio se a coluna não existir
             
@@ -390,7 +391,7 @@ if not df.empty:
                 # 3. Calcular Subtotais baseados na CATEGORIA AGRUPADA
                 subtotais = df_vendas.groupby('categoria_agrupada')[['valor_custo_brl', 'valor_venda_brl', 'lucro_brl']].sum().reset_index()
                 subtotais['codigo_ativo'] = 'SUBTOTAL'
-                subtotais['data_op_com'] = pd.NaT 
+                subtotais['data_op_pag'] = pd.NaT 
                 subtotais['ordem'] = 1 
 
                 # 4. Unir e Ordenar
@@ -402,7 +403,7 @@ if not df.empty:
                 )
                 
                 # Formatação de data para exibição
-                df_final['data_exibicao'] = pd.to_datetime(df_final['data_op_com']).dt.strftime('%d/%m/%Y').fillna('-')
+                df_final['data_exibicao'] = pd.to_datetime(df_final['data_op_pag']).dt.strftime('%d/%m/%Y').fillna('-')
 
                 # 5. Criar a Great Table
                 gt_vendas = (
@@ -412,7 +413,7 @@ if not df.empty:
                         data_exibicao="Data",
                         codigo_ativo="Ativo",
                         valor_custo_brl="Custo Total",
-                        valor_venda_brl="Venda Total",
+                        valor_venda_brl="Venda Total (+Taxas)",
                         lucro_brl="Lucro/Prejuízo"
                     )
                     .fmt_currency(

@@ -52,7 +52,7 @@ if "df_ir_rendimentos" not in st.session_state:
     try:
         token = st.session_state.get("token")
         headers = {'Authorization': f'Bearer {token}'}
-        response = requests.get(f"{API_URL}ir/ir_dividendos/{user_id}", params={"ano": ano_sel}, headers=headers)
+        response = requests.get(f"{API_URL}ir/ir_dividendos/", params={"ano": ano_sel}, headers=headers)
         
         if response.status_code == 200:
             df_raw = pd.DataFrame(response.json())
@@ -68,7 +68,7 @@ if "df_resumo_isento" not in st.session_state:
     try:
         user_id = st.session_state.get("id", 0)
         # Buscamos os dados do ano-calendário selecionado
-        resumo_raw = requests.get(f"{API_URL}ir/resumo_vendas_mensal/{user_id}", 
+        resumo_raw = requests.get(f"{API_URL}ir/resumo_vendas_mensal/", 
                                  params={"ano": ano_sel}, headers=headers).json()
         
         df_res_temp = pd.DataFrame(resumo_raw)
@@ -97,7 +97,7 @@ if "df_ir_bonificacoes" not in st.session_state:
     try:
         token = st.session_state.get("token")
         headers = {'Authorization': f'Bearer {token}'}
-        resp_boni = requests.get(f"{API_URL}ir/bonificacoes/{user_id}", params={"ano": ano_sel}, headers=headers)
+        resp_boni = requests.get(f"{API_URL}ir/bonificacoes/", params={"ano": ano_sel}, headers=headers)
         
         if resp_boni.status_code == 200:
             df_raw_boni = pd.DataFrame(resp_boni.json())
@@ -112,7 +112,7 @@ if "df_ir_bonificacoes" not in st.session_state:
                     df_to_append['nome'] = df_boni_filtrado['nome'].values
                     
                     # Calculamos o valor e formatamos para String (para manter seu padrão fmt_brl)
-                    df_to_append['total_liquido_brl'] = df_boni_filtrado['preco_op_brl'].values
+                    df_to_append['total_liquido_brl'] = df_boni_filtrado['preco_contabil_brl'].values
                     
                     # Guardamos no session_state para uso
                     st.session_state.df_ir_bonificacoes = df_to_append

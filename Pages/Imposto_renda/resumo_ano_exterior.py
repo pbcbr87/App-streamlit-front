@@ -67,10 +67,10 @@ with col_btn:
 if btn_carregar:
     with st.spinner(f"Processando cálculos de {ano}..."):
         user_id = st.session_state.get("id", 0)
-        resumo_raw = safe_get_list(f"{API_URL}ir/resumo_ano_exterior/{user_id}", {"ano": ano})
+        resumo_raw = safe_get_list(f"{API_URL}ir/resumo_ano_exterior/", {"ano": ano})
         
         # Busca o ano anterior para saber o prejuízo transportado
-        ano_anterior_raw = safe_get_list(f"{API_URL}ir/resumo_ano_exterior/{user_id}", {"ano": ano - 1})
+        ano_anterior_raw = safe_get_list(f"{API_URL}ir/resumo_ano_exterior/", {"ano": ano - 1})
         
         if resumo_raw:
             st.session_state.df_exterior = pd.DataFrame(resumo_raw)
