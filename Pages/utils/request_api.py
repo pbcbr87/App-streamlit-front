@@ -914,7 +914,8 @@ def executar_requisicao_atualizar_configuracoes( payload: dict, user_id: Optiona
     )
 
     if response.status_code == 200:
-        del st.session_state['configuracoes']
+        if 'configuracoes' in st.session_state:
+            del st.session_state['configuracoes']
         return response.json()
 
     _tratar_erro_resposta(response, contexto="ao Salvar Configurações do Usuário")

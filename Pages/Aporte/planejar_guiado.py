@@ -1878,7 +1878,10 @@ def executar_wizard(state):
                         if not isinstance(res, dict):
                             st.warning("A resposta da API veio em um formato inesperado.")
                             return
-                        executar_requisicao_atualizar_configuracoes(payload={"fez_planejamento": True})
+                        
+                        if st.session_state.get("fez_planejamento", True) == False:
+                            executar_requisicao_atualizar_configuracoes(payload={"fez_planejamento": True})
+                            
                         # 3. Atualiza o estado local e notifica o usuário
                         state["ativos"] = list(state["preview_ativos"])
                         state["etapa"] = 4
