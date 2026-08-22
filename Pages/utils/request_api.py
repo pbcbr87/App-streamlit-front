@@ -851,7 +851,7 @@ def executar_requisicao_atualizar_planejamento_carteira( payload: List[Dict[str,
     params = {"user_id": user_id} if user_id is not None else None
 
     response = _request(
-        method="POST",
+        method="PATCH",
         endpoint="aporte/atualizar_planejamento_carteira",
         params=params,
         payload=payload,

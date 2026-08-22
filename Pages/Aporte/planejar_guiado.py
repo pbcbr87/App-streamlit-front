@@ -7,6 +7,8 @@ from Pages.utils.request_api import (
     ApiRequestError,
     buscar_carteira_api,
     executar_requisicao_atualizar_planejamento_carteira,
+    obter_configuracoes_usuario_api,
+    executar_requisicao_atualizar_configuracoes
 )
 from Pages.utils.ferramentas import tratar_dados_carteira_raw
 
@@ -728,10 +730,17 @@ def componente_barra_adicao_rapida(state: dict, prefixo_key: str = "default"):
 # ============================================================
 # INICIALIZAÇÃO DO ESTADO
 # ============================================================
+config_user = obter_configuracoes_usuario_api() or {}
+if 'fez_planejamento' not in st.session_state:
+    if 'fez_planejamento' not in config_user:
+        st.session_state["fez_planejamento"] = False
+    else:
+        st.session_state["fez_planejamento"] = config_user['fez_planejamento']
+
 if "planejamento_guiado" not in st.session_state:
     st.session_state.planejamento_guiado = {
-        "etapa": 4,
-        "modo_wizard": False,
+        "etapa": 4 if st.session_state["fez_planejamento"] else 1,
+        "modo_wizard": False if st.session_state["fez_planejamento"] else True,
 
         # dados carregados
         "ativos": [],
@@ -1866,7 +1875,7 @@ def executar_wizard(state):
                         if not isinstance(res, dict):
                             st.warning("A resposta da API veio em um formato inesperado.")
                             return
-
+                        executar_requisicao_atualizar_configuracoes(payload={"fez_planejamento": True})
                         # 3. Atualiza o estado local e notifica o usuário
                         state["ativos"] = list(state["preview_ativos"])
                         state["etapa"] = 4
