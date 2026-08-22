@@ -338,8 +338,8 @@ def navegacao():
     if st.session_state.admin:
         texto_user = f"**{user}** {status} [ADMIN]"
     pages = {"🏦 Sua Carteira": cateira_pages, 
-             "💧 Aporte e Objetivos 🌳": aporte_planejado_pages, 
              "💰 Remunerações 🧺": dividendos_usuarios_pages, 
+             "💧 Aporte e Objetivos 🌳": aporte_planejado_pages, 
              "🏛️ Imposto de Renda": imposto_renda_pages,
              texto_user: conta_pages}
     

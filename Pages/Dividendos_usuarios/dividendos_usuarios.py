@@ -150,7 +150,7 @@ def garantir_dados_em_cache(state: dict):
             if not state.get('ultimo_carregar_tudo'):
                 st.write("")
                 with st.spinner("Buscando histórico completo..."):
-                    state['dados'] = listar_dividendos_usuarios_api(ativo_id=None, sem_data_corte=state.get('sem_data_corte', False))
+                    state['dados'] = listar_dividendos_usuarios_api(ativo_id=None, sem_data_corte=True)
                     state['ultimo_carregar_tudo'] = True
                     state['ultimo_ativo_carregado'] = None
 
@@ -174,9 +174,7 @@ if state["modo_tela"] == "listagem":
         st.rerun()
     
     # 1. Grid de Filtros de Entrada
-    c1, c2, c3, c4 = st.columns([1.5, 2.5, 1.5, 0.5], vertical_alignment="bottom")
-    with c4:
-        state['sem_data_corte'] = st.checkbox("📅 Todos", key="mais_de_um_mes")
+    c1, c2, c3 = st.columns([1.5, 2.5, 1.5], vertical_alignment="bottom")
     with c1:
         if st.button("👁️ Carregar Tudo", width="stretch"):
             state['carregar_tudo'] = True

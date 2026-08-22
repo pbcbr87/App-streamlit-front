@@ -10,7 +10,7 @@ from datetime import date, datetime
 
 def carregar_dividendos():
     headers = {'Authorization': f"Bearer {st.session_state.get('token')}"}
-    params = {'ativo': st.session_state.get("sl_fk_ativo", "WEGE3")}
+    params = {'ativo': st.session_state.get("sl_fk_ativo", "WEGE3"), 'sem_data_corte': True}
     resp = requests.get(f'{API_URL}dividendos/pegar_dividendos', params=params, headers=headers)
     if resp.status_code == 200:
         st.session_state['dividendos_api'] = resp.json()
@@ -124,15 +124,16 @@ def inserir_dividendo(dados_dict):
     if 'id' in dados_dict.keys():
         dados_dict.pop("id")
     dados = pd.DataFrame([dados_dict])
-    st.dataframe(dados[['fk_ativo', 'tipo', 'valor_bruto', 'valor_liq', 'data_aprov', 'data_com', 'data_pag']], width='content')
+    st.dataframe(dados[['fk_ativo', 'tipo', 'valor_bruto', 'valor_liq', 'data_aprov', 'data_com', 'data_pag', 'ano_calendario_ir']], width='content')
     if st.button('Enviar'):
         with st.spinner(text="In progress..."):
-            enviar_tabela(dados[['fk_ativo', 'tipo', 'valor_bruto', 'valor_liq', 'data_aprov', 'data_com', 'data_pag']])
+            enviar_tabela(dados[['fk_ativo', 'tipo', 'valor_bruto', 'valor_liq', 'data_aprov', 'data_com', 'data_pag', 'ano_calendario_ir']])
 
 def enviar_tabela(dataframe):
     linhas = dataframe.to_json(orient='records', date_format='iso')
     linhas = loads(linhas)
     tabela = dumps({"dados": linhas})
+
     resp = requests.post(f'{API_URL}dividendos/inserir_dividendos_tabela', tabela, headers={'Authorization':f'Bearer {st.session_state.token}'})
     try:
         resposta_json = resp.json()
@@ -140,7 +141,7 @@ def enviar_tabela(dataframe):
         st.error(f"Erro na API. Status {resp.status_code}. Resposta de texto: {resp.text}")
 
         # --- Tratamento de Sucesso (200 OK) ---
-    if resp.status_code == 200:
+    if resp.status_code == 201:
         st.success('✅ Dados enviados com sucesso!')          
     # --- Tratamento de Erro de Validação (422 Unprocessable Entity) ---
     elif resp.status_code == 422:

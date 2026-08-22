@@ -450,6 +450,7 @@ def listar_dividendos_usuarios_api(
     _tratar_erro_resposta(response, contexto="ao Listar Dividendos")
 
 def obter_dividendos_agregados_api( periodo_opcao: str = "12M",
+                                    agrupar_por: str = 'DATA_PAG',
                                     data_inicio: Optional[str] = None,
                                     data_fim: Optional[str] = None,
                                     apenas_aceitos: bool = True,
@@ -459,6 +460,7 @@ def obter_dividendos_agregados_api( periodo_opcao: str = "12M",
     params: Dict[str, Any] = {
         "periodo_opcao": periodo_opcao,
         "apenas_aceitos": apenas_aceitos,
+        "agrupar_por": agrupar_por,
     }
     if periodo_opcao == "CUSTOM":
         if data_inicio:

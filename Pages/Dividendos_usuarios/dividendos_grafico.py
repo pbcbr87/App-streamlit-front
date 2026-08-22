@@ -27,16 +27,17 @@ def numero_padrao(numero: float) -> str:
     return f"{numero:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
-def carregar_dados_agregados(
-    periodo: str = "12M",
-    dt_inicio: Optional[date] = None,
-    dt_fim: Optional[date] = None,
-) -> List[dict]:
+def carregar_dados_agregados( periodo: str = "12M",
+                                dt_inicio: Optional[date] = None,
+                                dt_fim: Optional[date] = None,
+                                agrupar_por: Optional[str] = None ) -> List[dict]:
+                                
     """Busca os dividendos agregados no backend FastAPI."""
     try:
         return (
             obter_dividendos_agregados_api(
                 periodo_opcao=periodo,
+                agrupar_por="DATA_COM" if agrupar_por =="Data Com" else "DATA_PAG",
                 data_inicio=str(dt_inicio) if dt_inicio else None,
                 data_fim=str(dt_fim) if dt_fim else None,
                 apenas_aceitos=True,
@@ -241,7 +242,7 @@ def renderizar_matriz_proventos(
 
 
 def renderizar_e_aplicar_filtros( df: pd.DataFrame, expander_container: Any, ) -> Tuple[pd.DataFrame, Optional[str], str, str, str]:
-    """🛠️ Renderiza os widgets do Streamlit e aplica os filtros diretamente no DataFrame.
+    """ Renderiza os widgets do Streamlit e aplica os filtros diretamente no DataFrame.
 
     Returns:
         Tuple contendo: (df_filtrado, coluna_agrupamento, agrupamento_label, visao, base_data)
@@ -251,65 +252,54 @@ def renderizar_e_aplicar_filtros( df: pd.DataFrame, expander_container: Any, ) -
     # 1. Filtro de Tickers no Expander Superior
     ativos_disponiveis = sorted(list(df_filtered["fk_ativo"].dropna().unique()))
     with expander_container:
-        tickers = st.multiselect(
-            "Filtrar Ativos:", key="multi_sl_Ativos", options=ativos_disponiveis
-        )
+        tickers = st.multiselect( "Filtrar Ativos:", key="multi_sl_Ativos", options=ativos_disponiveis )
 
-    # 🛠️ 2. Controles de Visualização em 4 Colunas (Sem colunas vazias)
-    col_f1, col_f2, col_f3, col_f4 = st.columns(4)
+    # 2. Controles de Visualização em 4 Colunas (Sem colunas vazias)
+    col_f1, col_f2, col_f3 = st.columns(3)
 
     visao = col_f1.selectbox("Visão:", ("Mensal", "Anual"))
 
-    base_data = col_f2.selectbox(
-        "Base de Data:",
-        options=["Data Com", "Pagamento"],
-        index=0,
-        help="Data Com: Competência do direito | Data Pagamento: Data de recebimento",
-    )
-
-    # 🛠️ Define o agrupamento primeiro para alimentar as opções do filtro dinâmico
-    agrupamento_label = col_f3.selectbox(
-        "Agrupar por:", options=list(MAPA_AGRUPAMENTOS.keys()), index=0
-    )
+    # Define o agrupamento primeiro para alimentar as opções do filtro dinâmico
+    agrupamento_label = col_f2.selectbox( "Agrupar por:", options=list(MAPA_AGRUPAMENTOS.keys()), index=0 )
     coluna_agrupamento = MAPA_AGRUPAMENTOS[agrupamento_label]
 
-    # 🛠️ Renderiza o filtro do agrupamento logo em seguida (na ordem lógica)
-    opcoes_filtro_especifico: List[str] = ["Todos"]
+    # Renderiza o filtro do agrupamento logo em seguida (na ordem lógica)
+    opcoes_filtro_especifico: List[str] = []
     if coluna_agrupamento and coluna_agrupamento in df_filtered.columns:
-        opcoes_filtro_especifico.extend(
-            sorted(list(df_filtered[coluna_agrupamento].dropna().unique()))
-        )
+        opcoes_filtro_especifico.extend( sorted(list(df_filtered[coluna_agrupamento].dropna().unique())) )
+    elif agrupamento_label == "Completo":
+        for coluna in MAPA_AGRUPAMENTOS.values():
+            if coluna in df_filtered.columns:
+                opcoes_filtro_especifico.extend( list(df_filtered[coluna].dropna().unique()) )
+                opcoes_filtro_especifico = sorted(list(set(opcoes_filtro_especifico)))
 
-    valor_filtro_selecionado = col_f4.selectbox(
-        f"Filtrar por {agrupamento_label}:", options=opcoes_filtro_especifico
-    )
 
-    # Define a coluna de data alvo baseada na escolha do usuário
-    coluna_data_alvo = "ano_mes_com" if base_data == "Data Com" else "ano_mes_pag"
+    valor_filtro_selecionado = col_f3.multiselect( f"Filtrar por {agrupamento_label}:", options=opcoes_filtro_especifico )
 
-    df_filtered["ano_mes_dt"] = pd.to_datetime(df_filtered[coluna_data_alvo])
+    df_filtered["ano_mes_dt"] = pd.to_datetime(df_filtered['ano_mes_ref'])
     df_filtered["periodo_str"] = df_filtered["ano_mes_dt"].dt.strftime("%Y-%m")
 
     # Aplicação direta das regras de filtragem
     if tickers:
         df_filtered = df_filtered[df_filtered["fk_ativo"].isin(tickers)]
-
-    if (
-        coluna_agrupamento
-        and valor_filtro_selecionado
-        and valor_filtro_selecionado != "Todos"
-    ):
-        if coluna_agrupamento in df_filtered.columns:
-            df_filtered = df_filtered[
-                df_filtered[coluna_agrupamento] == valor_filtro_selecionado
-            ]
+    
+    if valor_filtro_selecionado:
+        if coluna_agrupamento and coluna_agrupamento in df_filtered.columns:
+            # Filtro dinâmico na coluna selecionada
+            df_filtered = df_filtered[df_filtered[coluna_agrupamento].isin(valor_filtro_selecionado)]
+        elif agrupamento_label == "Completo":
+            # Busca o valor selecionado tanto em 'grupo' quanto em 'categoria' usando o operador '|'
+            cond_grupo = df_filtered["grupo"].isin(valor_filtro_selecionado) if "grupo" in df_filtered.columns else False
+            cond_categoria = df_filtered["categoria"].isin(valor_filtro_selecionado) if "categoria" in df_filtered.columns else False
+            
+            df_filtered = df_filtered[cond_grupo | cond_categoria]  
 
     if visao == "Anual":
         df_filtered["periodo_agrupado"] = df_filtered["ano_mes_dt"].dt.year.astype(str)
     else:
         df_filtered["periodo_agrupado"] = df_filtered["periodo_str"]
-
-    return df_filtered, coluna_agrupamento, agrupamento_label, visao, base_data
+    st.dataframe(df_filtered)
+    return df_filtered, coluna_agrupamento, agrupamento_label, visao
 
 # ==============================================================================
 # CABEÇALHO E FILTROS DE PERÍODO (FETCH API)
@@ -320,32 +310,27 @@ moeda = c2_t.radio("Moeda dos valores", ["BRL", "USD"], key="moeda_valores", hor
 
 c1_f, c2_f = st.columns(2)
 with c1_f.expander("📅 Filtros de Período", expanded=False):
-    col_p1, col_p2, col_p3 = st.columns([2, 2, 2])
-
-    periodo_selecionado = col_p1.selectbox(
-        "Período de Consulta:",
-        options=["12M", "TUDO", "CUSTOM"],
-        index=0,
-        help="12M: Últimos 12 meses | TUDO: Todo o histórico disponível | CUSTOM: Faixa personalizada",
-    )
+    col_p1, col_p2, col_p3, col_p4 = st.columns(4)
+    base_data = col_p1.selectbox( "Base de Data:", options=["Pagamento", "Data Com"], index=0,
+                                    help="Data Com: Competência do direito | Data Pagamento: Data de recebimento", )
+    periodo_selecionado = col_p2.selectbox( "Período de Consulta:", options=["12M", "TUDO", "CUSTOM"], index=0,
+                                                help="12M: Últimos 12 meses | TUDO: Todo o histórico disponível | CUSTOM: Faixa personalizada", )
 
     data_ini = None
     data_fim = None
 
     if periodo_selecionado == "CUSTOM":
-        data_ini = col_p2.date_input("Data Início", value=date.today().replace(month=1, day=1))
-        data_fim = col_p3.date_input("Data Fim", value=date.today())
+        data_ini = col_p3.date_input("Data Início", value=date.today().replace(month=1, day=1))
+        data_fim = col_p4.date_input("Data Fim", value=date.today())
 
     if (
         "grafico" not in state
-        or state.get("ultimo_periodo_opcao") != periodo_selecionado
+        or state.get("ultimo_periodo_opcao") != f"{periodo_selecionado}_{base_data}"
         or state.get("ultima_dt_ini") != data_ini
         or state.get("ultima_dt_fim") != data_fim
     ):
-        state["grafico"] = carregar_dados_agregados(
-            periodo=periodo_selecionado, dt_inicio=data_ini, dt_fim=data_fim
-        )
-        state["ultimo_periodo_opcao"] = periodo_selecionado
+        state["grafico"] = carregar_dados_agregados( periodo=periodo_selecionado, dt_inicio=data_ini, dt_fim=data_fim, agrupar_por=base_data)
+        state["ultimo_periodo_opcao"] = f"{periodo_selecionado}_{base_data}"
         state["ultima_dt_ini"] = data_ini
         state["ultima_dt_fim"] = data_fim
 
@@ -381,12 +366,7 @@ for agrp_col in ["categoria", "grupo"]:
 # ==============================================================================
 expander_ativos = c2_f.expander("🏷️ Filtros de Ativos", expanded=False)
 
-df_filtered, coluna_agrupamento, agrupamento_label, visao, base_data = (
-    renderizar_e_aplicar_filtros(
-        df=df_base,
-        expander_container=expander_ativos,
-    )
-)
+df_filtered, coluna_agrupamento, agrupamento_label, visao = renderizar_e_aplicar_filtros( df=df_base, expander_container=expander_ativos)
 
 if df_filtered.empty:
     st.warning("Nenhum dado retornado para os filtros aplicados.")
@@ -406,10 +386,12 @@ else:
         df_filtered.groupby("periodo_agrupado")[valor_liq_col].sum().reset_index()
     )
 
+df_chart["Rotulo"] = df_chart[valor_liq_col].apply(lambda x: f"{moeda_simbolo} {numero_padrao(x)}")
+
 if visao == "Anual":
-    df_chart["Rotulo"] = (df_chart[valor_liq_col] / 12).map("{:,.2f}".format)
+    df_chart["Média Mensal"] = (df_chart[valor_liq_col] / 12).apply(lambda x: f"{moeda_simbolo} {numero_padrao(x)}")
 else:
-    df_chart["Rotulo"] = df_chart[valor_liq_col].map("{:,.2f}".format)
+    df_chart["Média Mensal"] = df_chart["Rotulo"]
 
 # ==============================================================================
 # VISUALIZAÇÃO GRÁFICA
@@ -428,11 +410,27 @@ fig = px.bar(
     color=coluna_agrupamento,
     barmode="group",
     text="Rotulo",
+    custom_data=["Média Mensal"],
     title=f"Proventos Agregados por Período ({visao} - {base_data}) - {agrupamento_label}",
     labels=labels_plotly,
     height=530,
 )
-
+# Configura o que aparece no valor suspenso (Hover)
+if visao == "Anual":
+    fig.update_traces(
+        hovertemplate=(
+            "<b>Período:</b> %{x}<br>"
+            f"<b>Total Líquido:</b> {moeda_simbolo} %{{y:,.2f}}<br>"
+            "<b>Média Mensal:</b> %{customdata[0]}<extra></extra>"
+        )
+    )
+else:
+    fig.update_traces(
+        hovertemplate=(
+            "<b>Período:</b> %{x}<br>"
+            f"<b>Total Líquido:</b> {moeda_simbolo} %{{y:,.2f}}<extra></extra>"
+        )
+    )
 fig.update_layout(
     separators=",.",
     yaxis_tickformat=",.2f",
