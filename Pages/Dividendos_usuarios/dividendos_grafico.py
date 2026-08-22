@@ -298,7 +298,7 @@ def renderizar_e_aplicar_filtros( df: pd.DataFrame, expander_container: Any, ) -
         df_filtered["periodo_agrupado"] = df_filtered["ano_mes_dt"].dt.year.astype(str)
     else:
         df_filtered["periodo_agrupado"] = df_filtered["periodo_str"]
-    st.dataframe(df_filtered)
+
     return df_filtered, coluna_agrupamento, agrupamento_label, visao
 
 # ==============================================================================
@@ -386,6 +386,12 @@ else:
         df_filtered.groupby("periodo_agrupado")[valor_liq_col].sum().reset_index()
     )
 
+hoje_str = pd.Timestamp.now().strftime("%Y-%m") if visao != "Anual" else str(pd.Timestamp.now().year)
+def definir_status(periodo: str) -> str:
+    return "Futuro" if periodo > hoje_str else "Realizado"
+df_chart["Status_Periodo"] = df_chart["periodo_agrupado"].apply(definir_status)
+
+
 df_chart["Rotulo"] = df_chart[valor_liq_col].apply(lambda x: f"{moeda_simbolo} {numero_padrao(x)}")
 
 if visao == "Anual":
@@ -403,12 +409,20 @@ labels_plotly = {
 if coluna_agrupamento:
     labels_plotly[coluna_agrupamento] = agrupamento_label
 
+# Mapeamento das Cores (Ajuste o código hex da cor padrão do seu tema se desejar)
+COR_REALIZADO = "#C29B38"  # Tom dourado/ocre das barras atuais
+COR_FUTURO = "#E6D3A3"     # Tom bem mais claro para os valores futuros
+
+color_col = coluna_agrupamento if coluna_agrupamento else "Status_Periodo"
+color_map = {"Realizado": COR_REALIZADO, "Futuro": COR_FUTURO} if not coluna_agrupamento else None
+
 fig = px.bar(
     df_chart,
     x="periodo_agrupado",
     y=valor_liq_col,
-    color=coluna_agrupamento,
-    barmode="group",
+    color=color_col,
+    color_discrete_map=color_map,
+    barmode="group" if coluna_agrupamento else "overlay",
     text="Rotulo",
     custom_data=["Média Mensal"],
     title=f"Proventos Agregados por Período ({visao} - {base_data}) - {agrupamento_label}",
