@@ -10,10 +10,10 @@ from Pages.utils.request_api import ( autenticar_usuario_api,
                                       ApiRequestError
                                     )
 
-print("---------Inicio--------------")
-print(f'st.state: Logado: {st.session_state.logado if "logado" in st.session_state else None}, cmd Delete cookie: {st.session_state.deleteCookie if "deleteCookie" in st.session_state else None}, Ativar cookie: {st.session_state.ative_cookie if "ative_cookie" in st.session_state else None} ')
-# print("Calculo em antamento: ", st.session_state.motor_em_andamento)
-print("-----------------------------")
+print(f"---------Inicio--------------{time.time()}")
+# print(f'st.state: Logado: {st.session_state.logado if "logado" in st.session_state else None}, cmd Delete cookie: {st.session_state.deleteCookie if "deleteCookie" in st.session_state else None}, Ativar cookie: {st.session_state.ative_cookie if "ative_cookie" in st.session_state else None} ')
+# # print("Calculo em antamento: ", st.session_state.motor_em_andamento)
+# print("-----------------------------")
 # ------------------------------------------------
 # 1. FUNÇÃO CENTRALIZADA DE REQUESTS (BOA PRÁTICA)
 # ------------------------------------------------
@@ -87,12 +87,12 @@ def ajustar_CSS_main():
     )
 
 try:
-    # Ping inicial para 'acordar' a API caso esteja em sleep (ex: Render/Free tier)
-    resp = requests.get(f"{API_URL.rstrip('/')}/", timeout=2)
-    if isinstance(resp, Exception):
-        time.sleep(2)
-except:
-    pass # Ignoramos erros aqui, o foco é apenas o estímulo inicial
+    print(f"Ping inicial para acordar a API: {API_URL.rstrip('/')}/")
+    # Ping inicial para 'acordar' a API caso esteja em sleep
+    resp = requests.get(f"{API_URL.rstrip('/')}/", timeout=2)       
+except Exception as e:
+    print(f"Aguardando acordar a pagina 4seg: {e}")
+    time.sleep(4)
 
 #==========================================================
 #Delcarar sessions

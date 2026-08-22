@@ -807,8 +807,9 @@ def etapa1(state):
 
         # Renderização
         for grupo_vis, ativos_do_grupo in grupos_dict.items():
-            with st.expander(f"{icone_grupo(grupo_vis)} {grupo_vis} - {len(ativos_do_grupo)} Ativos", expanded=False):
-
+            if f"expander_{grupo_vis}" not in st.session_state:
+                st.session_state[f"expander_{grupo_vis}"] = False
+            with st.expander(f"{icone_grupo(grupo_vis)} {grupo_vis} - {len(ativos_do_grupo)} Ativos", expanded=st.session_state[f"expander_{grupo_vis}"]):
                 for a in ativos_do_grupo:
                     fk_ativo = ( a.get("fk_ativo") or a.get("id_ativo") or a.get("ativo_cat") )
 
