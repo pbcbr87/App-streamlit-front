@@ -143,6 +143,7 @@ if st.session_state.logado == False:
 
 if st.session_state.logado == True:
     st.session_state.ative_cookie = False
+    # Disparar Update do backend apenas uma vez por sessão para o usuário logado, evitando loops de requisições
     if not st.session_state.get('update_login_disparado', False):
         try:
             executar_requisicao_disparar_update(st.session_state.id)
@@ -195,61 +196,65 @@ def maintenance_page_gif():
 #Pagina de login
 #------------------------------------------------
 def login():
-    with st.container(horizontal_alignment="center").form("login", width="content", enter_to_submit=True, clear_on_submit=True):
-        a, b, c = st.columns([1,5,1], vertical_alignment="center")
-        b.image('imagens/login.png', width="stretch", caption="🫘 Plante o seu legado🌱")
+    with st.container(horizontal_alignment="center"):
+        with st.form("login", width="content", enter_to_submit=True):
+            a, b, c = st.columns([1,5,1], vertical_alignment="center")
+            try:
+                b.image('imagens/login.png', width="stretch", caption="🫘 Plante o seu legado🌱")
+            except Exception as e:
+                pass
 
-        user_input = st.text_input('Usuário', icon=":material/person:")
-        senha_input = st.text_input('Senha', type='password', icon=":material/lock:")
+            user_input = st.text_input('Usuário', icon=":material/person:")
+            senha_input = st.text_input('Senha', type='password', icon=":material/lock:")
 
-        if st.form_submit_button("Acessar Sistema", width="stretch"):
-            if not user_input or not senha_input:
-                st.warning('⚠️ Preencha usuário e senha.')
-                return
-            with st.status("Autenticando...", expanded=False) as status:
-                try:
-                    data = autenticar_usuario_api(user_input, senha_input)
-                    token = data.get("access_token")
+            if st.form_submit_button("Acessar Sistema", width="stretch"):
+                if not user_input or not senha_input:
+                    st.warning('⚠️ Preencha usuário e senha.')
+                    return
+                with st.status("Autenticando...", expanded=False) as status:
+                    try:
+                        data = autenticar_usuario_api(user_input, senha_input)
+                        token = data.get("access_token")
 
-                    if not token:
-                        status.update(
-                            label="Erro na resposta", state="error"
+                        if not token:
+                            status.update(
+                                label="Erro na resposta", state="error"
+                            )
+                            st.error("API não retornou um token válido.")
+                            return
+
+                        # Guarda token no cookie (10 dias)
+                        manager.set(
+                            "LY_SID", token, max_age=864000, samesite="lax"
                         )
-                        st.error("API não retornou um token válido.")
-                        return
+                        st.session_state.token = token
 
-                    # Guarda token no cookie (10 dias)
-                    manager.set(
-                        "LY_SID", token, max_age=864000, samesite="lax"
-                    )
-                    st.session_state.token = token
+                        # Carrega perfil do usuário
+                        user_info = get_user_cached()
+                        if user_info:
+                            st.session_state.logado = True
+                            st.session_state.nome = user_info["nome"].upper()
+                            st.session_state.user = user_info["login"].upper()
+                            st.session_state.email = user_info["email"].upper()
+                            st.session_state.admin = user_info["admin"]
+                            st.session_state.id = user_info["id"]
 
-                    # Carrega perfil do usuário
-                    user_info = get_user_cached()
-                    if user_info:
-                        st.session_state.logado = True
-                        st.session_state.nome = user_info["nome"].upper()
-                        st.session_state.user = user_info["login"].upper()
-                        st.session_state.email = user_info["email"].upper()
-                        st.session_state.admin = user_info["admin"]
-                        st.session_state.id = user_info["id"]
+                            status.update(label="Bem-vindo!", state="complete")
+                            st.rerun()
+                            return
+                        else:
+                            status.update( label="Erro de Perfil", state="error" )
+                            st.error("❌ Erro ao carregar perfil do usuário.")
 
-                        status.update(label="Bem-vindo!", state="complete")
-                        st.rerun()
-                        return
-                    else:
-                        status.update( label="Erro de Perfil", state="error" )
-                        st.error("❌ Erro ao carregar perfil do usuário.")
+                    except ApiRequestError as e:
+                        status.update(label="Falha no Acesso", state="error")
 
-                except ApiRequestError as e:
-                    status.update(label="Falha no Acesso", state="error")
+                        if e.status_code in (400, 401):
+                            st.error("🚫 Usuário ou senha incorretos.")
+                        else:
+                            st.error(f"❌ {e.message}")
 
-                    if e.status_code in (400, 401):
-                        st.error("🚫 Usuário ou senha incorretos.")
-                    else:
-                        st.error(f"❌ {e.message}")
-
-                    reset_usuario()
+                        reset_usuario()
 #------------------------------------------------
 #Pagina de logut 
 #------------------------------------------------
@@ -271,12 +276,7 @@ def navegacao():
         pages = {"Login": [st.Page(login)]}
         pg = st.navigation(pages, position="hidden")
         return pg
-        
-    if  st.session_state.nome == "XXX" and st.session_state.email == "X@X.COM":
-        st.warning('Por favor, atualize cadastro, email e altere sua senha.')
-        pages = { "Conta": [st.Page("Pages/Conta/settings.py", title="Meus cadastro", icon=":material/settings:")]}
-        pg = st.navigation(pages, position="sidebar")
-        return pg
+
     #------------------------------------------------
     #Estrutura de navegação principal
     #------------------------------------------------
