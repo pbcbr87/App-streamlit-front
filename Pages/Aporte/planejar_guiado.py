@@ -318,7 +318,7 @@ def create_sankey_chart(df: pd.DataFrame):
     )
 
     fig.update_layout(
-        margin=dict(b=12, t=10, l=40, r=40),
+        margin=dict(b=10, t=30, l=30, r=30),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         height=650,

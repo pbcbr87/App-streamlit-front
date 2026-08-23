@@ -400,7 +400,7 @@ def create_sankey_chart(df: pd.DataFrame, coluna_metrica: str = "%"):
     )
 
     fig.update_layout(
-        margin=dict(b=12, t=10, l=30, r=30),
+        margin=dict(b=12, t=30, l=30, r=30),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         height=650,
