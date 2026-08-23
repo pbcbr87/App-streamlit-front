@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit.config as config
 from Pages.utils.components import componente_buscador_ativo, componente_seletor_categorias
 from Pages.utils.request_api import (
     ApiRequestError,
@@ -798,7 +799,7 @@ def etapa1(state):
     
     def avaliar_classificar_ativos_etapa_1(state):
 
-        st.markdown("### ⭐ Avaliação e Classificação dos Ativos")
+        st.subheader("⭐ Avaliação e Classificação dos Ativos")
 
         # Ordenação LEGACY SEED
         ativos_ordenados = sorted(
@@ -831,9 +832,7 @@ def etapa1(state):
                     grupo_vis = a["grupo"].strip().title()
                     sub_vis = a["subgrupo"].strip().title()
 
-                    col_tit, col_grp, col_sub, col_nota, col_tier, col_exclir = (
-                        st.container(border=True).columns([2, 2, 2, 2, 0.5, 0.5]))
-
+                    col_tit, col_grp, col_sub, col_nota, col_tier, col_exclir = st.container(border=False).columns([2, 2, 2, 2, 0.5, 0.5])
                     # Título
                     with col_tit:
                         st.markdown(
@@ -934,8 +933,6 @@ def etapa1(state):
     # COLUNAS: BUSCADOR | NOVO GRUPO | NOVO SUBGRUPO
     # ------------------------------------------------------------
     componente_barra_adicao_rapida(state, prefixo_key="etapa1")
-
-    st.divider()
 
     # ------------------------------------------------------------
     # MAPEAMENTO DOS ATIVOS — TÍTULO + GRUPO + SUBGRUPO
@@ -1251,17 +1248,20 @@ def etapa2(state):
     if not state["pesos_subgrupos"]:
         inicializar_pesos_subgrupos(state)
 
-    st.subheader("🎚️ Passo 2 — Definir Pesos da Estrutura")
+    c_t, c_al = st.columns([1, 0.3])
+    c_t.subheader("🎚️ Passo 2 — Definir Pesos da Estrutura")
 
-    st.markdown( "Ajuste sua alocação de forma visual e intuitiva. "
+    c_t.caption( "Ajuste sua alocação de forma visual e intuitiva. "
         "Use os controles deslizantes para definir proporções por macro, grupo, subgrupo e tier.")
-
+                    
+    if not state.get("etapa2_ok", False):
+        c_al.warning("⚠️ Somas não batem 100%")
     # ============================================================
     # 🌎 Linha 1 — Macro / Grupo / Subgrupo / Tier
     # ============================================================
     st.markdown("### 🌎 Estrutura de Alocação")
 
-    col_macro, col_grupo, col_sub, col_tier = st.columns(4)
+    col_macro, col_grupo, col_sub, col_tier = st.container().columns(4, border=True, width='stretch', gap="xxsmall")
 
     # ------------------------------------------------------------
     # MACRO
@@ -1406,8 +1406,6 @@ def etapa2(state):
 
         state["regra_tier"] = regra.strip().upper()
 
-    st.divider()
-
     # ============================================================
     # 📋 Linha 2 — Resumo visual compacto
     # ============================================================
@@ -1513,12 +1511,12 @@ def etapa3(state):
     # MODO WIZARD / HOME
     # -------------------------------------------------------------
     if state.get("modo_wizard", True):
-        col1, col2 = st.columns([1.2, 1], gap="medium")
+        col1, col, col2 = st.columns([0.8, 0.4, 1.0], gap="xxsmall")
         col1.subheader("📋 Revisão Final — Nada foi salvo ainda")
         if col1.button("🔄 Refazer Planejamento Guiado"):
             state["etapa"] = 1
     else:
-        col1, col2 = st.columns([1.2, 1], gap="medium")
+        col1, col, col2 = st.columns([0.8, 0.4, 1.0], gap="xxsmall")
         col1.subheader("✏️ Editar Planejamento Atual")
         col1.info("Edite seu planejamento e clique em **Salvar Alterações**.")
     
@@ -1549,7 +1547,8 @@ def etapa3(state):
     # -------------------------------------------------------------
     # BARRA DE AÇÕES: ADICIONAR ATIVO / GRUPO / SUBGRUPO
     # -------------------------------------------------------------
-    if st.checkbox('Adicionar dados'):
+    col.markdown("##")
+    if col.checkbox('Criar, Grupo, Subgrupo ou Ativo', value=False, key="checkbox_adicao_rapida"):
         componente_barra_adicao_rapida(state, prefixo_key="etapa3")
     # -------------------------------------------------------------
     # DIVISÃO DA TELA
@@ -1559,7 +1558,7 @@ def etapa3(state):
     # -------------------------------------------------------------
     # LISTA PARA EDIÇÃO (UI)
     # -------------------------------------------------------------
-    # 🛠️ Indexação interna por fk_ativo para normalização dos pesos
+    # Indexação interna por fk_ativo para normalização dos pesos
     pesos_norm = { (a.get("fk_ativo") or a.get("ativa_cat") or a.get("ticker")): float(a.get("peso", 0.0)) for a in state.get("ativos", []) }
 
     list_edit = []
@@ -1784,26 +1783,15 @@ def pagina_inicial(state):
 # ============================================================
 # EXECUÇÃO DO WIZARD
 # ============================================================
-
 def executar_wizard(state):
     etapa = state["etapa"]
+    
     if etapa <= 3 and  state["modo_wizard"] == True:
-        # Barra de progresso do wizard
         total_etapas = 3
+        st.subheader(f"🎚️ Planejamento Guiado - Etapa {etapa} de {total_etapas}", text_alignment="center")
+        # Barra de progresso do wizard
         progresso = (etapa / total_etapas) * 100
-
-        st.markdown(
-            f"""
-            <div style="margin-bottom:15px;">
-                <div style="background:#e0e0e0;border-radius:6px;overflow:hidden;height:12px;">
-                    <div style="width:{progresso}%;background:#2196F3;height:12px;"></div>
-                </div>
-                <p style="text-align:center;font-weight:500;color:#2196F3;margin-top:4px;">
-                    Etapa {etapa} de {total_etapas}
-                </p>
-            </div>
-            """,
-        unsafe_allow_html=True, )
+        st.progress(progresso / 100)
 
     with st.container(horizontal_alignment="distribute", horizontal=True):
         col1 = st.container(horizontal_alignment="left")
@@ -1841,19 +1829,17 @@ def executar_wizard(state):
                 st.rerun()
 
         # Wizard: avançar etapa 2
-        elif etapa == 2:
-            if not state.get("etapa2_ok", False):
-                st.error("⚠️ Ajuste necessário antes de avançar.")
-            else:
-                if st.button("Avançar ➡️"):
-                    # calcular pesos automáticos aqui
-                    pesos_norm = calcular_pesos_automaticos(state)
-                    # salvar dentro dos ativos
-                    for a in state["ativos"]:
-                        a["peso"] = int(round(pesos_norm.get(a["ticker"], 0)))
-                            
-                    state["etapa"] = 3
-                    st.rerun()
+        elif etapa == 2:         
+            if st.button("Avançar ➡️"):
+                # calcular pesos automáticos aqui
+                pesos_norm = calcular_pesos_automaticos(state)
+                # salvar dentro dos ativos
+                for a in state["ativos"]:
+                    a["peso"] = int(round(pesos_norm.get(a["ticker"], 0)))
+                        
+                state["etapa"] = 3
+                st.rerun()
+
         # Salvar
         elif etapa == 3:
             if st.button("💾 Salvar Planejamento"):

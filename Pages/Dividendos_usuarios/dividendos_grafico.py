@@ -54,7 +54,7 @@ def renderizar_matriz_proventos(
     valor_liq_col: str,
     moeda_simbolo: str,
 ) -> None:
-    """🛠️ Renderiza a matriz de proventos consumindo exclusivamente as CSS Variables nativas do Streamlit."""
+    """ Renderiza a matriz de proventos consumindo exclusivamente as CSS Variables nativas do Streamlit."""
     if df_filtered.empty:
         st.warning("Sem dados suficientes para montar a matriz de proventos.")
         return
