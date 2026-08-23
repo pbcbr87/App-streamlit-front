@@ -47,8 +47,8 @@ def tratar_dados_carteira_raw(dados_raw: list) -> list:
 
         reg["aporte_brl"] = v_plan_brl - v_mkt_brl
         reg["aporte_usd"] = v_plan_usd - v_mkt_usd
-        reg["aporte_p_brl"] = (v_plan_brl / v_mkt_brl) if v_mkt_brl > 0 else 0.0
-        reg["aporte_p_usd"] = (v_plan_usd / v_mkt_usd) if v_mkt_usd > 0 else 0.0
+        reg["aporte_p_brl"] = ( (v_plan_brl - v_mkt_brl) / v_mkt_brl) if v_mkt_brl > 0 else 0.0
+        reg["aporte_p_usd"] = ( (v_plan_usd - v_mkt_usd) / v_mkt_usd) if v_mkt_usd > 0 else 0.0
 
         dados_tratados.append(reg)
 
