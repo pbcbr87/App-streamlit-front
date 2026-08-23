@@ -733,7 +733,8 @@ def componente_barra_adicao_rapida(state: dict, prefixo_key: str = "default"):
 if 'fez_planejamento' not in st.session_state:
     if "configuracoes" not in st.session_state:
         st.session_state['configuracoes'] = obter_configuracoes_usuario_api() or {}
-        config_user = st.session_state['configuracoes']
+
+    config_user = st.session_state['configuracoes']
 
     if 'fez_planejamento' not in config_user:
         st.session_state["fez_planejamento"] = False
