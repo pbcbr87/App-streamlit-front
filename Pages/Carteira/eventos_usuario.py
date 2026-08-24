@@ -56,7 +56,6 @@ def colorir_linhas_eventos(dataframe_da_tela: pd.DataFrame, dados_originais: Lis
 
 #  Configuração declarativa de colunas alinhada ao componente genérico
 CONFIG_EVENTOS: Dict[str, Dict[str, Any]] = {
-    "movimentacao_id": {"titulo":"movimentacao_id", "tipo": "hide"},
     "id": {"titulo": "ID", "tipo": "hide"},
     "aceito": {"titulo": "⚙️ Status", "tipo": "text", "funcao_map": formatar_status_aceito},
     "foi_aplicado": {"titulo": "🔄 Integrado", "tipo": "text", "funcao_map": formatar_status_aplicado},
@@ -336,7 +335,7 @@ elif state["modo_tela"] in ["editar", "inserir_manual_evento"]:
         st.title("✏️ Editar Evento Corporativo")
         evento_atual = state.get("evento_selecionado", {})
         evt_id = evento_atual.get("id")
-        dados_selecionado = {"movimentacao_id": evento_atual.get("movimentacao_id"), "dados_origem": evento_atual}
+        dados_selecionado = {"dados_origem": evento_atual}
 
         renderizar_layout_edit_evento(
             registro_selecionado=dados_selecionado,

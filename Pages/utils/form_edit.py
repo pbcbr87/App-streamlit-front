@@ -360,7 +360,7 @@ def renderizar_layout_edit_evento(registro_selecionado: dict = None, on_sucesso=
     """
     Componente PURO de Layout com Live Preview Lado a Lado e Alternância de Estados.
     Parâmetros:
-    - registro_selecionado: dict com 'dados_origem' e possivelmente 'movimentacao_id'.
+    - registro_selecionado: dict com 'dados_origem'.
     - on_sucesso: callback executado após gravação bem-sucedida.
     - key_estado_dinamico: chave isolada no session_state para formular várias instâncias.
     - origin_config: dicionário com configuração mínima:
@@ -370,8 +370,8 @@ def renderizar_layout_edit_evento(registro_selecionado: dict = None, on_sucesso=
         - modo_insert: str (opcional) -> valor para payload['modo_insert']
     """
     reg_selecionado = registro_selecionado or {}
-    mov_id = reg_selecionado.get("movimentacao_id")
     dados_origem = reg_selecionado.get("dados_origem", {})
+    evento_id = dados_origem.get("id")
 
     origin_config = origin_config or {}
 
@@ -557,7 +557,7 @@ def renderizar_layout_edit_evento(registro_selecionado: dict = None, on_sucesso=
 
     # 🏢 3. Formata e empacota para o Pydantic
     payload_estruturado = {
-        "movimentacao_origem_id": mov_id,
+        "evento_origem_id": evento_id,
         "tipo_evento": tipo_evento,
         "fk_ativo_base": form_state.get("fk_ativo_base"),
         "fk_ativo_gerado": form_state.get("fk_ativo_gerado"),
