@@ -55,16 +55,16 @@ grayColor = "#6C757D"
 # ==============================================================================
 [theme.dark]
 primaryColor = "#C5A059"
-backgroundColor = "#2A352D"                  # 🛠️ Fundo principal mais claro e suave
-secondaryBackgroundColor = "#344238"         # 🛠️ Cards e inputs em tom elevado para destaque
-codeBackgroundColor = "#212A24"              # 🛠️ Fundo de código ajustado
+backgroundColor = "#2A352D"                  # Fundo principal mais claro e suave
+secondaryBackgroundColor = "#344238"         # Cards e inputs em tom elevado para destaque
+codeBackgroundColor = "#212A24"              # Fundo de código ajustado
 textColor = "#F0F4F1"
 linkColor = "#D4AF37"
 borderColor = "rgba(197, 160, 89, 0.3)"
 showWidgetBorder = true
 codeTextColor = "#E2E8E4"
 dataframeBorderColor = "rgba(197, 160, 89, 0.3)"
-dataframeHeaderBackgroundColor = "#344238"    # 🛠️ Cabeçalho de tabelas acompanhando o tom secundário
+dataframeHeaderBackgroundColor = "#344238"    # Cabeçalho de tabelas acompanhando o tom secundário
 
 # Cores semânticas adaptadas para Dark Mode (Alerta st.info, st.warning, etc.)
 redColor = "#E63946"
@@ -75,8 +75,8 @@ blueColor = "#4EA8DE"
 grayColor = "#A3A8B8"
 
 [theme.dark.sidebar]
-backgroundColor = "#344238"                  # 🛠️ Sidebar acompanhando a nova tonalidade
-secondaryBackgroundColor = "#2A352D"         # 🛠️ Elementos internos da sidebar
+backgroundColor = "#344238"                  # Sidebar acompanhando a nova tonalidade
+secondaryBackgroundColor = "#2A352D"         # Elementos internos da sidebar
 codeBackgroundColor = "#2A352D"
 textColor = "#F0F4F1"
 borderColor = "rgba(197, 160, 89, 0.3)"

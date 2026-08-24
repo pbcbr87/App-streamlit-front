@@ -504,7 +504,7 @@ def componente_buscador_ativo(state_dict: dict, sub_chave_destino: str | None = 
             state_dict[chave_dados] = None
 
     if titulo:
-        st.markdown(f"<div style='padding-top: 5px;'><b>{titulo}</b></div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='padding-top: 0px;'><p style='font-size: 13.125px; margin-bottom: 0.1rem; padding-top: 0px;'>{titulo}</p></div>", unsafe_allow_html=True)
     # 🏢 Renderização do Componente Visual
     if state_dict.get(chave_destino, "Selecionar Ativo") == None:
         state_dict[chave_destino] = "Selecionar Ativo"

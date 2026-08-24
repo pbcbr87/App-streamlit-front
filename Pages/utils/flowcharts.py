@@ -2,6 +2,34 @@ import streamlit as st
 from Pages.utils.ferramentas import sanitizar_numero, formatar_ativo_visual
 
 
+def _aplicar_tema_e_renderizar_dot(dot_code: str):
+    """
+    Função utilitária central para detectar o tema do Streamlit e aplicar 
+    as substituições de cor no DOT do Graphviz de forma universal.
+    """
+    tema_atual = st.context.theme.get("type") 
+
+    if tema_atual == "dark":
+        texto = st.get_option("theme.dark.textColor")
+        borda = st.get_option("theme.dark.primaryColor")
+        
+        dot_code = (
+            dot_code
+            .replace("#1B2B20", texto)                # Texto das caixas e rótulos das setas
+            .replace("#1E3D59", borda)                # Bordas padrão
+            .replace("#F5F7FA", "#212A24")            # Preenchimento neutro
+            .replace("#E8F1F5", "#212A24")            # Fundo Origem
+            .replace("#F0FDF4", "#212A24")            # Fundo Destino Ajustado
+            .replace("#FDF2F2", "#2A2121")            # Fundo Remanescente/Baixa
+            .replace("#FEFCE8", "#2A2921")            # Fundo Caixa/Rendimento
+            .replace("#FFFBEB", "#2A2921")            # Fundo Intermediário
+            .replace("#15803D", "#4A7C59")            # Borda de destaque verde
+            .replace("#E53E3E", "#CF6679")            # Borda de destaque vermelha
+            .replace("#A16207", "#D97706")            # Borda caixa/dourado
+        )
+
+    st.graphviz_chart(dot_code)
+
 def renderizar_fluxograma_evento(tipo_evento: str, payload: dict, resultado=None):
     if not payload:
         return
@@ -142,15 +170,16 @@ def _renderizar_fluxograma_proporcional(instrucoes: list, ticker_base: str, tipo
         dot_code = """
         digraph G {
             rankdir=LR;
-            node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10];
+            bgcolor="transparent";
+            node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10, fontcolor="#1B2B20"];
             edge [fontname="Arial", fontsize=9, color="#17B890"];
 
             Origem [label="📦 __TICKER__\\nPosição Original\\nQtd: __QTD_ATUAL__\\nCusto: __CUSTO_BRL_O__ | __CUSTO_USD_O__", fillcolor="#E8F1F5", color="#1E3D59", penwidth=1.5];
-            Intermediario [label="🔄 __TICKER__\\n1. Pós-Grup.\\n__QTD_INTER__", fillcolor="#FFFBEB", color="#D97706", style="dashed,filled,rounded"];
+            Intermediario [label="🔄 __TICKER__\\n1. Pós-Grup.\\n__QTD_INTER__", fillcolor="#FFFBEB", color="#A16207", style="dashed,filled,rounded"];
             Destino [label="🟢 __TICKER__\\n2. Pós-Desdobramento\\n__QTD_FINAL__", fillcolor="#F0FDF4", color="#15803D", penwidth=2];
 
-            Origem -> Intermediario [label=" Agrupa", style=dashed, color="#D97706"];
-            Intermediario -> Destino [label=" Desdobra", color="#15803D"];
+            Origem -> Intermediario [label=" Agrupa", style=dashed, color="#A16207", fontcolor="#1B2B20"];
+            Intermediario -> Destino [label=" Desdobra", color="#15803D", fontcolor="#1B2B20"];
         }
         """
         dot_code = (dot_code
@@ -165,15 +194,16 @@ def _renderizar_fluxograma_proporcional(instrucoes: list, ticker_base: str, tipo
         dot_code = """
         digraph G {
             rankdir=LR;
-            node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10];
+            bgcolor="transparent";
+            node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10, fontcolor="#1B2B20"];
             edge [fontname="Arial", fontsize=9, color="#17B890"];
 
             Origem [label="📦 __TICKER__\\nPosição Original\\nQtd: __QTD_ATUAL__\\nCusto: __CUSTO_BRL_O__ | __CUSTO_USD_O__", fillcolor="#E8F1F5", color="#1E3D59"];
             Destino [label="🟢 __TICKER__\\nPosição Ajustada\\n__QTD_FINAL__", fillcolor="#F0FDF4", color="#15803D", penwidth=2];
             
-            Origem -> Destino [label=" __LABEL__"];
+            Origem -> Destino [label=" __LABEL__", fontcolor="#1B2B20"];
         }
-        """
+        """        
         dot_code = (dot_code
                     .replace("__TICKER__", ticker_exibicao)
                     .replace("__QTD_ATUAL__", str(qtd_origem))
@@ -182,7 +212,7 @@ def _renderizar_fluxograma_proporcional(instrucoes: list, ticker_base: str, tipo
                     .replace("__QTD_FINAL__", texto_final)
                     .replace("__LABEL__", label_transicao))
 
-    st.graphviz_chart(dot_code)
+    _aplicar_tema_e_renderizar_dot(dot_code)
 
 def _renderizar_fluxograma_bonificacao(instrucoes: list, ticker_base: str, ticker_gerado: str = None, resultado=None):
     """
@@ -309,28 +339,30 @@ def _renderizar_fluxograma_bonificacao(instrucoes: list, ticker_base: str, ticke
         dot_code = f"""
         digraph G {{
             rankdir=LR;
-            node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10];
+            bgcolor="transparent";
+            node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10, fontcolor="#1B2B20"];
             edge [fontname="Arial", fontsize=9];
 
             Origem [label="📦 __TICKER_BASE__\\nPosição Original\\nQtd: __QTD_ATUAL__\\nCusto: __CUSTO_ORIGEM__", fillcolor="#E8F1F5", color="#1E3D59"];
             Manter [label="📦 __TICKER_BASE__\\nPosição Mantida\\nQtd: __QTD_ATUAL__\\nCusto: __CUSTO_ORIGEM__", fillcolor="#F5F7FA", color="#64748B"];
             Destino [label="🟢 __TICKER_GERADO__\\n__TEXTO_FINAL__", fillcolor="#F0FDF4", color="#15803D", penwidth=2];
             
-            Origem -> Manter [label=" Mantido", style=dashed, color="#64748B"];
-            Origem -> Destino [label=" __TEXTO_BONUS__", style=bold, color="#15803D"];
+            Origem -> Manter [label=" Mantido", style=dashed, color="#64748B", fontcolor="#1B2B20"];
+            Origem -> Destino [label=" __TEXTO_BONUS__", style=bold, color="#15803D", fontcolor="#1B2B20"];
         }}
         """
     else:
         dot_code = f"""
         digraph G {{
             rankdir=LR;
-            node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10];
+            bgcolor="transparent";
+            node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10, fontcolor="#1B2B20"];
             edge [fontname="Arial", fontsize=9, color="#15803D"];
 
             Origem [label="📦 __TICKER_BASE__\\nPosição Original\\nQtd: __QTD_ATUAL__\\nCusto: __CUSTO_ORIGEM__", fillcolor="#E8F1F5", color="#1E3D59"];
             Destino [label="🟢 __TICKER_BASE__\\n__TEXTO_FINAL__", fillcolor="#F0FDF4", color="#15803D", penwidth=2];
             
-            Origem -> Destino [label=" __TEXTO_BONUS__", style=bold];
+            Origem -> Destino [label=" __TEXTO_BONUS__", style=bold, fontcolor="#1B2B20"];
         }}
         """
 
@@ -343,7 +375,7 @@ def _renderizar_fluxograma_bonificacao(instrucoes: list, ticker_base: str, ticke
                 .replace("__TEXTO_FINAL__", texto_destino)
                 .replace("__TEXTO_BONUS__", texto_bônus))
 
-    st.graphviz_chart(dot_code)
+    _aplicar_tema_e_renderizar_dot(dot_code)
 
 def _renderizar_fluxograma_leilao_fracoes(instrucoes: list, ticker_base: str, resultado=None):
     """
@@ -437,15 +469,16 @@ def _renderizar_fluxograma_leilao_fracoes(instrucoes: list, ticker_base: str, re
     dot_code = f"""
     digraph G {{
         rankdir=LR;
-        node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10];
+        bgcolor="transparent";
+        node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10, fontcolor="#1B2B20"];
         edge [fontname="Arial", fontsize=9, color="#17B890"];
 
         Origem [label="📦 __TICKER__\\nPosição Original\\nQtd: __QTD_ATUAL__\\nCusto: __CUSTO_BRL_O__ | __CUSTO_USD_O__", fillcolor="#E8F1F5", color="#1E3D59"];
         Dest_Original [label="📉 __TICKER__\\nPosição Remanescente\\n__TEXTO_AJUSTADO__", fillcolor="#FDF2F2", color="#E53E3E"];
         Dest_Caixa [label="💵 Caixa (Venda Frac.)\\n__TEXTO_CAIXA__", fillcolor="#FEFCE8", color="#A16207"];
 
-        Origem -> Dest_Original [label=" Baixa de Fração", style=dashed, color="#E53E3E"];
-        Origem -> Dest_Caixa [label=" Crédito em Conta", color="#A16207"];
+        Origem -> Dest_Original [label=" Baixa de Fração", style=dashed, color="#E53E3E", fontcolor="#1B2B20"];
+        Origem -> Dest_Caixa [label=" Crédito em Conta", color="#A16207", fontcolor="#1B2B20"];
     }}
     """
     
@@ -457,7 +490,7 @@ def _renderizar_fluxograma_leilao_fracoes(instrucoes: list, ticker_base: str, re
                 .replace("__TEXTO_AJUSTADO__", texto_ajustado)
                 .replace("__TEXTO_CAIXA__", texto_caixa))
 
-    st.graphviz_chart(dot_code)
+    _aplicar_tema_e_renderizar_dot(dot_code)
 
 def _renderizar_fluxograma_opa(instrucoes: list, ticker_base: str, resultado=None):
     """
@@ -563,18 +596,18 @@ def _renderizar_fluxograma_opa(instrucoes: list, ticker_base: str, resultado=Non
     dot_code = f"""
     digraph G {{
         rankdir=LR;
-        node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10];
-        edge [fontname="Arial", fontsize=9, color="#EF4444"];
+        bgcolor="transparent";
+        node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10, fontcolor="#1B2B20"];
+        edge [fontname="Arial", fontsize=9, color="#E53E3E"];
 
         Origem [label="📦 __TICKER__\\nPosição Original\\nQtd: __QTD_ATUAL__\\nCusto: __CUSTO_BRL_O__ | __CUSTO_USD_O__", fillcolor="#E8F1F5", color="#1E3D59"];
-        Dest_Original [label="📉 __TICKER__\\nPosição Remanescente\\n__TEXTO_AJUSTADO__", fillcolor="#FDF2F2", color="#EF4444"];
+        Dest_Original [label="📉 __TICKER__\\nPosição Remanescente\\n__TEXTO_AJUSTADO__", fillcolor="#FDF2F2", color="#E53E3E"];
         Dest_Caixa [label="💵 Caixa (Liquidação OPA)\\n__TEXTO_CAIXA__", fillcolor="#FEFCE8", color="#A16207"];
 
-        Origem -> Dest_Original [label=" Saída de Ativos", style=dashed, color="#EF4444"];
-        Origem -> Dest_Caixa [label=" Crédito (Alienação)", color="#A16207"];
+        Origem -> Dest_Original [label=" Saída de Ativos", style=dashed, color="#E53E3E", fontcolor="#1B2B20"];
+        Origem -> Dest_Caixa [label=" Crédito (Alienação)", color="#A16207", fontcolor="#1B2B20"];
     }}
     """
-    
     dot_code = (dot_code
                 .replace("__TICKER__", ticker_exibicao)
                 .replace("__QTD_ATUAL__", str(qtd_origem))
@@ -583,7 +616,7 @@ def _renderizar_fluxograma_opa(instrucoes: list, ticker_base: str, resultado=Non
                 .replace("__TEXTO_AJUSTADO__", texto_ajustado)
                 .replace("__TEXTO_CAIXA__", texto_caixa))
 
-    st.graphviz_chart(dot_code)
+    _aplicar_tema_e_renderizar_dot(dot_code)
 
 def _renderizar_fluxograma_reducao_capital(instrucoes: list, ticker_base: str, resultado=None):
     """
@@ -663,15 +696,16 @@ def _renderizar_fluxograma_reducao_capital(instrucoes: list, ticker_base: str, r
     dot_code = f"""
     digraph G {{
         rankdir=LR;
-        node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10];
+        bgcolor="transparent";
+        node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10, fontcolor="#1B2B20"];
         edge [fontname="Arial", fontsize=9, color="#17B890"];
 
         Origem [label="📦 __TICKER__\\nPosição Original\\nQtd: __QTD_ATUAL__\\nCusto: __CUSTO_BRL_O__ | __CUSTO_USD_O__", fillcolor="#E8F1F5", color="#1E3D59"];
-        Dest_Original [label="📉 __TICKER__\\nPosição Atualizada\\n__TEXTO_AJUSTADO__", fillcolor="#F0FDF4", color="#16A34A"];
+        Dest_Original [label="📉 __TICKER__\\nPosição Atualizada\\n__TEXTO_AJUSTADO__", fillcolor="#F0FDF4", color="#15803D"];
         Dest_Caixa [label="__TEXTO_CAIXA__", fillcolor="#FEFCE8", color="#A16207"];
 
-        Origem -> Dest_Original [label=" Abatimento de Custo", color="#16A34A"];
-        Origem -> Dest_Caixa [label=" Crédito em Conta", color="#A16207"];
+        Origem -> Dest_Original [label=" Abatimento de Custo", color="#15803D", fontcolor="#1B2B20"];
+        Origem -> Dest_Caixa [label=" Crédito em Conta", color="#A16207", fontcolor="#1B2B20"];
     }}
     """
     
@@ -683,7 +717,7 @@ def _renderizar_fluxograma_reducao_capital(instrucoes: list, ticker_base: str, r
                 .replace("__TEXTO_AJUSTADO__", texto_ajustado)
                 .replace("__TEXTO_CAIXA__", texto_caixa))
 
-    st.graphviz_chart(dot_code)
+    _aplicar_tema_e_renderizar_dot(dot_code)
 
 def _renderizar_fluxograma_atualizacao(instrucoes: list, ticker_base: str, ticker_gerado: str = None, resultado=None):
     """
@@ -752,15 +786,16 @@ def _renderizar_fluxograma_atualizacao(instrucoes: list, ticker_base: str, ticke
     dot_code = f"""
     digraph G {{
         rankdir=LR;
-        node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10];
+        bgcolor="transparent";
+        node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10, fontcolor="#1B2B20"];
         edge [fontname="Arial", fontsize=9];
 
         Origem [label="📦 __TICKER_ANTIGO__\\nPosição Original\\nQtd: __QTD_ATUAL__\\nCusto: __CUSTO_BRL_O__ | __CUSTO_USD_O__", fillcolor="#E8F1F5", color="#1E3D59"];
-        Dest_Antigo [label="📉 __TICKER_ANTIGO__\\nPosição Antiga\\n__TEXTO_ANTIGO_AJUSTADO__", fillcolor="#FDF2F2", color="#EF4444"];
-        Dest_Novo [label="📈 __TICKER_NOVO__\\nNova Posição\\n__TEXTO_NOVO_AJUSTADO__", fillcolor="#F0FDF4", color="#16A34A"];
+        Dest_Antigo [label="📉 __TICKER_ANTIGO__\\nPosição Antiga\\n__TEXTO_ANTIGO_AJUSTADO__", fillcolor="#FDF2F2", color="#E53E3E"];
+        Dest_Novo [label="📈 __TICKER_NOVO__\\nNova Posição\\n__TEXTO_NOVO_AJUSTADO__", fillcolor="#F0FDF4", color="#15803D"];
 
-        Origem -> Dest_Antigo [label=" Encerramento", style=dashed, color="#EF4444"];
-        Origem -> Dest_Novo [label=" Migração de Custo (100%)", color="#16A34A", penwidth=1.5];
+        Origem -> Dest_Antigo [label=" Encerramento", style=dashed, color="#E53E3E", fontcolor="#1B2B20"];
+        Origem -> Dest_Novo [label=" Migração de Custo (100%)", color="#15803D", penwidth=1.5, fontcolor="#1B2B20"];
     }}
     """
     
@@ -773,7 +808,7 @@ def _renderizar_fluxograma_atualizacao(instrucoes: list, ticker_base: str, ticke
                 .replace("__TEXTO_ANTIGO_AJUSTADO__", texto_antigo_ajustado)
                 .replace("__TEXTO_NOVO_AJUSTADO__", texto_novo_ajustado))
 
-    st.graphviz_chart(dot_code)
+    _aplicar_tema_e_renderizar_dot(dot_code)
 
 def _renderizar_fluxograma_cisao_incorporacao(tipo_evento: str, instrucoes: list, ticker_base: str, ticker_gerado: str, resultado=None):
     """
@@ -923,26 +958,26 @@ def _renderizar_fluxograma_cisao_incorporacao(tipo_evento: str, instrucoes: list
     dot_code = f"""
     digraph G {{
         rankdir=LR;
-        node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10];
+        bgcolor="transparent";
+        node [shape=box, style="filled,rounded", color="#1E3D59", fillcolor="#F5F7FA", fontname="Arial", fontsize=10, fontcolor="#1B2B20"];
         edge [fontname="Arial", fontsize=9];
 
         // Nós principais
         Origem [label="📦 {ticker_base_exibicao}\\nPosição Original\\nQtd: {qtd_origem}\\nCusto: {custo_origem_formatado}", fillcolor="#E8F1F5", color="#1E3D59"];
         
-        MãeDestino [label="📦 {ticker_base_exibicao}\\n{texto_mae_final}", fillcolor="#F8FAFC", color="#64748B"];
+        MãeDestino [label="📦 {ticker_base_exibicao}\\n{texto_mae_final}", fillcolor="#F5F7FA", color="#64748B"];
         FilhoDestino [label="🟢 {ticker_gerado_exibicao}\\n{texto_filho_final}", fillcolor="#F0FDF4", color="#15803D", penwidth=2];
         
-        Origem -> MãeDestino [label=" Evento Contábil", style=dashed, color="#64748B"];
-        Origem -> FilhoDestino [label=" Gerado ({qtd_gerada_str})", style=bold, color="#15803D"];
+        Origem -> MãeDestino [label=" Evento Contábil", style=dashed, color="#64748B", fontcolor="#1B2B20"];
+        Origem -> FilhoDestino [label=" Gerado ({qtd_gerada_str})", style=bold, color="#15803D", fontcolor="#1B2B20"];
     """
 
     if tem_caixa_node:
         dot_code += f"""
-        CaixaDestino [label="🪙 DINHEIRO EM CAIXA\\n{texto_caixa_final}", fillcolor="#FEFCE8", color="#CA8A04", penwidth=1.5];
-        Origem -> CaixaDestino [label=" {tipo_tributacao.replace('_', ' ')}", style=bold, color="#CA8A04"];
+        CaixaDestino [label="🪙 DINHEIRO EM CAIXA\\n{texto_caixa_final}", fillcolor="#FEFCE8", color="#A16207", penwidth=1.5];
+        Origem -> CaixaDestino [label=" {tipo_tributacao.replace('_', ' ')}", style=bold, color="#A16207", fontcolor="#1B2B20"];
         """
 
     dot_code += "\n}"
 
-    st.graphviz_chart(dot_code)
-# (Adicione aqui as outras funções auxiliares privadas para bonificação, OPA, etc.)
+    _aplicar_tema_e_renderizar_dot(dot_code)
