@@ -1,11 +1,5 @@
 import streamlit as st
-import pandas as pd
-import requests
-from settings import API_URL
-from plotly import graph_objects as go
 from Pages.utils.request_api import ApiRequestError, executar_requisicao_aporte_etapa2, buscar_carteira_api, executar_requisicao_aporte_etapa1, obter_configuracoes_usuario_api
-from Pages.utils.components import st_number_input_custom
-from Pages.utils.ferramentas import formatar_numero_para_br_str
 from Pages.utils.form_aporte import widget_resultado_grupo, widget_aporte_final, widget_config_ativos, widget_resultado_ativos, widget_config_categorias, widget_aporte_global
 from Pages.utils.form_config import componente_config_redutores, get_redutores_padrao
 

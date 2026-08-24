@@ -1,6 +1,5 @@
 from datetime import date, datetime
 from decimal import Decimal
-import streamlit as st
 from typing import Any, Optional
 import math
 import pandas as pd
@@ -162,8 +161,25 @@ def formatar_numero_para_br_str(val):
         except ValueError:
             return val  # Mantém o texto para disparar a validação de erro
 
+    # if isinstance(val, (int, float)):
+    #     return f"{val:,.10f}".replace(",", "X").replace(".", ",").replace("X", ".").strip("0")
     if isinstance(val, (int, float)):
-        return f"{val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        # Formata até 10 casas decimais no padrão americano com separador de milhar
+        val_str = f"{val:,.10f}"
+        
+        parte_inteira, parte_decimal = val_str.split(".")
+        
+        # Remove zeros excedentes da parte decimal
+        parte_decimal_limpa = parte_decimal.rstrip("0")
+        
+        # Garante no mínimo 2 casas decimais (ex: "0" vira "00")
+        if len(parte_decimal_limpa) < 2:
+            parte_decimal_limpa = parte_decimal_limpa.ljust(2, "0")
+            
+        # Ajusta separadores de milhar (ponto) e decimal (vírgula)
+        parte_inteira_br = parte_inteira.replace(",", ".")
+        
+        return f"{parte_inteira_br},{parte_decimal_limpa}"
     return str(val)
 
 def formatar_data_segura(valor):

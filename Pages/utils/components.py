@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 from Pages.utils.ferramentas import formatar_data_segura, formatar_ativo_visual, formatar_numero_para_br_str, converter_para_float
 from Pages.utils.request_api import checar_status_processamento_api, pesquisar_ativos_api
-from typing import List, Dict, Any, Callable, Optional, Union
-from streamlit_extras.radial_menu import radial_menu
+from typing import List, Dict, Any, Optional, Union
 
 
 @st.fragment(run_every=50)
@@ -402,28 +401,30 @@ def st_number_input_custom(label, value=None, key=None, placeholder="0,00", disa
     Gerencia o estado via st.session_state para formatar dinamicamente o texto
     exibido para o padrão "1.234,56" e retorna o valor numérico (float).
     """
-    if not key:
-        key = f"input_custom_{label}"
-
-    # Inicializa a chave no session_state apenas na primeira execução
-    if key not in st.session_state:
-        st.session_state[key] = formatar_numero_para_br_str(value)
-
     # Callback executada imediatamente quando o usuário altera o campo
     def alterar():
         valor_atual = st.session_state[key]
         st.session_state[key] = formatar_numero_para_br_str(valor_atual)
+            
+        entrada = st.session_state[key]
+        valor_numerico = converter_para_float(entrada)
+        st.session_state[f"{key}_return"] = valor_numerico
+        if entrada and valor_numerico is None:
+            st.session_state[key] = "0,00"
+            st.toast("⚠️ Inválido (ex: 1.250,50).")
+            st.session_state[f"{key}_return"] = 0
+            
+    # Inicializa a chave no session_state apenas na primeira execução
+    if not key:
+        key = f"input_custom_{label}"
 
-    st.text_input(label, key=key, placeholder=placeholder, disabled=disabled, on_change=alterar, help=help)
+    if key not in st.session_state:
+        st.session_state[key] = formatar_numero_para_br_str(value)
+        alterar()
 
-    entrada = st.session_state[key]
-    valor_numerico = converter_para_float(entrada)
-
-    if entrada and valor_numerico is None:
-        st.warning("⚠️ Inválido.(ex: 1.250,50)")
-        return None
-
-    return valor_numerico
+    
+    st.text_input(label, key=key, placeholder=placeholder, disabled=disabled, on_change=alterar, help=help)    
+    return st.session_state[f"{key}_return"]
 
 def componente_buscador_ativo(state_dict: dict, sub_chave_destino: str | None = None, sufixo_key: str | None = None, titulo: str | None = None,
                                 sub_chave_dados: str | None = None ):
