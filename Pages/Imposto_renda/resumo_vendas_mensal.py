@@ -261,11 +261,11 @@ if not df.empty:
         prej_fii = item.get('prejuizo_acumulado_fii', 0)
 
         dados_conciliacao = [
-            {"Descrição": "💰 Vendas Totais (RV)", "RV (15%)": fmt_brl(vendas), "FII (20%)": "_"},
-            {"Descrição": "🟢 Lucro Isento (RV)", "RV (15%)": fmt_brl(isento), "FII (20%)": "_"},
+            {"Descrição": "💰 Vendas Totais (Ações)", "RV (15%)": fmt_brl(vendas), "FII (20%)": "_"},
+            {"Descrição": "🟢 Lucro Isento (Ações)", "RV (15%)": fmt_brl(isento), "FII (20%)": "_"},
             {"Descrição": "📈 Lucro Tributável", "RV (15%)": fmt_brl(lucro_rv), "FII (20%)": fmt_brl(lucro_fii)},
             {"Descrição": "📉 Prejuízo Acumulado", "RV (15%)": fmt_brl(prej_rv), "FII (20%)": fmt_brl(prej_fii)},
-            {"Descrição": "⚖️ Base de Cálculo", "RV (15%)": fmt_brl(item.get('imposto_rv', 0)), "FII (20%)": fmt_brl((item.get('imposto_fii', 0)/0.2))},
+            {"Descrição": "⚖️ Base de Cálculo", "RV (15%)": fmt_brl(item.get('base_calculo_rv', 0)), "FII (20%)": fmt_brl((item.get('base_calculo_fii', 0)))},
             {"Descrição": "🏛️ Imposto Devido", "RV (15%)": fmt_brl(item.get('imposto_rv', 0)), "FII (20%)": fmt_brl(item.get('imposto_fii', 0))}
         ]
         
