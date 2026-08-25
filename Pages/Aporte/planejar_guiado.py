@@ -1426,7 +1426,6 @@ def etapa3(state):
             key_id = item.get("fk_ativo") or item.get("ativo_cat") or item.get("ticker") or item.get("codigo_ativo") or item.get("Ativo") 
             if key_id:
                 cache_map[key_id] = item
-        
         for linha in list_editado:
             key_id = linha.get("fk_ativo") or linha.get("ativo_cat") or linha.get("ticker") or linha.get("codigo_ativo") or linha.get("Ativo")
             if key_id not in cache_map:
@@ -1519,7 +1518,10 @@ def etapa3(state):
         col1, col, col2 = st.columns([0.8, 0.4, 1.0], gap="xxsmall")
         col1.subheader("✏️ Editar Planejamento Atual")
         col1.info("Edite seu planejamento e clique em **Salvar Alterações**.")
-    
+    #--------------------------------------------------------------
+    # Espaço para criar grupoas e subgrupos rapidamente
+    #--------------------------------------------------------------
+    criar_grupos_subgrupos = st.empty()
     # -------------------------------------------------------------
     # FILTRO DE GRUPOS
     # -------------------------------------------------------------
@@ -1543,13 +1545,6 @@ def etapa3(state):
     tipo_grafico = filtro.selectbox( "Visualização do Gráfico", label_visibility="collapsed", options=["Pizza", "Diagrama"],
         index=0, key="select_tipo_grafico_edit", width=150 )
 
-
-    # -------------------------------------------------------------
-    # BARRA DE AÇÕES: ADICIONAR ATIVO / GRUPO / SUBGRUPO
-    # -------------------------------------------------------------
-    col.markdown("##")
-    if col.checkbox('Criar, Grupo, Subgrupo ou Ativo', value=False, key="checkbox_adicao_rapida"):
-        componente_barra_adicao_rapida(state, prefixo_key="etapa3")
     # -------------------------------------------------------------
     # DIVISÃO DA TELA
     # -------------------------------------------------------------
@@ -1565,6 +1560,7 @@ def etapa3(state):
     for a in dados_filtrados:
         key_id = a.get("fk_ativo") or a.get("ativo_cat")
         list_edit.append({
+            "Selecionar": False,
             "fk_ativo": key_id,  # Armazenado para controle do editor (não visível)
             "Ativo": a.get("ticker", ""),   # VISUAL: Ticker exibido ao usuário
             "Macro": str(a["macro"]).title(),
@@ -1584,6 +1580,7 @@ def etapa3(state):
     grupo_wiew = [g.title() for g in state["grupos"]]
     subgrupo_wiew = [g.title() for g in state["subgrupos"]]
     colunas_config = {
+        "Selecionar": st.column_config.CheckboxColumn("Sel.", default=False),
         "Ativo": st.column_config.TextColumn("Ativo", disabled=True),
         "Macro": st.column_config.TextColumn("Macro", disabled=True),
         "Grupo": st.column_config.SelectboxColumn("Grupo", options=list(grupo_wiew), required=True ),
@@ -1598,26 +1595,49 @@ def etapa3(state):
     list_editado = col_tabela.data_editor( list_edit,
                                             hide_index=True,
                                             column_config=colunas_config,
-                                            column_order=["Ativo", "Macro", "Grupo", "Subgrupo", "Nota", "Peso"],
+                                            column_order=["Selecionar","Ativo", "Macro", "Grupo", "Subgrupo", "Nota", "Peso"],
                                             key="data_editor_planejamento",
                                             num_rows="fixed",
                                             height=450,
                                             width="stretch", )
 
+
+    # -------------------------------------------------------------
+    # BARRA DE AÇÕES: ADICIONAR ATIVO / GRUPO / SUBGRUPO
+    # -------------------------------------------------------------
+    if col.checkbox('Criar, Grupo, Subgrupo ou Ativo', value=False, key="checkbox_adicao_rapida"):
+        with criar_grupos_subgrupos:
+            componente_barra_adicao_rapida(state, prefixo_key="etapa3")
+    # -------------------------------------------------------------
+    # PROCESSAR ATIVOS SELECIONADOS (EXEMPLO DE AÇÃO EM MASSA)
+    # -------------------------------------------------------------
+    ativos_selecionados = [linha for linha in list_editado if linha.get("Selecionar")]
+    
+    if ativos_selecionados:
+        st.info(f"📌 **{len(ativos_selecionados)}** ativo(s) selecionado(s).")
+        # Exemplo de botão para aplicar sua função nos ativos selecionados:
+        def reset_grupo_subgrupo(ativos_selecionados):
+            for linha in ativos_selecionados:
+                for ativo in state["ativos"]:
+                    if ativo.get("fk_ativo") == linha.get("fk_ativo"):
+                        ativo["grupo"] = ativo["categoria"]
+                        ativo["subgrupo"] = ativo["setor"]
+
+            st.session_state["toast_pendente"] = { "mensagem": f"Status de {len(ativos_selecionados)} evento(s) alterado com sucesso!",
+                                                    "icone": "✅", }            
+
+        col.button("⏪ Restaurar Grupos e Subgrupos", on_click=reset_grupo_subgrupo, args=(ativos_selecionados,))
+
     # -------------------------------------------------------------
     # NORMALIZAÇÃO DE CAMPOS DA UI
     # -------------------------------------------------------------
-    grupo_padrao = state["grupos"][0] if state["grupos"] else ""
-    subgrupo_padrao = state["subgrupos"][0] if state["subgrupos"] else ""
-
     for linha in list_editado:
         linha["Nota"] = int(float(linha.get("Nota") or 0))
         linha["Peso"] = int(float(linha.get("Peso") or 0))
 
         # interno → UPPER
-        linha["Grupo"] = str(linha.get("Grupo") or grupo_padrao).strip().upper()
-        linha["Subgrupo"] = str(linha.get("Subgrupo") or subgrupo_padrao).strip().upper()
-
+        linha["Grupo"] = str(linha.get("Grupo", "Outros")).strip().upper()
+        linha["Subgrupo"] = str(linha.get("Subgrupo", "Outros")).strip().upper()
     # -------------------------------------------------------------
     # DETECTAR ALTERAÇÕES
     # -------------------------------------------------------------

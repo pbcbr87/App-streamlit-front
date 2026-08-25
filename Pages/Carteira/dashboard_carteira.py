@@ -733,7 +733,14 @@ def renderizar_tabela_resumo(dados: list, moeda: str):
 # ==============================================================================
 # 🚀 4. EXECUÇÃO PRINCIPAL DA PÁGINA
 # ==============================================================================
-st.title("📊 Dashboard - Overview da Carteira")
+col_t, col_bt_obj, col_bt_div = st.columns([0.7, 0.15, 0.15], vertical_alignment="center")
+
+if col_bt_obj.button("🎯 Objetivos 🌳", key="btn_objetivos", width="stretch"):
+    st.switch_page("Pages/Aporte/planejar_guiado.py")
+if col_bt_div.button("💰 Dividendos", key="btn_dividendos", width="stretch"):
+    st.switch_page("Pages/Dividendos_usuarios/dividendos_grafico.py")
+
+col_t.title("📊 Dashboard - Overview da Carteira")
 # Busca e tratamento com Cache em Session State (Evita chamadas repetidas ao backend)
 if 'dados_carteira_cache' not in st.session_state:
     try:
