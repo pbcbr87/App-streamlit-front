@@ -369,7 +369,6 @@ def renderizar_layout_edit_evento(registro_selecionado: dict = None, on_sucesso=
         - label_btn_gravar: str (opcional) -> rótulo do botão de gravação
         - modo_insert: str (opcional) -> valor para payload['modo_insert']
     """
-    st.write(registro_selecionado)
     reg_selecionado = registro_selecionado or {}
     dados_origem = reg_selecionado.get("dados_origem", {})
     evento_id = dados_origem.get("id")
