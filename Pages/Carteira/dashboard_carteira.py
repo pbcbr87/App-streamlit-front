@@ -476,18 +476,14 @@ def renderizar_graficos(dados: list, moeda: str):
                     ]
 
                     # Criar texto formatado estilo Finviz: TICKER + PERC (ex: MSFT \n +1.62%)
-                    df_graficos["texto_exibicao"] = df_graficos.apply(
-                        lambda r: f"<b>{r[col_ativo]}</b><br>{r[col_lucro_pct]:+.2f}%"
-                        if col_ativo in r and col_lucro_pct in r
-                        else "",
-                        axis=1,
-                    )
+                    df_graficos["texto_lucro_pct"] = df_graficos[col_lucro_pct].apply(lambda x: f"{x * 100:+.2f}" if pd.notnull(x) else "")
 
                     fig = px.treemap(
                         df_graficos,
                         path=path_cols,
                         values=coluna_metrica,  # Tamanho do bloco = Tamanho da Posição
                         color=col_lucro_pct,  # Cor do bloco = Lucro %
+                        custom_data=["texto_lucro_pct"], # Passa o valor numérico para o customdata
                         range_color=[ -1.0, 1.0,],  # 👈 TRAVA o mínimo em -1 e o máximo em +1
                         color_continuous_scale=[
                             [0.0, "#801213"],  # Cor no limite -1.0 (Vermelho Escuro)
@@ -501,8 +497,8 @@ def renderizar_graficos(dados: list, moeda: str):
 
                     # Ajusta os textos exibidos dentro de cada bloco
                     fig.update_traces(
-                        texttemplate="%{label}<br>%{color:+.2f}%",  # Mostra o nome do grupo/ticker e o %
-                        hovertemplate="<b>%{label}</b><br>Tamanho: %{value:,.2f}<br>Resultado: %{color:+.2f}%<extra></extra>",
+                        texttemplate="%{label}<br>%{customdata[0]:+.2f}%",  # Mostra o nome do grupo/ticker e o %
+                        hovertemplate="<b>%{label}</b><br>Tamanho: %{value:,.2f}<br>Resultado: %{customdata[0]:+.2f}%<extra></extra>",
                     )
 
                     # Oculta a barra de cor lateral para ficar mais limpo estilo Finviz
