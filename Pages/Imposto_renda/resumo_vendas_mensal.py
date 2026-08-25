@@ -370,7 +370,6 @@ if not df.empty:
         )
         with st.expander('📋 Detalhamento das Operações'):
             df_vendas = st.session_state.df_vendas.copy()
-            # st.write(df_vendas)
             # 1. Preparação e Filtro
             if 'data_op_pag' in df_vendas.columns:
                 df_vendas['data_op_pag'] = pd.to_datetime(df_vendas['data_op_pag'])
@@ -381,9 +380,7 @@ if not df.empty:
             if not df_vendas.empty:
                 # --- REGRA DE AGRUPAMENTO ---
                 # Se for FII, mantém FII. Caso contrário (Ação, BDR, ETF), vira RENDA VARIÁVEL (RV)
-                df_vendas['categoria_agrupada'] = df_vendas['categoria'].apply(
-                    lambda x: 'FII' if x.upper() == 'FII' else 'RENDA VARIÁVEL (RV)'
-                )
+                df_vendas['categoria_agrupada'] = df_vendas['categoria'].apply(lambda x: 'FII' if x.upper() == 'FII' else 'RV')
                 
                 # 2. Criar coluna de ordem (0 para dados, 1 para subtotal)
                 df_vendas['ordem'] = 0
@@ -407,11 +404,12 @@ if not df.empty:
 
                 # 5. Criar a Great Table
                 gt_vendas = (
-                    GT(df_final[['categoria_agrupada', 'data_exibicao', 'codigo_ativo', 'valor_custo_brl', 'valor_venda_brl', 'lucro_brl']])
+                    GT(df_final[['categoria_agrupada', 'data_exibicao', 'codigo_ativo', 'tipo', 'valor_custo_brl', 'valor_venda_brl', 'lucro_brl']])
                     .cols_label(
                         categoria_agrupada="Tipo de Ativo",
                         data_exibicao="Data",
                         codigo_ativo="Ativo",
+                        tipo="Tipo",
                         valor_custo_brl="Custo Total",
                         valor_venda_brl="Venda Total (+Taxas)",
                         lucro_brl="Lucro/Prejuízo"

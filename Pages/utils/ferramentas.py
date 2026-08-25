@@ -110,10 +110,12 @@ def dividir_id_ativo(id_ativo: str) -> tuple[str, str]:
 def formatar_ativo_visual(id_ativo: str) -> str:
     """Formatador visual reaproveitável."""
     if not id_ativo or id_ativo == "Selecionar Ativo":
-        return id_ativo.title()
+        return id_ativo
     if "_" in id_ativo:
         ativo, categoria = id_ativo.split("_", 1)
-        return f"{ativo} ({categoria})".title()
+        categoria = categoria.title()
+        ativo = ativo.upper()
+        return f"{ativo} ({categoria})"
     return id_ativo.title()
 
 def limpar_nans_dict(lista_dicts: list[dict]) -> list[dict]:
