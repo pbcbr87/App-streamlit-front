@@ -329,7 +329,6 @@ elif state["modo_tela"] in ["inserir", "editar", "inserir_table"]:
         key_form = f"form_evento_{state.get('form_key_count', 0)}"
         
         try:
-            st.write(state.get("item_selecionado"))
             item = state.get("item_selecionado") or {}
             evento_id = item.get("id")
             dados_origem = {k: v for k, v in item.items() if k != "id"}

@@ -1729,5 +1729,4 @@ def renderizar_formulario_cisao_incorporacao(tipo_evento: str, dados_origem: dic
             payload["instrucoes"] = [inst_m, inst_f, inst_cx]
         else:
             payload = None
-    st.write(payload)
     return payload
