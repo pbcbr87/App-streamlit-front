@@ -109,7 +109,7 @@ CONFIG_MOVIMENTACOES = {
     "dolar_bc":         {"titulo": "💵 Dólar BC", "tipo": "currency", "multi_moeda": False, "precisao": 4}
 }
 
-COLUNAS_RESUMIDAS = ["fk_ativo_visual", "data_op_pag", "tipo", "quant_","quant_acum", "preco_contabil","custo_acum"]
+COLUNAS_RESUMIDAS = ["fk_ativo_visual", "data_op_pag", "tipo", "quant_","quant_acum", "preco_contabil","custo_acum", "lucro"]
 
 # ==============================================================================
 # 🎛️ GERENCIADOR CENTRAL DE LAYOUT
@@ -369,6 +369,7 @@ def renderizar_layout_edit_evento(registro_selecionado: dict = None, on_sucesso=
         - label_btn_gravar: str (opcional) -> rótulo do botão de gravação
         - modo_insert: str (opcional) -> valor para payload['modo_insert']
     """
+    st.write(registro_selecionado)
     reg_selecionado = registro_selecionado or {}
     dados_origem = reg_selecionado.get("dados_origem", {})
     evento_id = dados_origem.get("id")
@@ -1704,7 +1705,7 @@ def renderizar_formulario_cisao_incorporacao(tipo_evento: str, dados_origem: dic
             # --- Dicionário da Mãe ---
             inst_m = {
                 "ticker": ticker_mae, 
-                "proporcao_custo": -1, 
+                chave_contabil: -val_f_processado, 
                 "qtd_fator_delta": -1,
                 "tipo_tributacao": "AJUSTE_CONTABIL"
             }
@@ -1728,5 +1729,5 @@ def renderizar_formulario_cisao_incorporacao(tipo_evento: str, dados_origem: dic
             payload["instrucoes"] = [inst_m, inst_f, inst_cx]
         else:
             payload = None
-
+    st.write(payload)
     return payload

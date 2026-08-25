@@ -71,7 +71,7 @@ CONFIG_ERRO = {
     **CONFIG_COLUNAS_IMPORTACAO_EVENTOS,
 }
 
-COLUNAS_RESUMIDAS_EVENTOS = ["fk_ativo_base", "tipo", "data_com", "data_pag"]
+COLUNAS_RESUMIDAS_EVENTOS = ["fk_ativo_base", "tipo", "data_com", "data_pag", "instrucoes"]
 
 # ====================================================================
 # Estado da página
@@ -329,17 +329,20 @@ elif state["modo_tela"] in ["inserir", "editar", "inserir_table"]:
         key_form = f"form_evento_{state.get('form_key_count', 0)}"
         
         try:
+            st.write(state.get("item_selecionado"))
             item = state.get("item_selecionado") or {}
+            evento_id = item.get("id")
+            dados_origem = {k: v for k, v in item.items() if k != "id"}
             modo_inserir = state.get("modo_tela") == "inserir"
 
             renderizar_layout_edit_evento(
-                    registro_selecionado={"dados_origem": item},
+                    registro_selecionado={"dados_origem": dados_origem},
                     key_estado_dinamico=key_form,
                     origin_config={
                         "callback_request_api": (
                             (lambda payload: executar_requisicao_criar_evento_corporativo(payload))
                             if modo_inserir
-                            else (lambda payload: executar_requisicao_atualizar_evento_corporativo(evento_id=item.get("id"), payload=payload))
+                            else (lambda payload: executar_requisicao_atualizar_evento_corporativo(evento_id=evento_id, payload=payload))
                         ),
                         "label_btn_gravar": "🚀 Criar Evento" if modo_inserir else "💾 Gravar Evento",
                         "modo_insert": "MANUAL INSERT" if modo_inserir else "MANUAL EDIT"
