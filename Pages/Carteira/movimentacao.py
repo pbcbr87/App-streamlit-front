@@ -17,33 +17,62 @@ from Pages.utils.modals import modal_confirmar_delecao, modal_confirmar_zerar_ca
 
 
 def render_botao_download_ordens_excel(user_id: int | None = None) -> None:
-    """Busca as ordens input pendentes e exibe o botão de download em formato XLSX."""
-    # 🟢 1. Busca os dados utilizando a função da API
+    """Busca as ordens input pendentes e gera Excel formatando datas para dd/mm/yyyy
+    e números no padrão nativo PT-BR.
+    """
     ordens = listar_ordens_input_api(user_id=user_id)
 
     if not ordens:
         st.info("Nenhuma ordem encontrada para exportação.")
         return
 
-    # 🔵 2. Converte a lista de dicionários para DataFrame
     df = pd.DataFrame(ordens)
-    colunas_decimais = ["custo_operacao", "taxas", "quant"]
+    
+    cols_para_remover = ["id", "fk_usuario"]
+    df = df.drop(columns=[col for col in cols_para_remover if col in df.columns])
 
+    # 1. Converte a coluna de data para o tipo Date do pandas
+    if "data_operacao" in df.columns:
+        df["data_operacao"] = pd.to_datetime(
+            df["data_operacao"], errors="coerce"
+        ).dt.date
+
+    #  2. Garante que as colunas numéricas sejam float (para o Excel entender como número)
+    colunas_decimais = ["custo_operacao", "taxas", "quant"]
     for col in colunas_decimais:
         if col in df.columns:
-            # Garante a conversão para string e troca o ponto por vírgula
-            df[col] = df[col].apply(
-                lambda x: (
-                    str(x).replace(".", ",") if pd.notnull(x) and x != "" else x
-                )
-            )
-    # 🟡 3. Gera o arquivo Excel em memória utilizando io.BytesIO
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
     output = io.BytesIO()
+
+    # 🟡 3. Utiliza openpyxl para formatar exibições nativas (datas e números)
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
         df.to_excel(writer, index=False, sheet_name="Ordens Input")
+
+        workbook = writer.book
+        worksheet = writer.sheets["Ordens Input"]
+
+        # Formatação da coluna de Data (dd/mm/yyyy)
+        if "data_operacao" in df.columns:
+            col_data_idx = df.columns.get_loc("data_operacao") + 1
+            for row in range(2, len(df) + 2):
+                cell = worksheet.cell(row=row, column=col_data_idx)
+                cell.number_format = "dd/mm/yyyy"  #  Formato nativo de data
+
+        #  Formatação das colunas numéricas (#,##0.00)
+        col_indices_num = [
+            df.columns.get_loc(col) + 1
+            for col in colunas_decimais
+            if col in df.columns
+        ]
+
+        for col_idx in col_indices_num:
+            for row in range(2, len(df) + 2):
+                cell = worksheet.cell(row=row, column=col_idx)
+                cell.number_format = "#,##0.00"
+
     excel_data = output.getvalue()
 
-    # 🔴 4. Renderiza o botão de download no Streamlit
     st.download_button(
         label="📥 Baixar Ordens (Excel)",
         data=excel_data,
