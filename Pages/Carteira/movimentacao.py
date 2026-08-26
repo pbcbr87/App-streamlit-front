@@ -343,11 +343,6 @@ if state['modo_tela'] == "listagem":
     with col_btn_download.popover("📤 Exportar", width="stretch"):
         render_botao_download_ordens_excel(user_id=st.session_state.get('user_id', None))
 
-        if st.button("📥 Exportar Ordens inseridas", width="stretch"):
-            df_export = pd.DataFrame(state['ordens'])
-            df_export.to_excel("ordens_exportadas.xlsx", index=False)
-            st.success("✅ Ordens exportadas com sucesso!")
-
     if 'ordens_pendentes' in state and state['ordens_pendentes']:
         st.subheader("⚠️ Ordens Pendentes de Processamento")
         exibir_tabela_generica( dados=state['ordens_pendentes'],
