@@ -16,12 +16,10 @@ from Pages.utils.modals import modal_confirmar_delecao, modal_confirmar_zerar_ca
 
 
 
-def render_botao_download_ordens_excel(user_id: int | None = None) -> None:
+def render_botao_download_ordens_excel(ordens) -> None:
     """Busca as ordens input pendentes e gera Excel formatando datas para dd/mm/yyyy
     e números no padrão nativo PT-BR.
     """
-    ordens = listar_ordens_input_api(user_id=user_id)
-
     if not ordens:
         st.info("Nenhuma ordem encontrada para exportação.")
         return
@@ -76,9 +74,9 @@ def render_botao_download_ordens_excel(user_id: int | None = None) -> None:
     st.download_button(
         label="📥 Baixar Ordens (Excel)",
         data=excel_data,
-        file_name="ordens_input_pendentes.xlsx",
+        file_name="ordens_input.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        key="btn_download_ordens_excel",
+        key="btn_download_ordens_excel"
     )
 
 
@@ -369,8 +367,11 @@ if state['modo_tela'] == "listagem":
             state['form_key_count'] = state.get('form_key_count', 0) + 1
             st.rerun()
 
-    with col_btn_download.popover("📤 Exportar", width="stretch"):
-        render_botao_download_ordens_excel(user_id=st.session_state.get('user_id', None))
+    with col_btn_download.popover("📤 Exportar", width="stretch", on_change=lambda: state.update({'ordens_input': listar_ordens_input_api()})):
+        if "ordens_input" not in state:
+            st.info("Carregando arquivo de ordens...")
+        if "ordens_input" in state:          
+            render_botao_download_ordens_excel(state['ordens_input'])
 
     if 'ordens_pendentes' in state and state['ordens_pendentes']:
         st.subheader("⚠️ Ordens Pendentes de Processamento")
