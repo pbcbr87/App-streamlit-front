@@ -111,16 +111,9 @@ def renderizar_matriz_proventos(
     # ==============================================================================
     pivot["TOTAL"] = pivot[ordem_meses].sum(axis=1)
 
-    ano_atual = pd.Timestamp.now().year
-    mes_atual = pd.Timestamp.now().month
-
     medias = []
     for ano, row in pivot.iterrows():
-        if ano == ano_atual:
-            meses_decorridos = min(mes_atual, 12)
-            medias.append(row["TOTAL"] / meses_decorridos if meses_decorridos > 0 else 0)
-        else:
-            medias.append(row["TOTAL"] / 12)
+        medias.append(row["TOTAL"] / 12)
 
     pivot["MEDIA"] = medias
 

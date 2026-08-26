@@ -1,11 +1,12 @@
 import streamlit as st
 import pandas as pd
+import io
 from Pages.utils.components import componente_buscador_ativo, exibir_tabela_generica
 from Pages.utils.ferramentas import formatar_ativo_visual
 from Pages.utils.form_edit import (renderizar_layout_edit_evento, 
                                    renderizar_layout_edit_ordem, 
                                    renderizar_layout_importacao_tabela)
-from Pages.utils.request_api import (buscar_movimentacoes_api,
+from Pages.utils.request_api import (buscar_movimentacoes_api, listar_ordens_input_api,
                                      obter_detalhe_movimentacao_api,
                                      executar_requisicao_insert_evento,
                                      executar_requisicao_edit_movimentacoes,
@@ -15,6 +16,41 @@ from Pages.utils.modals import modal_confirmar_delecao, modal_confirmar_zerar_ca
 
 
 
+def render_botao_download_ordens_excel(user_id: int | None = None) -> None:
+    """Busca as ordens input pendentes e exibe o botão de download em formato XLSX."""
+    # 🟢 1. Busca os dados utilizando a função da API
+    ordens = listar_ordens_input_api(user_id=user_id)
+
+    if not ordens:
+        st.info("Nenhuma ordem encontrada para exportação.")
+        return
+
+    # 🔵 2. Converte a lista de dicionários para DataFrame
+    df = pd.DataFrame(ordens)
+    colunas_decimais = ["custo_operacao", "taxas", "quant"]
+
+    for col in colunas_decimais:
+        if col in df.columns:
+            # Garante a conversão para string e troca o ponto por vírgula
+            df[col] = df[col].apply(
+                lambda x: (
+                    str(x).replace(".", ",") if pd.notnull(x) and x != "" else x
+                )
+            )
+    # 🟡 3. Gera o arquivo Excel em memória utilizando io.BytesIO
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name="Ordens Input")
+    excel_data = output.getvalue()
+
+    # 🔴 4. Renderiza o botão de download no Streamlit
+    st.download_button(
+        label="📥 Baixar Ordens (Excel)",
+        data=excel_data,
+        file_name="ordens_input_pendentes.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        key="btn_download_ordens_excel",
+    )
 
 
 # ==============================================================================
@@ -258,7 +294,7 @@ def garantir_dados_em_cache(state: dict):
 # 🏢 3. RENDERIZAÇÃO DAS TELAS (FLUXO DINÂMICO)
 # ==============================================================================
 if state['modo_tela'] == "listagem":    
-    col_titulo, col_btn_cart, col_btn_zerar, col_btn_novo, col_btn_novo_evento  = st.columns([2.5, 1, 1, 1, 1], vertical_alignment="center")
+    col_titulo, col_btn_cart, col_btn_zerar, col_btn_novo, col_btn_novo_evento, col_btn_download = st.columns([2.5, 1, 1, 1, 1, 1], vertical_alignment="center")
     
     with col_titulo:
         st.title("📜 Extrato de Movimentações")
@@ -303,7 +339,15 @@ if state['modo_tela'] == "listagem":
             state['modo_tela'] = "inserir_manual_evento"
             state['form_key_count'] = state.get('form_key_count', 0) + 1
             st.rerun()
-    
+
+    with col_btn_download.popover("📤 Exportar", width="stretch"):
+        render_botao_download_ordens_excel(user_id=st.session_state.get('user_id', None))
+
+        if st.button("📥 Exportar Ordens", width="stretch"):
+            df_export = pd.DataFrame(state['ordens'])
+            df_export.to_excel("ordens_exportadas.xlsx", index=False)
+            st.success("✅ Ordens exportadas com sucesso!")
+
     if 'ordens_pendentes' in state and state['ordens_pendentes']:
         st.subheader("⚠️ Ordens Pendentes de Processamento")
         exibir_tabela_generica( dados=state['ordens_pendentes'],

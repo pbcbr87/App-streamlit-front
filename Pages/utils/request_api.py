@@ -287,7 +287,6 @@ def buscar_ordens_pendentes_api(user_id: Optional[int] = None) -> List[Dict[str,
     """Consome a rota GET de ordens pendentes, permitindo filtrar por user_id (exclusivo para Admins)."""
     params = {"user_id": user_id} if user_id else None
     
-    # 🛠️ Ajuste o prefixo da rota ("ordens/" ou "movimentacoes/") conforme registrado no seu APIRouter
     response = _request("GET", "movimentacoes/listar_ordens_pendentes", params=params)
 
     if response.status_code == 200:
@@ -296,6 +295,21 @@ def buscar_ordens_pendentes_api(user_id: Optional[int] = None) -> List[Dict[str,
         return []
 
     _tratar_erro_resposta(response, contexto="ao Listar Ordens Pendentes")
+    return []
+
+
+def listar_ordens_input_api(user_id: Optional[int] = None) -> List[Dict[str, Any]]:
+    """Consome a rota GET de ordens pendentes, permitindo filtrar por user_id (exclusivo para Admins)."""
+    params = {"user_id": user_id} if user_id else None
+    
+    response = _request("GET", "movimentacoes/listar_ordens_input", params=params)
+
+    if response.status_code == 200:
+        return response.json()
+    elif response.status_code == 404:
+        return []
+
+    _tratar_erro_resposta(response, contexto="ao Listar Ordens Input")
     return []
 
 
