@@ -141,7 +141,7 @@ def garantir_dados_em_cache(state: dict):
             if ativo_atual != state.get('ultimo_ativo_carregado'):
                 st.write("")
                 with st.spinner(f"Buscando movimentações de {ativo_atual}..."):
-                    state['dados'] = listar_dividendos_usuarios_api(ativo_id=ativo_atual, sem_data_corte=state.get('sem_data_corte', False))
+                    state['dados'] = listar_dividendos_usuarios_api(ativo_id=ativo_atual, sem_data_corte=True)
                     state['ultimo_ativo_carregado'] = ativo_atual
                     state['ultimo_carregar_tudo'] = False
 

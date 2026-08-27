@@ -59,7 +59,7 @@ def reset_usuario():
 #Congiguraçãoes iniciais
 #------------------------------------------------
 st.set_page_config(
-    page_title="Legacy Seed - Gerenciamento de Investimentos",
+    page_title="Legacy Seed - 🫘 Plante o seu legado🌱",
     page_icon="imagens/icon.png",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -378,7 +378,7 @@ def navegacao():
                 executar_requisicao_disparar_update(st.session_state.id)
                 st.toast("Cálculo da carteira iniciado em background!", icon="🚀")
             except ApiRequestError as e:
-                st.error(f"Erro ao disparar recálculo: {e.message}")   
+                st.toast(f"Erro ao disparar recálculo: {e.message}")   
     return pg
 
 #------------------------------------------------

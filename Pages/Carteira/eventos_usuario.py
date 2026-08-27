@@ -151,7 +151,14 @@ def alternar_status_lote(registros: List[Dict[str, Any]]) -> None:
 
     # Montagem de mensagens para a sessão utilizando o tamanho das listas (len)
     if sucessos:
-        ir_para_listagem_limpo()
+        if 'page_movimentacao' in st.session_state:
+            st.session_state['page_movimentacao']["ultimo_ativo_carregado"] = None
+            st.session_state['page_movimentacao']["ultimo_carregar_tudo"] = False
+            st.session_state['page_movimentacao']["modo_tela"] = "listagem"
+            st.session_state['page_movimentacao']["ordens_pendentes"] = None
+        st.session_state[PAGE_KEY]["ultimo_ativo_carregado"] = None
+        st.session_state[PAGE_KEY]["ultimo_carregar_tudo"] = False
+        st.session_state[PAGE_KEY]["modo_tela"] = "listagem"
         st.session_state["toast_pendente"] = {
             "mensagem": f"Status de {len(sucessos)} evento(s) alterado com sucesso!",
             "icone": "✅",
