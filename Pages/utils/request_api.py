@@ -692,11 +692,39 @@ def auditar_dividendos_globais_em_lote_api(ids: List[int]) -> bool:
         # Ativa monitoramento para reprocessamento na UI após a alteração
         _ativar_monitoramento_backend()
         datail = response.json()
-        st.session_state["toast_pendente"] = {"mensagem": f"✅ Status de auditoria atualizado em {datail['total_afetados']} registros. ids não encontrados: {datail['ids_nao_encontrados']}", "icone": "🔄"}
+        st.session_state["toast_pendente"] = {"mensagem": f"✅ Status de auditoria atualizado em {datail['total_afetados']} registros.", "icone": "🔄"}
+        if datail.get('ids_nao_encontrados'):
+            st.session_state['erro_pendente'] = {"mensagem": f"⚠️ IDs não encontrados: {', '.join(datail['ids_nao_encontrados'])}"}
         return True
 
     # Tratamento em caso de falha na auditoria
     _tratar_erro_resposta(response, contexto="ao Auditar Dividendos Globais em Lote")
+    return False
+
+
+def alternar_conflito_dividendos_globais_em_lote_api(ids: List[int]) -> bool:
+    """Consome a rota PATCH /dividendos/alternar_conflito_lote para alternar o status de conflito em lote.
+
+    :param ids: Lista com os IDs dos dividendos a terem o status de conflito alternado.
+    :return: True em caso de alteração bem-sucedida.
+    """
+    if not ids:
+        return False
+
+    # Requisição PATCH enviando o JSON no corpo da requisição
+    response = _request("PATCH", "dividendos/alternar_conflito_lote", payload={"ids": ids})
+
+    if response.status_code in (200, 204):
+        # Ativa monitoramento para reprocessamento na UI após a alteração
+        _ativar_monitoramento_backend()
+        datail = response.json()
+        st.session_state["toast_pendente"] = {"mensagem": f"✅ Status de conflito atualizado em {datail['total_afetados']} registros.", "icone": "🔄"}
+        if datail.get('ids_nao_encontrados'):
+            st.session_state['erro_pendente'] = {"mensagem": f"⚠️ IDs não encontrados: {', '.join(datail['ids_nao_encontrados'])}"}
+        return True
+
+    # Tratamento em caso de falha na alteração de conflito
+    _tratar_erro_resposta(response, contexto="ao Alternar Conflito de Dividendos Globais em Lote")
     return False
 
 

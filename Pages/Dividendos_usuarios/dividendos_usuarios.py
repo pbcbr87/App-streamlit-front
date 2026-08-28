@@ -188,11 +188,11 @@ def garantir_dados_em_cache(state: dict):
 if state["modo_tela"] == "listagem":
     titulo, btn_novo, btn_importar = st.columns([6, 1, 1], vertical_alignment="center")
     titulo.title("💰 Dividendos Cadastrados")
-    if btn_novo.button("➕ Novo", type="primary", width="stretch"):
+    if btn_novo.button("➕ Novo Dividendo", type="primary", width="stretch"):
         state["modo_tela"] = "inserir"
         state["form_key_count"] = state.get("form_key_count", 0) + 1
         st.rerun()
-    if btn_importar.button("📥 Importar", width="stretch"):
+    if btn_importar.button("📦 Inserir Pacote Tabela", width="stretch"):
         state["modo_tela"] = "importar"
         state["form_key_count"] = state.get("form_key_count", 0) + 1
         st.rerun()

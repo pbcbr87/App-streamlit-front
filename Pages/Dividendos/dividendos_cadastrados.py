@@ -13,7 +13,8 @@ from Pages.utils.request_api import (
     atualizar_dividendo_global_api,
     excluir_dividendos_globais_em_lote_api,
     inserir_pacote_dividendos_global_api,
-    auditar_dividendos_globais_em_lote_api
+    auditar_dividendos_globais_em_lote_api,
+    alternar_conflito_dividendos_globais_em_lote_api
 )
 
 PAGE_KEY = "page_dividendos_cadastrados"
@@ -29,24 +30,28 @@ state.setdefault('modo_tela', "listagem")
 state.setdefault('dados', [])
 
 
-def formatar_status_auditado(row: Dict[str, Any]) -> str:
+def formatar_status_auditado(auditado) -> str:
     """ Formata a indicação visual de auditoria do dividendo de mercado."""
-    return "✅ Auditado" if row.get("auditado") or row.get("aceito") else "⬜ Pendente"
+    return "✅ Auditado" if auditado else "⬜ Pendente"
 
+def formatar_status_conflito(conflito) -> str:
+    """ Formata a indicação visual de conflito do dividendo de mercado."""
+    return "⚠️ Conflito" if conflito else "✅ Sem Conflito"
 
 def colorir_linhas_auditadas(dataframe: pd.DataFrame, dados_originais: List[Dict[str, Any]]) -> pd.DataFrame:
     """ Aplica estilo destacado para dividendos pendentes de auditoria/confirmação."""
     estilo = pd.DataFrame("", index=dataframe.index, columns=dataframe.columns)
     for idx, registro in enumerate(dados_originais):
-        if not (registro.get("auditado") or registro.get("aceito")):
+        if registro.get("conflito"):
+            estilo.loc[idx] = "color: #F1FAEE; background-color: #CF6679; font-style: italic;"
+        elif not registro.get("auditado"):
             estilo.loc[idx] = "color: #856404; background-color: #fff3cd; font-style: italic;"
     return estilo
 
-
 CONFIG_DIVIDENDOS_GLOBAIS = {
     "id": {"titulo": "ID", "tipo": "hide"},
-    "auditado": {"titulo": "⚙️ Auditado", "tipo": "text", "funcao_map": formatar_status_auditado},
-    "conflito": {"titulo": "⚠️ Conflito", "tipo": "text"},
+    "auditado": {"titulo": "⚙️ Auditado", "tipo": "text", "funcao_map": lambda row: formatar_status_auditado(row.get("auditado"))},
+    "conflito": {"titulo": "⚠️ Conflito", "tipo": "text", "funcao_map": lambda row: formatar_status_conflito(row.get("conflito"))},
     "fk_ativo": {"titulo": "🏷️ Ativo", "tipo": "text", "funcao_map": lambda row: formatar_ativo_visual(row.get("fk_ativo"))},
     "tipo": {"titulo": "⚡ Tipo", "tipo": "text"},
     "valor_bruto": {"titulo": "💰 Bruto", "tipo": "currency", "multi_moeda": False, "precisao": 2},
@@ -55,9 +60,7 @@ CONFIG_DIVIDENDOS_GLOBAIS = {
     "data_com": {"titulo": "📅 Data Com", "tipo": "date"},
     "data_pag": {"titulo": "📅 Pagamento", "tipo": "date"},
     "ano_calendario_ir": {"titulo": "📅 Ano IR", "tipo": "number", "precisao": 0},
-    "origem_dado": {"titulo": "📤 Origem", "tipo": "text"},
-    "data_insert": {"titulo": "🕒 Cadastro", "tipo": "date"},
-    "modo_insert": {"titulo": "📥 Origem", "tipo": "text"},
+    "origem_dado": {"titulo": "📤 Origem", "tipo": "text"}
 }
 
 CONFIG_IMPORTACAO_DIVIDENDOS = {
@@ -128,6 +131,21 @@ def acao_alternar_auditoria(registros: List[Dict[str, Any]]) -> None:
         
     except Exception as erro:
         st.error(f"❌ Erro ao alterar status de auditoria: {erro}")
+
+
+def acao_alternar_conflito(registros: List[Dict[str, Any]]) -> None:
+    """ Altera o status de conflito do dividendo global."""
+    state_loc = st.session_state[PAGE_KEY]
+    try:
+        ids = [registro["id"] for registro in registros]
+        alternar_conflito_dividendos_globais_em_lote_api(ids=ids)
+        state_loc["dados"] = []
+        state_loc["modo_tela"] = "listagem"
+        state_loc['ultimo_ativo_carregado'] = None
+        state_loc['ultimo_carregar_tudo'] = False
+        
+    except Exception as erro:
+        st.error(f"❌ Erro ao alterar status de conflito: {erro}")
 
 
 def salvar_dividendo(payload: Dict[str, Any], editando: bool) -> bool:
@@ -202,7 +220,7 @@ if state["modo_tela"] == "listagem":
         state["form_key_count"] = state.get("form_key_count", 0) + 1
         st.rerun()
         
-    if btn_importar.button("📥 Importar", width="stretch"):
+    if btn_importar.button("📦 Inserir Pacote Tabela", width="stretch"):
         state["modo_tela"] = "importar"
         state["form_key_count"] = state.get("form_key_count", 0) + 1
         st.rerun()
@@ -246,7 +264,7 @@ if state["modo_tela"] == "listagem":
     elif not dados_para_exibir:
         st.warning("Nenhum dividendo global cadastrado encontrado.")        
     else:        
-        f1, f2 = st.columns(2)
+        f1, f2, f3, f4 = st.columns(4)
 
         opcoes_tipos = list(set([mov.get('tipo', '') for mov in dados_para_exibir if mov.get('tipo')]))
         tipos_selecionados = f1.multiselect("Filtrar por Tipo", options=opcoes_tipos, key="filtro_tipo_admin")
@@ -254,10 +272,20 @@ if state["modo_tela"] == "listagem":
         opcoes_ativos = list(set([mov.get('fk_ativo', '') for mov in dados_para_exibir if mov.get('fk_ativo')]))
         ativos_selecionados = f2.multiselect("Filtrar por Ativo", options=opcoes_ativos, format_func=formatar_ativo_visual, key="filtro_ativo_admin")
 
+        opcoes_aditado = list(set([mov.get('auditado', '') for mov in dados_para_exibir]))
+        auditado_selecionados = f3.multiselect("Filtrar por Auditado", options=opcoes_aditado, format_func=formatar_status_auditado, key="filtro_aditado_admin",)
+
+        opcoes_conflito = list(set([mov.get('conflito', '') for mov in dados_para_exibir]))
+        conflito_selecionados = f4.multiselect("Filtrar por Conflito", options=opcoes_conflito, format_func=formatar_status_conflito, key="filtro_conflito_admin")
+
         if tipos_selecionados:
             dados_para_exibir = [item for item in dados_para_exibir if item.get("tipo") in tipos_selecionados]
         if ativos_selecionados:
             dados_para_exibir = [item for item in dados_para_exibir if item.get("fk_ativo", "") in ativos_selecionados]
+        if auditado_selecionados:
+            dados_para_exibir = [item for item in dados_para_exibir if item.get("auditado", "") in auditado_selecionados]
+        if conflito_selecionados:
+            dados_para_exibir = [item for item in dados_para_exibir if str(item.get("conflito", "")) in conflito_selecionados]
 
         if not dados_para_exibir:
             st.info("💡 Nenhum dividendo encontrado para os filtros selecionados.")
@@ -265,11 +293,12 @@ if state["modo_tela"] == "listagem":
             exibir_tabela_generica(
                 dados=dados_para_exibir,
                 config_colunas=CONFIG_DIVIDENDOS_GLOBAIS,
-                colunas_resumidas=["auditado", "fk_ativo", "tipo", "valor_bruto", "imposto", "valor_liq", "data_com", "data_pag"],
+                colunas_resumidas=["auditado", "conflito","fk_ativo", "tipo", "valor_bruto", "imposto", "valor_liq", "data_com", "data_pag"],
                 callback_edit=acao_editar,
                 callback_deletar=acao_excluir,
                 callback_estilo=colorir_linhas_auditadas,
-                botoes_acao=[{"icone": "🔄", "callback": acao_alternar_auditoria, "somente_unico": False, "help": "Alternar Auditoria/Status"}],
+                botoes_acao=[{"icone": "🎚️", "callback": acao_alternar_auditoria, "somente_unico": False, "help": "Alternar Auditoria"},
+                             {"icone": "☯️", "callback": acao_alternar_conflito, "somente_unico": False, "help": "Alternar Conflito"}],
                 chave_tabela="dividendos_globais_admin",
                 suporta_moeda=True,
             )
