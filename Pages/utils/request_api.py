@@ -910,6 +910,110 @@ def executar_requisicao_excluir_eventos_corporativos_lote( eventos_ids: Union[in
     _tratar_erro_resposta(response, contexto="ao Excluir Evento(s) Corporativo(s) em Lote")
     return {}
 
+
+# ==============================================================================
+# REQUISIÇÕES DE EVENTOS PENDENTES (API 'eventos_pendentes')
+# ==============================================================================
+
+def listar_eventos_pendentes_api(ativo_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Consome a rota GET /eventos_pendentes/pegar_eventos para listar eventos pendentes.
+
+    [RESTRITO: ADMIN]
+
+    :param ativo_id: Ticker do ativo base para filtragem (opcional).
+    :return: Lista de dicionários contendo os eventos pendentes.
+    """
+    params = {"ativo_id": ativo_id.strip().upper()} if ativo_id else None
+
+    response = _request("GET", "eventos_pendentes/pegar_eventos", params=params)
+
+    if response.status_code == 200:
+        return response.json()
+    elif response.status_code == 404:
+        return []
+
+    _tratar_erro_resposta(response, contexto="ao Listar Eventos Pendentes")
+
+
+def obter_evento_pendente_por_id_api(evento_id: int) -> Dict[str, Any]:
+    """Consome a rota GET /eventos_pendentes/pegar_evento/{id} para buscar detalhes de um evento pendente pelo ID.
+
+    [RESTRITO: ADMIN]
+
+    :param evento_id: ID do evento pendente.
+    :return: Dicionário contendo os detalhes do evento pendente.
+    """
+    response = _request("GET", f"eventos_pendentes/pegar_evento/{evento_id}")
+
+    if response.status_code == 200:
+        return response.json()
+    elif response.status_code == 404:
+        raise ApiRequestError(
+            message=f"Evento pendente com ID {evento_id} não foi encontrado.",
+            status_code=404,
+            contexto="ao Obter Evento Pendente por ID",
+        )
+
+    _tratar_erro_resposta(response, contexto="ao Obter Evento Pendente por ID")
+
+
+def editar_evento_pendente_api(evento_id: int, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Consome a rota PUT /eventos_pendentes/evento/{id} para atualizar parcialmente ou totalmente um evento pendente.
+
+    [RESTRITO: ADMIN]
+
+    :param evento_id: ID do evento pendente.
+    :param payload: Dicionário contendo os dados do evento (EventoPendenteUpdate).
+    :return: Dicionário com a resposta da API (status, mensagem, campos modificados).
+    """
+    response = _request("PUT", f"eventos_pendentes/evento/{evento_id}", payload=payload)
+
+    if response.status_code == 200:
+        _ativar_monitoramento_backend()
+        return response.json()
+
+    _tratar_erro_resposta(response, contexto="ao Editar Evento Pendente")
+
+
+def atualizar_status_evento_pendente_api(evento_id: int, status: str) -> Dict[str, Any]:
+    """Consome a rota PATCH /eventos_pendentes/{id}/status para atualizar o status do evento pendente.
+
+    [RESTRITO: ADMIN]
+
+    :param evento_id: ID do evento pendente.
+    :param status: Novo status (ex: 'PENDENTE', 'IMPLEMENTADO', 'EM ANDAMENTO').
+    :return: Dicionário com a resposta da API (status, mensagem, novo_status).
+    """
+    payload = {"status": status}
+    response = _request("PATCH", f"eventos_pendentes/{evento_id}/status", payload=payload)
+
+    if response.status_code == 200:
+        _ativar_monitoramento_backend()
+        return response.json()
+
+    _tratar_erro_resposta(response, contexto="ao Atualizar Status do Evento Pendente")
+
+
+def deletar_eventos_pendentes_em_lote_api(ids: List[int]) -> Dict[str, Any]:
+    """Consome a rota DELETE /eventos_pendentes/delete_lote para excluir múltiplos eventos pendentes por ID.
+
+    [RESTRITO: ADMIN]
+
+    :param ids: Lista contendo os IDs dos eventos a serem removidos.
+    :return: Dicionário com o resultado do expurgo (total excluidos, ids excluidos e não encontrados).
+    """
+    if not ids:
+        return {}
+
+    payload = {"ids": ids}
+    response = _request("DELETE", "eventos_pendentes/delete_lote", payload=payload)
+
+    if response.status_code == 200:
+        _ativar_monitoramento_backend()
+        return response.json()
+
+    _tratar_erro_resposta(response, contexto="ao Deletar Lote de Eventos Pendentes")
+
 # ==============================================================================
 # REQUISIÇÕES DE COMANDOS DA CARTEIRA E RECALCULO
 # ==============================================================================

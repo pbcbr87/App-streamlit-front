@@ -250,7 +250,7 @@ state = inicializar_estado()
 if state["modo_tela"] == "listagem":
     col_titulo, col_btn_novo, col_btn_pacote = st.columns([4, 1, 1], vertical_alignment="center")
     with col_titulo:
-        st.title("🎁 Gestão de Eventos Corporativos Cadastrados [ADMIN]")
+        st.title("🎁 Gestão de Eventos Corporativos Cadastrados 🛡️")
         st.caption("Visualize, edite, crie e remova eventos corporativos.")
 
     with col_btn_novo:

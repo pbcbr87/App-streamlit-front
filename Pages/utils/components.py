@@ -353,17 +353,25 @@ def exibir_tabela_generica(dados: list, config_colunas: dict,colunas_resumidas: 
                                 width="stretch",
                                 # 🔧 CORREÇÃO AQUI: Mudamos de None para "ignore" quando não houver seleção
                                 on_select="rerun" if permite_selecao != "none" else "ignore",
-                                selection_mode=permite_selecao
+                                selection_mode=permite_selecao,
+                                key=f"tabela_{chave_tabela}"
                             )
-
+        
     # --------------------------------------------------------------------------
     # ✏️ 5. BOTÕES DE AÇÃO CONDICIONAIS
     # --------------------------------------------------------------------------
+    if f"registros_selecionados_chave_tabela_{chave_tabela}" not in st.session_state:
+        st.session_state[f"registros_selecionados_chave_tabela_{chave_tabela}"] = []
+    st.session_state[f"registros_selecionados_chave_tabela_{chave_tabela}"] = []
+
     if ( permite_selecao != "none" and "selection" in sl_row and "rows" in sl_row["selection"] and len(sl_row["selection"]["rows"]) > 0):
         indices_selecionados = sl_row["selection"]["rows"]
-        registros_selecionados = [dados[i] for i in indices_selecionados]
-        qtd_selecionados = len(registros_selecionados)
+        registros_selecionados = [dados[i] for i in indices_selecionados if i < len(dados)]
 
+        st.session_state[f"registros_selecionados_chave_tabela_{chave_tabela}"] = registros_selecionados
+
+        qtd_selecionados = len(registros_selecionados)
+        
         for idx_botao, btn in enumerate(lista_botoes):
             callback = btn.get("callback")
             if not callback:
