@@ -336,7 +336,7 @@ def navegacao():
     texto_user = f"**{user}** {status}"
 
     if st.session_state.admin:
-        texto_user = f"**{user}** {status} [ADMIN]"
+        texto_user = f"**{user}** {status} 🛡️"
     pages = {"🏦 Sua Carteira": cateira_pages, 
              "💰 Remunerações 🧺": dividendos_usuarios_pages, 
              "💧 Aporte e Objetivos 🌳": aporte_planejado_pages, 
@@ -344,10 +344,10 @@ def navegacao():
              texto_user: conta_pages}
     
     if st.session_state.admin == True:
-        pages["Usuarios 🛡️[ADMIN]"] = admin_pages
-        pages["Eventos 🛡️[ADMIN]"] = evento_pages
-        pages["Ativos 🛡️[ADMIN]"] = ativos_pages
-        pages["Dividendos 🛡️[ADMIN]"] = dividendos_pages
+        pages["Usuarios 🛡️"] = admin_pages
+        pages["Eventos 🛡️"] = evento_pages
+        pages["Ativos 🛡️"] = ativos_pages
+        pages["Dividendos 🛡️"] = dividendos_pages
 
     if MANUTENCAO and st.session_state.admin == False and not st.session_state.get("main_aceito", False):
         pages = {"Manutenção": [st.Page(maintenance_page_gif, title='Manutenção')]}

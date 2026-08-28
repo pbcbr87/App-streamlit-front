@@ -8,11 +8,12 @@ from Pages.utils.form_dividendos import renderizar_formulario_dividendo
 from Pages.utils.form_edit import renderizar_layout_importacao_tabela
 from Pages.utils.ferramentas import formatar_ativo_visual
 from Pages.utils.request_api import (
-                                        alterar_status_dividendo_api,
-                                        editar_dividendo_api,
-                                        excluir_dividendo_api,
-                                        inserir_dividendo_api,
-                                        listar_dividendos_usuarios_api,
+                                        alterar_status_dividendo_usuario_api,
+                                        editar_dividendo_usuario_api,
+                                        excluir_dividendos_usuarios_em_lote_api,
+                                        inserir_dividendo_usuario_api,
+                                        listar_dividendos_usuario_api,
+                                        obter_dividendo_usuario_por_id_api
                                     )
 
 PAGE_KEY = "page_dividendos"
@@ -78,27 +79,48 @@ CONFIG_ERRO_IMPORTACAO_DIVIDENDOS = {
 
 
 def acao_editar(registro: Dict[str, Any]) -> None:
-    state["registro_selecionado"] = registro
-    state["modo_tela"] = "editar"
-    state["form_key_count"] = state.get("form_key_count", 0) + 1
+    """ Prepara a tela para edição do registro de mercado selecionado."""
+    state_loc = st.session_state[PAGE_KEY]
+    try:
+        dividendo_id = registro.get('id')
+        if not dividendo_id:
+            st.warning("⚠️ Nenhum ID válido foi encontrado deste dividendo.")
+            return
+
+        st.write("")
+        with st.spinner("Buscando dados de origem no servidor..."):
+            registro_completo = obter_dividendo_usuario_por_id_api(dividendo_id)
+
+        state_loc["registro_selecionado"] = registro_completo
+        state_loc["modo_tela"] = "editar"
+        state_loc["form_key_count"] = state_loc.get("form_key_count", 0) + 1
+    except Exception as e:
+        st.toast(f"❌ Não foi possível abrir a edição: {str(e)}", icon="❌")
 
 
 def acao_excluir(registros: List[Dict[str, Any]]) -> None:
+    state_loc = st.session_state[PAGE_KEY]
     try:
-        for registro in registros:
-            excluir_dividendo_api(registro["id"])
+        ids = [registro["id"] for registro in registros]
+        excluir_dividendos_usuarios_em_lote_api(ids)
         st.session_state["toast_pendente"] = {"mensagem": f"✅ {len(registros)} dividendo(s) excluído(s).", "icone": "🗑️"}
-        state["dados"] = []
+        state_loc["dados"] = []
+        state_loc["modo_tela"] = "listagem"
+        state_loc['ultimo_ativo_carregado'] = None
+        state_loc['ultimo_carregar_tudo'] = False
     except Exception as erro:
         st.error(f"❌ Erro ao excluir dividendos: {erro}")
 
 
 def acao_status(registros: List[Dict[str, Any]]) -> None:
+    state_loc = st.session_state[PAGE_KEY]
     try:
-        for registro in registros:
-            alterar_status_dividendo_api(registro["id"], not bool(registro.get("aceito")))
-        state["dados"] = []
-        st.session_state["toast_pendente"] = {"mensagem": "✅ Status atualizado.", "icone": "🔄"}
+        ids = [registro["id"] for registro in registros]
+        alterar_status_dividendo_usuario_api(ids)
+        state_loc["dados"] = []
+        state_loc["modo_tela"] = "listagem"
+        state_loc['ultimo_ativo_carregado'] = None
+        state_loc['ultimo_carregar_tudo'] = False
     except Exception as erro:
         st.error(f"❌ Erro ao alterar status: {erro}")
 
@@ -107,14 +129,16 @@ def salvar_dividendo(payload: Dict[str, Any], editando: bool) -> bool:
     dados = dict(payload)
     dividendo_id = dados.pop("id", None)
     if editando:
-        return editar_dividendo_api(dividendo_id, dados)
-    return inserir_dividendo_api({"dados": [dados]}, modo_insert="MANUAL")
+        return editar_dividendo_usuario_api(dividendo_id, dados)
+    return inserir_dividendo_usuario_api({"dados": [dados]}, modo_insert="MANUAL")
 
 
 def voltar_listagem() -> None:
+    """ Reseta os estados temporários do formulário e retorna para a listagem."""
+    state = st.session_state[PAGE_KEY]
     state["modo_tela"] = "listagem"
-    state["registro_selecionado"] = None
-    state["dados"] = []
+    state['ultimo_ativo_carregado'] = None
+    state['ultimo_carregar_tudo'] = False
     st.rerun()
 
 
@@ -141,7 +165,7 @@ def garantir_dados_em_cache(state: dict):
             if ativo_atual != state.get('ultimo_ativo_carregado'):
                 st.write("")
                 with st.spinner(f"Buscando movimentações de {ativo_atual}..."):
-                    state['dados'] = listar_dividendos_usuarios_api(ativo_id=ativo_atual, sem_data_corte=True)
+                    state['dados'] = listar_dividendos_usuario_api(ativo_id=ativo_atual, sem_data_corte=True)
                     state['ultimo_ativo_carregado'] = ativo_atual
                     state['ultimo_carregar_tudo'] = False
 
@@ -150,7 +174,7 @@ def garantir_dados_em_cache(state: dict):
             if not state.get('ultimo_carregar_tudo'):
                 st.write("")
                 with st.spinner("Buscando histórico completo..."):
-                    state['dados'] = listar_dividendos_usuarios_api(ativo_id=None, sem_data_corte=True)
+                    state['dados'] = listar_dividendos_usuario_api(ativo_id=None, sem_data_corte=True)
                     state['ultimo_carregar_tudo'] = True
                     state['ultimo_ativo_carregado'] = None
 
@@ -247,7 +271,7 @@ else:
     if state["modo_tela"] == "importar":
         renderizar_layout_importacao_tabela(
             titulo="📥 Importação de Dividendos por Tabela",
-            funcao_envio_api=lambda payload: inserir_dividendo_api(payload, modo_insert="TABELA"),
+            funcao_envio_api=lambda payload: inserir_dividendo_usuario_api(payload, modo_insert="TABELA"),
             config_colunas=CONFIG_IMPORTACAO_DIVIDENDOS,
             config_colunas_erro=CONFIG_ERRO_IMPORTACAO_DIVIDENDOS,
             on_sucesso=voltar_listagem,
@@ -259,8 +283,7 @@ else:
     else:
         st.title("✏️ Editar Dividendo" if state["modo_tela"] == "editar" else "➕ Novo Dividendo")
         renderizar_formulario_dividendo(
-            registro=state.get("registro_selecionado"),
-            moeda=state["moeda"],
+            registro=state.get("registro_selecionado") if state["modo_tela"] == "editar" else None,
             on_salvar=salvar_dividendo,
             on_sucesso=voltar_listagem,
             key_estado_dinamico=key_form,

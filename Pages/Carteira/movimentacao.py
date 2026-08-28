@@ -188,7 +188,7 @@ def adicionar_preco_unit(quant, custo) -> float:
 
 
 CONFIG_ORDEM = {
-    "Data do Negócio":       {"titulo":"📅 Data do Negócio", "tipo": "text"},
+    "Data do Negócio":       {"titulo":"📅 Data do Negócio", "tipo": "date"},
     "Tipo de Movimentação":  {"titulo": "⚡ Tipo", "tipo": "text"},
     "Mercado":               {"titulo": "🏬 Mercado", "tipo": "text"},
     "Instituição":           {"titulo": "🏛️ Instituição", "tipo": "text"},
@@ -197,7 +197,7 @@ CONFIG_ORDEM = {
     "Preço":                 {"titulo": "💰 Preço Unitário", "tipo": "currency", "multi_moeda": False, "precisao": 2},
     "Valor":                 {"titulo": "🛡️ Valor Total", "tipo": "currency", "multi_moeda": False, "precisao": 2},
 
-    "data_operacao":  {"titulo": "📅 Data do Negócio", "tipo": "text"},
+    "data_operacao":  {"titulo": "📅 Data do Negócio", "tipo": "date"},
     "codigo_ativo":   {"titulo": "🏷️ Ativo", "tipo": "text"},
     "categoria":      {"titulo": "📂 Categoria", "tipo": "text"},
     "c_v":            {"titulo": "⚡ Operação", "tipo": "text"},
@@ -214,7 +214,7 @@ CONFIG_ERRO = {
     "codigo_ativo":   {"titulo": "🏷️ Ativo", "tipo": "text"},
     "categoria":      {"titulo": "📂 Categoria", "tipo": "text"},
     "c_v":            {"titulo": "⚡ Operação", "tipo": "text"},
-    "data_operacao":  {"titulo": "📅 Data do Negócio", "tipo": "text"},
+    "data_operacao":  {"titulo": "📅 Data do Negócio", "tipo": "date"},
     "quant":          {"titulo": "📊 Quantidade", "tipo": "number", "precisao": 6},
     "custo_operacao": {"titulo": "🛡️ Valor Total", "tipo": "currency", "multi_moeda": False, "precisao": 2},
     "taxas":          {"titulo": "💸 Taxas", "tipo": "currency", "multi_moeda": False, "precisao": 2},

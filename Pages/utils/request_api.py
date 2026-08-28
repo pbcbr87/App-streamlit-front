@@ -250,14 +250,14 @@ def buscar_movimentacoes_api(ativo_id: Optional[str] = None) -> list:
 def listar_eventos_api(ativo_id: Optional[str] = None, apenas_aceitos: bool = False,
     user_id: Optional[int] = None
 ) -> List[Dict[str, Any]]:
-    """🛠️ Consome a rota GET para listar eventos personalizados e corporativos.
+    """ Consome a rota GET para listar eventos personalizados e corporativos.
 
     :param ativo_id: Ticker do ativo para filtragem no ativo base ou gerado (opcional).
     :param apenas_aceitos: Se True, filtra apenas os eventos ativos/aceitos (padrão: False).
     :param user_id: ID do usuário alvo (opcional - exclusivo para Administradores).
     :return: Lista de dicionários contendo a estrutura dos eventos.
     """
-    # 🛠️ Montagem dinâmica dos parâmetros de consulta da URL (Query Params)
+    #  Montagem dinâmica dos parâmetros de consulta da URL (Query Params)
     params: Dict[str, Any] = {
         "apenas_aceitos": str(apenas_aceitos).lower()
     }
@@ -267,7 +267,7 @@ def listar_eventos_api(ativo_id: Optional[str] = None, apenas_aceitos: bool = Fa
     if user_id is not None:
         params["user_id"] = user_id
 
-    # 🛠️ Disparo da requisição GET para o endpoint de listagem
+    # Disparo da requisição GET para o endpoint de listagem
     response = _request(
         method="GET",
         endpoint="movimentacoes/listar_eventos",
@@ -279,7 +279,7 @@ def listar_eventos_api(ativo_id: Optional[str] = None, apenas_aceitos: bool = Fa
     elif response.status_code == 404:
         return []
 
-    # 🛠️ Tratamento padronizado de erro para HTTP 403, 500, etc.
+    # Tratamento padronizado de erro para HTTP 403, 500, etc.
     _tratar_erro_resposta(response, contexto="ao Listar Eventos")
 
 
@@ -440,7 +440,7 @@ def executar_requisicao_deletar_eventos_lote(ids_eventos: List[str], recalcular:
 # ====================================================================
 # REQUISICOES PARA DIVIDENDOS DO USUARIO
 # ====================================================================
-def listar_dividendos_usuarios_api(
+def listar_dividendos_usuario_api(
                                     ativo_id: Optional[str] = None,
                                     apenas_aceitos: bool = False,
                                     sem_data_corte: bool = False,
@@ -463,7 +463,30 @@ def listar_dividendos_usuarios_api(
 
     _tratar_erro_resposta(response, contexto="ao Listar Dividendos")
 
-def obter_dividendos_agregados_api( periodo_opcao: str = "12M",
+
+def obter_dividendo_usuario_por_id_api(dividendo_id: int) -> Dict[str, Any]:
+    """Consome a rota GET /dividendos_usuarios/{id} para buscar os detalhes de um provento específico.
+
+    :param dividendo_id: ID do registro de dividendo no banco de dados.
+    :return: Dicionário contendo os detalhes do dividendo.
+    """
+    # Requisição GET para o endpoint com parâmetro de rota
+    response = _request("GET", f"dividendos_usuarios/id/{dividendo_id}")
+
+    if response.status_code == 200:
+        return response.json()
+    elif response.status_code == 404:
+        raise ApiRequestError(
+            message=f"Dividendo com ID {dividendo_id} não foi encontrado.",
+            status_code=404,
+            contexto="ao Obter Dividendo Usuario por ID",
+        )
+
+    # Exceção padronizada para outros status HTTP
+    _tratar_erro_resposta(response, contexto="ao Obter Dividendo Usuario por ID")
+
+
+def obter_dividendos_usuario_agregados_api( periodo_opcao: str = "12M",
                                     agrupar_por: str = 'DATA_PAG',
                                     data_inicio: Optional[str] = None,
                                     data_fim: Optional[str] = None,
@@ -493,11 +516,9 @@ def obter_dividendos_agregados_api( periodo_opcao: str = "12M",
     _tratar_erro_resposta(response, contexto="ao Obter Dividendos Agregados")
 
 
-def inserir_dividendo_api(
-    payload: Dict[str, Any],
-    modo_insert: Literal["TABELA", "MANUAL"] = "TABELA",
-    user_id: Optional[int] = None,
-) -> bool:
+def inserir_dividendo_usuario_api( payload: Dict[str, Any], modo_insert: Literal["TABELA", "MANUAL"] = "TABELA",
+                                    user_id: Optional[int] = None,
+                                ) -> bool:
     """Envia um pacote de dividendos (manual ou via tabela) para a API.
 
     :param modo_insert: Origem dos dados ("TABELA" para importação via planilha, "MANUAL" para inserção manual).
@@ -516,7 +537,7 @@ def inserir_dividendo_api(
     _tratar_erro_resposta(response, contexto="ao Inserir Dividendos")
 
 
-def editar_dividendo_api(dividendo_id: Any, payload: Dict[str, Any], user_id: Optional[int] = None) -> bool:
+def editar_dividendo_usuario_api(dividendo_id: Any, payload: Dict[str, Any], user_id: Optional[int] = None) -> bool:
     params = {"user_id": user_id} if user_id is not None else None
     response = _request("PUT", f"dividendos_usuarios/edit_dividendo/{dividendo_id}", params=params, payload=payload)
 
@@ -526,30 +547,44 @@ def editar_dividendo_api(dividendo_id: Any, payload: Dict[str, Any], user_id: Op
     _tratar_erro_resposta(response, contexto="ao Editar Dividendo")
 
 
-def alterar_status_dividendo_api(dividendo_id: Any, aceito: bool, user_id: Optional[int] = None) -> bool:
+def alterar_status_dividendo_usuario_api(ids: List[str], user_id: Optional[int] = None) -> bool:
+    """Consome a rota PATCH /dividendos_usuarios/edit_aceito_lote para alternar o status 'aceito' em lote.
+
+    :param ids: Lista de IDs dos dividendos a terem o status alterado.
+    :param user_id: ID do usuário alvo (opcional para admin).
+    :return: True em caso de alteração bem-sucedida.
+    """
+    if not ids:
+        return False
+
     params = {"user_id": user_id} if user_id is not None else None
-    response = _request(
-        "PATCH",
-        f"dividendos_usuarios/edit_campo/{dividendo_id}",
-        params=params,
-        payload={"aceito": aceito},
-    )
+        
+    #  Requisição PATCH enviando o payload JSON correto
+    response = _request("PATCH", "dividendos_usuarios/edit_aceito_lote", payload={"ids": ids}, params=params)
 
-    if response.status_code == 200:
+    if response.status_code in (200, 204):
+        # Ativa monitoramento para reprocessamento na UI após a alteração
+        _ativar_monitoramento_backend()
+        datail = response.json()
+        st.session_state["toast_pendente"] = {"mensagem": f"✅ Status de aceito atualizado em {datail['total_afetados']} registros.", "icone": "🔄"}
+        if datail.get('ids_nao_encontrados'):
+            st.session_state['erro_pendente'] = {"mensagem": f"⚠️ IDs não encontrados: {', '.join(datail['ids_nao_encontrados'])}"}
+
         return True
+    # Tratamento em caso de falha na alteração
+    _tratar_erro_resposta(response, contexto="ao Alternar Aceite de Dividendos em Lote")
+    return False
 
-    _tratar_erro_resposta(response, contexto="ao Alterar Status do Dividendo")
 
+def excluir_dividendos_usuarios_em_lote_api(dividendo_id: Any, user_id: Optional[int] = None) -> bool:
 
-def excluir_dividendo_api(dividendo_id: Any, user_id: Optional[int] = None) -> bool:
     ids = [dividendo_id] if not isinstance(dividendo_id, (list, tuple, set)) else list(dividendo_id)
     params = {"user_id": user_id} if user_id is not None else None
-    response = _request(
-        "DELETE",
-        "dividendos_usuarios/delete_lote",
-        params=params,
-        payload={"ids": ids},
-    )
+    response = _request( "DELETE",
+                        "dividendos_usuarios/delete_lote",
+                        params=params,
+                        payload={"ids": ids},
+                    )
 
     if response.status_code in (200, 204):
         return True
@@ -557,23 +592,155 @@ def excluir_dividendo_api(dividendo_id: Any, user_id: Optional[int] = None) -> b
     _tratar_erro_resposta(response, contexto="ao Excluir Dividendo")
 
 
-def excluir_dividendos_lote_api(ids: List[Any], user_id: Optional[int] = None) -> bool:
-    """Exclui um lote de dividendos usando a rota de delete em lote."""
+# ==============================================================================
+# REQUISIÇÕES DE DIVIDENDOS (MERCADO / GLOBAL)
+# ==============================================================================
+
+def listar_dividendos_global_api(
+                                    ativo_id: Optional[str] = None,
+                                    data_inicio: Optional[str] = None,
+                                    data_fim: Optional[str] = None,
+                                    limite: Optional[int] = None,
+                                ) -> List[Dict[str, Any]]:
+    """Consome a rota GET /dividendos/ para listar proventos globais cadastrados no sistema.
+
+    Permite filtrar por ativo, intervalo de datas e limite de registros.
+
+    :param ativo_id: Ticker do ativo (ex: 'PETR4', 'VALE3') (opcional).
+    :param data_inicio: Data inicial de pagamento ou corte (AAAA-MM-DD) (opcional).
+    :param data_fim: Data final de pagamento ou corte (AAAA-MM-DD) (opcional).
+    :param limite: Quantidade máxima de registros a retornar (opcional).
+    :return: Lista de dicionários contendo os dividendos globais.
+    """
+    params: Dict[str, Any] = {}
+    
+    if ativo_id:
+        params["ativo_id"] = ativo_id.strip().upper()
+    if data_inicio:
+        params["data_inicio"] = data_inicio
+    if data_fim:
+        params["data_fim"] = data_fim
+    if limite is not None:
+        params["limite"] = limite
+
+    # Chamada centralizada com tratamento de query params
+    response = _request("GET", "dividendos/pegar_dividendos", params=params or None)
+
+    if response.status_code == 200:
+        return response.json()
+    elif response.status_code in (204, 404):
+        return []
+
+    # Exceção padronizada em caso de erro
+    _tratar_erro_resposta(response, contexto="ao Listar Dividendos Globais")
+
+
+def obter_dividendo_global_por_id_api(dividendo_id: int) -> Dict[str, Any]:
+    """Consome a rota GET /dividendos/{id} para buscar os detalhes de um provento específico.
+
+    :param dividendo_id: ID do registro de dividendo no banco de dados.
+    :return: Dicionário contendo os detalhes do dividendo.
+    """
+    # Requisição GET para o endpoint com parâmetro de rota
+    response = _request("GET", f"dividendos/id/{dividendo_id}")
+
+    if response.status_code == 200:
+        return response.json()
+    elif response.status_code == 404:
+        raise ApiRequestError(
+            message=f"Dividendo com ID {dividendo_id} não foi encontrado.",
+            status_code=404,
+            contexto="ao Obter Dividendo Global por ID",
+        )
+
+    # Exceção padronizada para outros status HTTP
+    _tratar_erro_resposta(response, contexto="ao Obter Dividendo Global por ID")
+
+
+def atualizar_dividendo_global_api(dividendo_id: int, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Consome a rota PUT /dividendos/edit_dividendo/{id} para atualizar os dados de um provento cadastrado.
+
+    :param dividendo_id: ID do dividendo a ser editado.
+    :param payload: Dicionário contendo os campos atualizados.
+    :return: Dicionário contendo o dividendo atualizado.
+    """
+    # Chamada HTTP PUT para alteração do registro
+    response = _request("PUT", f"dividendos/edit_dividendo/{dividendo_id}", payload=payload)
+
+    if response.status_code == 200:
+        # Expurga cache e avisa a UI sobre mudança
+        _ativar_monitoramento_backend()
+        return response.json()
+
+    # Trata falhas de permissão ou erros de payload
+    _tratar_erro_resposta(response, contexto="ao Atualizar Dividendo Global")
+
+
+def auditar_dividendos_globais_em_lote_api(ids: List[int]) -> bool:
+    """Consome a rota PATCH /dividendos/audit_dividendo_lote para alternar o status de auditoria em lote.
+
+    :param ids: Lista com os IDs dos dividendos a serem auditados.
+    :return: True em caso de auditoria com sucesso.
+    """
     if not ids:
         return False
 
-    params = {"user_id": user_id} if user_id is not None else None
-    response = _request(
-        "DELETE",
-        "dividendos_usuarios/delete_lote",
-        params=params,
-        payload={"ids": ids},
-    )
+    # Requisição PATCH enviando o JSON no corpo da requisição
+    response = _request("PATCH", "dividendos/audit_dividendo_lote", payload={"ids": ids})
 
     if response.status_code in (200, 204):
+        # Ativa monitoramento para reprocessamento na UI após a alteração
+        _ativar_monitoramento_backend()
+        datail = response.json()
+        st.session_state["toast_pendente"] = {"mensagem": f"✅ Status de auditoria atualizado em {datail['total_afetados']} registros. ids não encontrados: {datail['ids_nao_encontrados']}", "icone": "🔄"}
         return True
 
-    _tratar_erro_resposta(response, contexto="ao Excluir Lote de Dividendos")
+    # Tratamento em caso de falha na auditoria
+    _tratar_erro_resposta(response, contexto="ao Auditar Dividendos Globais em Lote")
+    return False
+
+
+def excluir_dividendos_globais_em_lote_api(ids: List[int]) -> bool:
+    """Consome a rota DELETE /dividendos/delete_lote para excluir proventos em lote do cadastro geral.
+
+    :param ids: Lista com os IDs dos dividendos a serem excluídos.
+    :return: True em caso de remoção com sucesso.
+    """
+    if not ids:
+        return False
+
+    # Requisição DELETE com payload no corpo da mensagem
+    response = _request("DELETE", "dividendos/delete_lote", payload={"ids": ids},)
+
+    if response.status_code in (200, 204):
+        # Ativa monitoramento para reprocessamento na UI após a deleção
+        _ativar_monitoramento_backend()
+        return True
+
+    # Tratamento em caso de falha na remoção
+    _tratar_erro_resposta(response, contexto="ao Excluir Dividendos Globais em Lote")
+    return False
+
+
+def inserir_pacote_dividendos_global_api(payload: Dict[str, Any], modo_insert: Literal["TABELA", "MANUAL"] = "TABELA",) -> Dict[str, Any]:
+    """Consome a rota POST /dividendos/inserir_dividendos_tabela para inserção em lote de dividendos globais.
+
+     Útil para rotinas de scraping ou carga de histórico.
+
+    :param payload: Dicionário contendo a lista/pacote de dividendos.
+    :return: Dicionário com o resumo da inserção (quantidade inserida, mensagens, etc.).
+    """
+    # Timeout estendido para inserção pesada em lote
+    response = _request("POST", "dividendos/inserir_dividendos_tabela/", payload=payload, timeout=60, params={"modo_insert": modo_insert})
+
+    if response.status_code in (200, 201):
+        # Notifica a UI e limpa cache de carteira/eventos
+        _ativar_monitoramento_backend()
+        return response.json()
+
+    # Tratamento de erros no lote
+    _tratar_erro_resposta(response, contexto="ao Inserir Pacote de Dividendos")
+
 
 # ====================================================================
 # REQUISIÇÕES PARA EVENTOS CORPORATIVOS (API 'eventoscorporativos')

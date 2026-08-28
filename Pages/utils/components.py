@@ -69,12 +69,12 @@ def renderizar_status_motor_sidebar(user_id: int):
 
 def processar_notificacoes_pendentes() -> None:
     """Exibe mensagens pendentes acumuladas antes ou depois do rerun."""
-    # 🛠️ Resgate direto e seguro do toast (pop evita exceção se a chave não existir)
+    # Resgate direto e seguro do toast (pop evita exceção se a chave não existir)
     toast = st.session_state.pop("toast_pendente", None)
     if toast and isinstance(toast, dict):
         st.toast(toast.get("mensagem", ""), icon=toast.get("icone"))
 
-    # 🛠️ Resgate independente do erro direto do session_state (evita AttributeError)
+    # Resgate independente do erro direto do session_state (evita AttributeError)
     erro = st.session_state.pop("erro_pendente", None)
     if erro:
         st.error(erro)
@@ -395,7 +395,7 @@ def exibir_tabela_generica(dados: list, config_colunas: dict,colunas_resumidas: 
                 width="stretch",
             )
 
-def st_number_input_custom(label, value=None, key=None, placeholder="0,00", disabled=False ,help=None):
+def st_number_input_custom(label, value=None, key=None, placeholder="0,00", disabled=False ,help=None, on_change=None):
     """Componente numérico pt-BR com formatação automática ao mudar o valor (on_change).
 
     Gerencia o estado via st.session_state para formatar dinamicamente o texto
@@ -413,11 +413,17 @@ def st_number_input_custom(label, value=None, key=None, placeholder="0,00", disa
             st.session_state[key] = "0,00"
             st.toast("⚠️ Inválido (ex: 1.250,50).")
             st.session_state[f"{key}_return"] = 0
+        else:
+            if on_change:
+                on_change()
             
     # Inicializa a chave no session_state apenas na primeira execução
     if not key:
         key = f"input_custom_{label}"
 
+    if f"{key}_return" not in st.session_state:
+        st.session_state[f"{key}_return"] = 0.0
+        
     if key not in st.session_state:
         st.session_state[key] = formatar_numero_para_br_str(value)
         alterar()
