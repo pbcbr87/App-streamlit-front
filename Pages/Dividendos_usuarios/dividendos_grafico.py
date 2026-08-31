@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 import streamlit.config as config
 import plotly.express as px
-from Pages.utils.request_api import ApiRequestError, obter_dividendos_usuarios_agregados_api
+from Pages.utils.request_api import ApiRequestError, obter_dividendos_usuario_agregados_api
 
 #===============================================================================
 # CONFIGURAÇÕES DE ESTADO DA PÁGINA
@@ -35,7 +35,7 @@ def carregar_dados_agregados( periodo: str = "12M",
     """Busca os dividendos agregados no backend FastAPI."""
     try:
         return (
-            obter_dividendos_usuarios_agregados_api(
+            obter_dividendos_usuario_agregados_api(
                 periodo_opcao=periodo,
                 agrupar_por="DATA_COM" if agrupar_por =="Data Com" else "DATA_PAG",
                 data_inicio=str(dt_inicio) if dt_inicio else None,
