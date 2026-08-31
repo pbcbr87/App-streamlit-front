@@ -325,7 +325,7 @@ def widget_resultado_ativos(dist: list, qtd_select=None, key_estado_dinamico: st
                 if "sugestao_aporte" in df.columns
                 else 0.0
             )
-            c1.metric("Total Sugerido", f"{moeda} {total_sugerido:.2f}")
+            c1.metric("Total Sugerido", f"{moeda} {formatar_numero_para_br_str(total_sugerido)}")
             c2.metric("Ativos no Grupo", len(df))
             c3.metric("Moeda", moeda)
 
