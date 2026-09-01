@@ -374,12 +374,12 @@ def widget_aporte_final(sugestao_grupos: list, data_editors: dict, key_estado_di
                 quantidade_ativos = int(valor_financeiro // preco_unitario) if preco_unitario > 0 else 0
                 cor_aporte = "#24a148" if valor_financeiro > 0 else "#31333F"
                 
-                c2.markdown(f"<span style='color: {cor_aporte}; font-weight: bold;'>{moeda} {formatar_numero_para_br_str(valor_financeiro)}</span>", unsafe_allow_html=True)
+                c2.markdown(f"<span style='color: {cor_aporte}; font-weight: bold;'>{moeda} {formatar_numero_para_br_str(valor_financeiro, 2)}</span>", unsafe_allow_html=True)
                 c3.markdown(f"<span style='color: #0068c9; font-weight: bold; font-size: 16px;'>{quantidade_ativos}</span>", unsafe_allow_html=True)
-                c4.write(f"{moeda} {formatar_numero_para_br_str(preco_unitario)}")
+                c4.write(f"{moeda} {formatar_numero_para_br_str(preco_unitario, 2)}")
                 
                 valor_sug_original = perc_sugerido * valor_total_aporte / 100
-                c6.write(f"{moeda} {formatar_numero_para_br_str(valor_sug_original)} / {formatar_numero_para_br_str(perc_sugerido)}%")
+                c6.write(f"{moeda} {formatar_numero_para_br_str(valor_sug_original, 2)} / {formatar_numero_para_br_str(perc_sugerido, 2)}%")
 
             row_atualizada = row.to_dict()
             row_atualizada.update({
