@@ -118,36 +118,36 @@ def renderizar_kpis(dados: list, moeda: str):
     <div class="kpi-grid">
         <div class="kpi-card">
             <div class="kpi-label">Patrimônio Total</div>
-            <div class="kpi-value">{simbolo} {formatar_numero_para_br_str(round(patrimonio, 2))}</div>
+            <div class="kpi-value">{simbolo} {formatar_numero_para_br_str(patrimonio, 2)}</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-label">Custo Investido</div>
-            <div class="kpi-value">{simbolo} {formatar_numero_para_br_str(round(custo_total, 2))}</div>
+            <div class="kpi-value">{simbolo} {formatar_numero_para_br_str(custo_total, 2)}</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-label">Ganho de Capital</div>
             <div class="kpi-value-container">
-                <span class="kpi-value">{simbolo} {formatar_numero_para_br_str(round(lucro_capital, 2))}</span>
+                <span class="kpi-value">{simbolo} {formatar_numero_para_br_str(lucro_capital, 2)}</span>
                 <span class="kpi-badge" style="color: {cor_lucro}; background: {cor_lucro}18;">
-                    {sinal_lucro}{formatar_numero_para_br_str(round(pct_lucro, 2))}%
+                    {sinal_lucro}{formatar_numero_para_br_str(pct_lucro, 2)}%
                 </span>
             </div>
         </div>
         <div class="kpi-card">
             <div class="kpi-label">Renda Mensal Est.</div>
             <div class="kpi-value-container">
-                <span class="kpi-value">{simbolo} {formatar_numero_para_br_str(round(renda_mensal_est, 2))}</span>
+                <span class="kpi-value">{simbolo} {formatar_numero_para_br_str(renda_mensal_est, 2)}</span>
                 <span class="kpi-badge" style="color: #0288d1; background: #0288d118;">
-                    {formatar_numero_para_br_str(round(pct_renda_mensal_est, 2))}%
+                    {formatar_numero_para_br_str(pct_renda_mensal_est, 2)}%
                 </span>
             </div>
         </div>
         <div class="kpi-card">
             <div class="kpi-label">Retorno Total</div>
             <div class="kpi-value-container">
-                <span class="kpi-value">{simbolo} {formatar_numero_para_br_str(round(retorno_total, 2))}</span>
+                <span class="kpi-value">{simbolo} {formatar_numero_para_br_str(retorno_total, 2)}</span>
                 <span class="kpi-badge" style="color: {cor_retorno}; background: {cor_retorno}18;">
-                    {sinal_retorno}{formatar_numero_para_br_str(round(pct_retorno_total, 2))}%
+                    {sinal_retorno}{formatar_numero_para_br_str(pct_retorno_total, 2)}%
                 </span>
             </div>
         </div>

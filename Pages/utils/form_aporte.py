@@ -325,7 +325,7 @@ def widget_resultado_ativos(dist: list, qtd_select=None, key_estado_dinamico: st
                 if "sugestao_aporte" in df.columns
                 else 0.0
             )
-            c1.metric("Total Sugerido", f"{moeda} {formatar_numero_para_br_str(total_sugerido)}")
+            c1.metric("Total Sugerido", f"{moeda} {formatar_numero_para_br_str(total_sugerido, 2)}")
             c2.metric("Ativos no Grupo", len(df))
             c3.metric("Moeda", moeda)
 
@@ -398,15 +398,15 @@ def widget_aporte_final(sugestao_grupos: list, data_editors: dict, key_estado_di
 
         m1, m2, m3 = st.columns(3)
         m1.metric(
-            "Total Alocado", f"{formatar_numero_para_br_str(total_percentual_atual)}%", 
-            delta=f"{formatar_numero_para_br_str(total_percentual_atual - 100)}%" if abs(total_percentual_atual - 100) > 0.01 else None,
+            "Total Alocado", f"{formatar_numero_para_br_str(total_percentual_atual, 2)}%", 
+            delta=f"{formatar_numero_para_br_str(total_percentual_atual - 100, 2)}%" if abs(total_percentual_atual - 100) > 0.01 else None,
             delta_color="inverse" if total_percentual_atual > 100.01 else "normal"
         )
-        m2.metric("Total Efetivo", f"{moeda} {formatar_numero_para_br_str(total_efetivo)}")
-        m3.metric("Sobra em Caixa", f"{moeda} {formatar_numero_para_br_str(sobra)}")
+        m2.metric("Total Efetivo", f"{moeda} {formatar_numero_para_br_str(total_efetivo, 2)}")
+        m3.metric("Sobra em Caixa", f"{moeda} {formatar_numero_para_br_str(sobra, 2)}")
 
         if total_percentual_atual > 100.01:
-            st.error(f"⚠️ Distribuição acima de 100%. Reduza {formatar_numero_para_br_str(total_percentual_atual - 100)}%.")
+            st.error(f"⚠️ Distribuição acima de 100%. Reduza {formatar_numero_para_br_str(total_percentual_atual - 100, 2)}%.")
 
         return df_res
 
@@ -435,7 +435,7 @@ def widget_aporte_final(sugestao_grupos: list, data_editors: dict, key_estado_di
             valor_total = info_grupo["valor_alocado"]
             moeda = info_grupo["moeda"]
 
-            titulo_expander = f"📌 Ajuste Manual: {grupo} - Aporte: {moeda} {formatar_numero_para_br_str(valor_total)}"
+            titulo_expander = f"📌 Ajuste Manual: {grupo} - Aporte: {moeda} {formatar_numero_para_br_str(valor_total, 2)}"
             with st.expander(titulo_expander, expanded=True):
                 # Passa o df_selecionado diretamente
                 df_ajustado = widget_ajuste_manual_dinamico( df_selecionado, valor_total, moeda, key_estado_dinamico=f"{key_estado_dinamico}_{grupo}",)

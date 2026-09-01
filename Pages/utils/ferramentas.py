@@ -152,7 +152,7 @@ def converter_para_float(texto):
     except ValueError:
         return None
 
-def formatar_numero_para_br_str(val):
+def formatar_numero_para_br_str(val, casas_decimais: int = 10):
     if val is None or val == "":
         return ""
     # Se for string, primeiro tenta converter pra float pra reformatar limpo
@@ -166,8 +166,8 @@ def formatar_numero_para_br_str(val):
     # if isinstance(val, (int, float)):
     #     return f"{val:,.10f}".replace(",", "X").replace(".", ",").replace("X", ".").strip("0")
     if isinstance(val, (int, float)):
-        # Formata até 10 casas decimais no padrão americano com separador de milhar
-        val_str = f"{val:,.10f}"
+        # Formata até 'casas_decimais' casas decimais no padrão americano com separador de milhar
+        val_str = f"{val:,.{casas_decimais}f}"
         
         parte_inteira, parte_decimal = val_str.split(".")
         
