@@ -132,8 +132,8 @@ def limpar_nans_dict(lista_dicts: list[dict]) -> list[dict]:
                 item_limpo[k] = None
             # 2. Trata Timestamps do Pandas ou datetimes do Python
             elif isinstance(v, (pd.Timestamp, datetime, date)):
-                # Converte '2020-07-02 00:00:00' para '2020-07-02'
-                item_limpo[k] = v.strftime("%Y-%m-%d")
+                # Converte '2020-07-02 00:00:00' para '02/07/2020'
+                item_limpo[k] = v.strftime("%d/%m/%Y")
             # 3. Mantém outros valores válidos
             else:
                 item_limpo[k] = v

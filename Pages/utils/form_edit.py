@@ -657,6 +657,7 @@ def renderizar_layout_importacao_tabela( titulo: str, funcao_envio_api: Callable
         with st.container(border=True):
             st.markdown(f"#### 📊 Aprovação do Pacote ({len(list_dict_registros)} registros)")
             st.caption("Confira os dados importados abaixo antes de processar.")
+            st.dataframe(list_dict_registros)
             exibir_tabela_generica(
                 dados=list_dict_registros,
                 config_colunas=config_colunas,
@@ -753,6 +754,8 @@ def renderizar_layout_importacao_tabela( titulo: str, funcao_envio_api: Callable
             if uploaded_file is not None:
                 try:
                     df_raw = pd.read_excel(uploaded_file)
+                    df_raw.head()
+                    df_raw.info()
                     if df_raw.empty:
                         st.error("⚠️ O arquivo enviado está totalmente vazio.")
                     else:
