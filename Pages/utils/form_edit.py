@@ -606,7 +606,7 @@ def renderizar_layout_importacao_tabela( titulo: str, funcao_envio_api: Callable
     """
     Layout dinâmico genérico por etapas para importação de dados por tabela (Excel/CSV).
     
-    🛠️ Alteração: Função tornada 100% genérica via parâmetros reutilizáveis (eventos, ordens, proventos, etc.).
+     Alteração: Função tornada 100% genérica via parâmetros reutilizáveis (eventos, ordens, proventos, etc.).
     
     Args:
         titulo: Título exibido no topo (ex: "📥 Importação de Eventos por Tabela")
@@ -665,7 +665,8 @@ def renderizar_layout_importacao_tabela( titulo: str, funcao_envio_api: Callable
                 callback_deletar=None,
                 callback_estilo=None,
                 chave_tabela=f"preview_{key_estado_dinamico}",
-                suporta_moeda=False
+                suporta_moeda=False,
+                formato_data_input="BR"
             )
             
             c_chk, c_btn, c_cancel = st.columns([2, 1, 1])
