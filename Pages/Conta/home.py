@@ -28,5 +28,5 @@ btn_col1, btn_col2, _ = st.columns([1, 1, 4])
 with btn_col1:
     # Assumindo que 'Pages/page_2.py' é a página principal da carteira
     if st.button('Ver Carteira', type="primary"): 
-        st.switch_page("Pages/Carteira/page_2.py")
+        st.switch_page("Pages/Carteira/dashboard_casteira.py")
 

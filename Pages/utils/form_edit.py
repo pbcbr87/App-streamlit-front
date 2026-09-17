@@ -670,15 +670,12 @@ def renderizar_layout_importacao_tabela( titulo: str, funcao_envio_api: Callable
             )
             
             c_chk, c_btn, c_cancel = st.columns([2, 1, 1])
-            with c_chk:
-                concordou = st.checkbox("Confirmo que os dados estão corretos.", key=f"chk_tbl_{key_estado_dinamico}")
             
             with c_btn:
                 btn_processar = st.button(
                     "🚀 Confirmar e Enviar", 
                     type="primary", 
                     use_container_width=True, 
-                    disabled=not concordou, 
                     key=f"btn_send_{key_estado_dinamico}"
                 )
 
